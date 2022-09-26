@@ -1,0 +1,79 @@
+import { Temporal } from "@js-temporal/polyfill";
+import * as fs from "fs/promises";
+import fetch from "node-fetch";
+
+export interface DayWithMean {
+  day: Temporal.PlainDate;
+  mean: number;
+}
+
+export interface HourTemperature {
+  day: Temporal.PlainDate;
+  hour: number;
+  value: number;
+}
+
+export async function getDailyData(year: number): Promise<DayWithMean[]> {
+  const response = await fetch(
+    `https://www.yr.no/api/v0/locations/5-18700/observations/year/${year}`
+  );
+
+  if (!response.ok) {
+    console.log(response);
+    throw new Error("Unexpected response");
+  }
+
+  const responseJson = (await response.json()) as any;
+
+  const result: DayWithMean[] = [];
+
+  for (const month of responseJson.historical.months) {
+    for (const day of month.days) {
+      if (day.temperature.mean == null) {
+        // No data yet.
+        continue;
+      }
+
+      result.push({
+        day: Temporal.PlainDate.from(day.time.slice(0, 10)),
+        mean: day.temperature.mean,
+      });
+    }
+  }
+
+  return result;
+}
+
+export async function getHourlyData(
+  day: Temporal.PlainDate
+): Promise<HourTemperature[]> {
+  const response = await fetch(
+    `https://www.yr.no/api/v0/locations/5-18700/observations/${day}`
+  );
+
+  if (!response.ok) {
+    console.log(response);
+    throw new Error("Unexpected response");
+  }
+
+  const responseJson = (await response.json()) as any;
+
+  const result: HourTemperature[] = [];
+
+  for (const day of responseJson.historical.days) {
+    for (const hour of day.hours) {
+      if (hour.temperature.value == null) {
+        // No data yet.
+        continue;
+      }
+
+      result.push({
+        day: Temporal.PlainDate.from(hour.time.slice(0, 10)),
+        hour: Number(hour.time.slice(11, 13)),
+        value: hour.temperature.value,
+      });
+    }
+  }
+
+  return result;
+}
