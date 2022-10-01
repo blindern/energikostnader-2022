@@ -1,10 +1,5 @@
 import { Temporal } from "@js-temporal/polyfill";
-
-export interface HourUsage {
-  date: Temporal.PlainDate;
-  hour: number;
-  usage: number; // kWh
-}
+import { HourUsage } from "./extract/common";
 
 export function generateHourUsageCsvRows(
   meterName: string,
@@ -14,7 +9,10 @@ export function generateHourUsageCsvRows(
     usageList
       .map(
         (it) =>
-          `${formatHourForCsv(it.date, it.hour)}\t${meterName}\t${it.usage}`
+          `${formatHourForCsv(
+            it.date,
+            it.hour
+          )}\t${meterName}\t${formatNumberForCsv(it.usage)}`
       )
       .join("\n") + "\n"
   );
@@ -35,10 +33,6 @@ export function formatHourForCsv(
   return `${formatDateDayFirst(date)} kl. ${padZero(hour)}.00`;
 }
 
-export function requireEnv(name: string): string {
-  const value = process.env[name];
-  if (value == null) {
-    throw new Error(`Missing env: ${name}`);
-  }
-  return value;
+export function formatNumberForCsv(value: number): string {
+  return String(value).replace(".", ",");
 }

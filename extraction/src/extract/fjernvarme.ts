@@ -1,6 +1,6 @@
 import { Temporal } from "@js-temporal/polyfill";
 import fetch from "node-fetch";
-import { HourUsage } from "./common-lib.js";
+import { HourUsage } from "./common.js";
 
 export async function getAccessToken(
   username: string,

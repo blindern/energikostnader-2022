@@ -1,5 +1,4 @@
 import { Temporal } from "@js-temporal/polyfill";
-import * as fs from "fs/promises";
 import fetch from "node-fetch";
 
 export interface DayWithMean {
@@ -8,9 +7,9 @@ export interface DayWithMean {
 }
 
 export interface HourTemperature {
-  day: Temporal.PlainDate;
+  date: Temporal.PlainDate;
   hour: number;
-  value: number;
+  temperature: number;
 }
 
 export async function getDailyData(year: number): Promise<DayWithMean[]> {
@@ -68,9 +67,9 @@ export async function getHourlyData(
       }
 
       result.push({
-        day: Temporal.PlainDate.from(hour.time.slice(0, 10)),
+        date: Temporal.PlainDate.from(hour.time.slice(0, 10)),
         hour: Number(hour.time.slice(11, 13)),
-        value: hour.temperature.value,
+        temperature: hour.temperature.value,
       });
     }
   }

@@ -1,20 +1,22 @@
 import { Temporal } from "@js-temporal/polyfill";
 import fetch from "node-fetch";
-import { formatHourForCsv } from "./common-lib.js";
 
-interface HourPrice {
+export interface HourPrice {
   date: Temporal.PlainDate;
   hour: number;
   price: number;
 }
 
-async function getNordpoolData(date: Temporal.PlainDate): Promise<HourPrice[]> {
+export async function getNordpoolData(
+  date: Temporal.PlainDate
+): Promise<HourPrice[]> {
   const endDate = `${String(date.day).padStart(2, "0")}-${String(
     date.month
   ).padStart(2, "0")}-${date.year}`;
 
   const url = `https://www.nordpoolgroup.com/api/marketdata/page/23?currency=NOK&endDate=${endDate}`;
 
+  // TODO: retry 500 errors
   const response = await fetch(url);
 
   if (!response.ok) {
@@ -53,24 +55,10 @@ async function getNordpoolData(date: Temporal.PlainDate): Promise<HourPrice[]> {
       result.push({
         date: Temporal.PlainDate.from(startTimeMatch[1]),
         hour: Number(startTimeMatch[2]),
-        price: column.Value.replace(/,/, ".").replace(/ /g, ""),
+        price: Number(column.Value.replace(/,/, ".").replace(/ /g, "")),
       });
     }
   }
 
   return result;
 }
-
-if (process.argv.length < 3) {
-  process.stderr.write("Syntax: program <date>");
-  process.exit(1);
-}
-
-const dateStr = process.argv[2];
-const data = await getNordpoolData(Temporal.PlainDate.from(dateStr));
-
-process.stdout.write(
-  data
-    .map((it) => `${formatHourForCsv(it.date, it.hour)}\t${it.price}`)
-    .join("\n") + "\n"
-);

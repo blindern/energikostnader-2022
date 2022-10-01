@@ -1,7 +1,8 @@
 import { Temporal } from "@js-temporal/polyfill";
 import fetch from "node-fetch";
 import { read, utils } from "xlsx";
-import { formatDateDayFirst, HourUsage } from "./common-lib.js";
+import { formatDateDayFirst } from "../format.js";
+import { HourUsage } from "./common.js";
 
 export interface LoginState {
   sessionId: string;

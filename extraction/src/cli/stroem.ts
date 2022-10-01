@@ -1,12 +1,11 @@
 import { Temporal } from "@js-temporal/polyfill";
-import * as dotenv from "dotenv";
-import * as fs from "fs/promises";
-import { generateHourUsageCsvRows, requireEnv } from "./common-lib.js";
-import { fetchExcelWithLogin, parseExcel } from "./stroem-lib.js";
-
-dotenv.config();
-const username = requireEnv("STROEM_USERNAME");
-const password = requireEnv("STROEM_PASSWORD");
+import {
+  STROEM_METER_LIST,
+  STROEM_PASSWORD,
+  STROEM_USERNAME,
+} from "../config.js";
+import { fetchExcelWithLogin, parseExcel } from "../extract/stroem.js";
+import { generateHourUsageCsvRows } from "../format.js";
 
 if (process.argv.length < 4) {
   process.stderr.write("Syntax: program <first-date> <last-date>");
@@ -17,9 +16,9 @@ const firstDate = process.argv[2];
 const lastDate = process.argv[3];
 
 const excelData = await fetchExcelWithLogin({
-  username,
-  password,
-  meterList: ["707057500051111111", "707057500051222222"],
+  username: STROEM_USERNAME,
+  password: STROEM_PASSWORD,
+  meterList: STROEM_METER_LIST,
   firstDate: Temporal.PlainDate.from(firstDate),
   lastDate: Temporal.PlainDate.from(lastDate),
 });

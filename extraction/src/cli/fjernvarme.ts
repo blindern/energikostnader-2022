@@ -1,16 +1,16 @@
 import { Temporal } from "@js-temporal/polyfill";
-import * as dotenv from "dotenv";
-import { generateHourUsageCsvRows, requireEnv } from "./common-lib.js";
-import { getAccessToken, getHourlyData } from "./fjernvarme-lib.js";
-
-dotenv.config();
-
-const fjernvarmeUsername = requireEnv("FJERNVARME_USERNAME");
-const fjernvarmePassword = requireEnv("FJERNVARME_PASSWORD");
+import {
+  FJERNVARME_ANLEGG_NUMMER,
+  FJERNVARME_KUNDE_ID,
+  FJERNVARME_PASSWORD,
+  FJERNVARME_USERNAME,
+} from "../config.js";
+import { getAccessToken, getHourlyData } from "../extract/fjernvarme.js";
+import { generateHourUsageCsvRows } from "../format.js";
 
 const accessToken = await getAccessToken(
-  fjernvarmeUsername,
-  fjernvarmePassword
+  FJERNVARME_USERNAME,
+  FJERNVARME_PASSWORD
 );
 
 if (process.argv.length < 4) {
@@ -23,8 +23,8 @@ const lastDate = process.argv[3];
 
 const usage = await getHourlyData({
   accessToken,
-  anleggNummer: "123456789",
-  kundeId: "1234",
+  anleggNummer: FJERNVARME_ANLEGG_NUMMER,
+  kundeId: FJERNVARME_KUNDE_ID,
   firstDate: Temporal.PlainDate.from(firstDate),
   lastDate: Temporal.PlainDate.from(lastDate),
 });
