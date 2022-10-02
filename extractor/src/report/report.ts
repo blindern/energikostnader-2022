@@ -483,12 +483,15 @@ function generatePriceReport(
           usageKwh: fjernvarmeUsage,
         });
 
+        const nordpoolKwh = indexedData.spotpriceByHour[index];
+
         return {
           date,
           hour,
           name: `${dateStr} kl ${String(hour).padStart(2, "0")}`,
           priceStroemKwh: priceStroem / stroemUsage,
           priceFjernvarmeKwh: priceFjernvarme / fjernvarmeUsage,
+          nordpoolKwh: nordpoolKwh == null ? undefined : nordpoolKwh / 100,
         };
       });
     })

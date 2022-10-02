@@ -247,7 +247,7 @@ function HourlyPrice({ reportData }: { reportData: ReportData }) {
         <Area
           type="stepAfter"
           dataKey="priceFjernvarmeKwh"
-          name="Estimert pris fjernvarme per kWh"
+          name="Fjernvarme per kWh"
           stroke="#ff0000"
           fill="#ff0000"
           fillOpacity={0.05}
@@ -259,7 +259,7 @@ function HourlyPrice({ reportData }: { reportData: ReportData }) {
         <Area
           type="stepAfter"
           dataKey="priceStroemKwh"
-          name="Estimert pris strøm per kWh"
+          name="Strøm per kWh"
           stroke="#6aa84f"
           fill="#6aa84f"
           fillOpacity={0.1}
@@ -267,6 +267,17 @@ function HourlyPrice({ reportData }: { reportData: ReportData }) {
           dot={false}
           legendType="plainline"
           strokeWidth={1.5}
+        />
+        <Line
+          type="stepAfter"
+          dataKey="nordpoolKwh"
+          name="Nordpool per kWh"
+          stroke="#888"
+          opacity={0.5}
+          isAnimationActive={false}
+          dot={false}
+          legendType="plainline"
+          strokeWidth={1}
         />
         {stroemPriceThisHour && hourStartRow && hourEndRow && (
           <ReferenceArea
@@ -424,7 +435,7 @@ function App() {
           <Daily reportData={reportData} />
         </div>
         <div>
-          <h2>Estimert pris per kWh</h2>
+          <h2>Estimert reell pris per kWh</h2>
           <HourlyPrice reportData={reportData} />
         </div>
         <div>
