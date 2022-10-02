@@ -1,0 +1,32 @@
+name: Build report app
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      # Cheating a bit on types from the other project, and it works if we install its deps.
+      - run: npm ci
+        working-directory: extraction
+      - run: npm ci
+        working-directory: report
+      - run: npm run build
+        working-directory: report
+      - name: Install SSH key
+        if: github.ref == 'refs/heads/main'
+        env:
+          FBS_SSH_KEY: ${{ secrets.FBS_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$FBS_SSH_KEY" >~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+        working-directory: report
+      - name: Deploy
+        if: github.ref == 'refs/heads/main'
+        run: |
+          ssh-keyscan fcos-3.nrec.foreningenbs.no >> ~/.ssh/known_hosts
+          rsync -avz --delete --exclude report.json dist/ root@fcos-3.nrec.foreningenbs.no:/var/mnt/data/web-1-www/root/energi/
+        working-directory: report

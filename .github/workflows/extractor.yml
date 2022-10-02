@@ -1,4 +1,4 @@
-name: Build
+name: Build extractor service
 on: [push]
 jobs:
   build:
