@@ -23,7 +23,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Push container
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/main'
         id: docker_build
         uses: docker/build-push-action@v3
         with:
@@ -32,7 +32,7 @@ jobs:
           tags: blindern/energi-extractor:latest
 
       # - name: Deploy
-      #   if: github.ref == 'refs/heads/master'
+      #   if: github.ref == 'refs/heads/main'
       #   run: |
       #     curl --fail -L -i -H "authorization: bearer $DEPLOYER_TOKEN" -H "content-type: application/json" -X POST https://deployer.foreningenbs.no/deploy -d '
       #     {
