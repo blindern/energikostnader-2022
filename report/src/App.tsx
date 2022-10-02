@@ -291,12 +291,7 @@ function HourlyPrice({ reportData }: { reportData: ReportData }) {
             ifOverflow="extendDomain"
           />
         )}
-        <ReferenceLine
-          y={0}
-          stroke="black"
-          strokeWidth={3}
-          strokeDasharray="3 3"
-        />
+        <ReferenceLine y={0} stroke="#555" strokeWidth={1} />
         {reportData.prices.rows
           .slice(1)
           .filter((it) => it.name.endsWith("kl 00"))
