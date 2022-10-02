@@ -59,6 +59,10 @@ export async function getHourlyData(
 
   const result: HourTemperature[] = [];
 
+  if (!responseJson.historical) {
+    return result;
+  }
+
   for (const day of responseJson.historical.days) {
     for (const hour of day.hours) {
       if (hour.temperature.value == null) {
