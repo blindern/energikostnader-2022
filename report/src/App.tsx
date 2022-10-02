@@ -1,5 +1,4 @@
-import data2 from "../../extraction/report.json";
-
+import { useEffect, useState } from "react";
 import {
   Area,
   CartesianGrid,
@@ -7,7 +6,6 @@ import {
   Legend,
   Line,
   ReferenceArea,
-  ReferenceDot,
   ReferenceLine,
   ResponsiveContainer,
   Scatter,
@@ -17,6 +15,9 @@ import {
   YAxis,
   ZAxis,
 } from "recharts";
+import { generateReportData } from "../../extraction/src/report/report";
+
+type ReportData = Awaited<ReturnType<typeof generateReportData>>;
 
 function deriveTempTickCount(data: number[]): number[] {
   const min = Math.min(...data);
@@ -35,10 +36,10 @@ function deriveTempTickCount(data: number[]): number[] {
   return result;
 }
 
-function Hourly() {
+function Hourly({ reportData }: { reportData: ReportData }) {
   return (
     <ResponsiveContainer width="100%" height={400}>
-      <ComposedChart data={data2.hourly.rows}>
+      <ComposedChart data={reportData.hourly.rows}>
         <CartesianGrid stroke="#dddddd" />
         <Area
           type="step"
@@ -101,7 +102,7 @@ function Hourly() {
           orientation="right"
           interval={0}
           ticks={deriveTempTickCount(
-            data2.hourly.rows.map((it) => it.temperature ?? 0)
+            reportData.hourly.rows.map((it) => it.temperature ?? 0)
           )}
           width={40}
         />
@@ -112,10 +113,10 @@ function Hourly() {
   );
 }
 
-function Daily() {
+function Daily({ reportData }: { reportData: ReportData }) {
   return (
     <ResponsiveContainer width="100%" height={400}>
-      <ComposedChart data={data2.daily.rows}>
+      <ComposedChart data={reportData.daily.rows}>
         <CartesianGrid stroke="#dddddd" />
         <Area
           type="step"
@@ -178,7 +179,7 @@ function Daily() {
           orientation="right"
           interval={0}
           ticks={deriveTempTickCount(
-            data2.daily.rows.map((it) => it.temperature ?? 0)
+            reportData.daily.rows.map((it) => it.temperature ?? 0)
           )}
           width={40}
         />
@@ -189,7 +190,7 @@ function Daily() {
   );
 }
 
-function HourlyPrice() {
+function HourlyPrice({ reportData }: { reportData: ReportData }) {
   const now = new Date();
   const hourStart = `${now.getDate()}.${
     now.getMonth() + 1
@@ -201,13 +202,13 @@ function HourlyPrice() {
     nextHour.getMonth() + 1
   } kl ${nextHour.getHours()}`;
 
-  const stroemPriceThisHour = data2.prices.rows.find(
+  const stroemPriceThisHour = reportData.prices.rows.find(
     (it) => it.name == hourStart
   )?.priceStroemKwh;
 
   return (
     <ResponsiveContainer width="100%" height={400}>
-      <ComposedChart data={data2.prices.rows}>
+      <ComposedChart data={reportData.prices.rows}>
         <CartesianGrid stroke="#dddddd" />
         <Line
           type="step"
@@ -242,7 +243,12 @@ function HourlyPrice() {
             ifOverflow="extendDomain"
           />
         )}
-        <ReferenceLine y={0} stroke="black" strokeWidth={3} strokeDasharray="3 3" />
+        <ReferenceLine
+          y={0}
+          stroke="black"
+          strokeWidth={3}
+          strokeDasharray="3 3"
+        />
         <XAxis
           dataKey="name"
           angle={-90}
@@ -259,8 +265,8 @@ function HourlyPrice() {
   );
 }
 
-function EnergyTemperature() {
-  const finalData = data2.et.rows.filter(
+function EnergyTemperature({ reportData }: { reportData: ReportData }) {
+  const finalData = reportData.et.rows.filter(
     (it) => it.temperature !== undefined && it.temperature < 20
   );
 
@@ -349,23 +355,41 @@ function EnergyTemperature() {
 }
 
 function App() {
+  const [reportData, setReportData] = useState();
+  useEffect(() => {
+    fetch("report.json")
+      .then((it) => it.json())
+      .then((resultJson) => {
+        setReportData(resultJson);
+      })
+      .catch((e) => {
+        console.error("Failed to load data", e);
+      });
+  });
+
+  if (!reportData) {
+    return <p>Henter data...</p>;
+  }
+
   return (
     <div>
       <h1>Energiforbruk på Blindern Studenterhjem</h1>
       <h2>Timeforbruk siste dagene</h2>
-      <Hourly />
+      <Hourly reportData={reportData} />
       <div className="two-columns">
         <div>
           <h2>Dagsforbruk siste dagene</h2>
-          <Daily />
+          <Daily reportData={reportData} />
         </div>
         <div>
-          <h2>Estimert pris per kWh (inkludert alle avgifter og strømstøtte)</h2>
-          <HourlyPrice />
+          <h2>
+            Estimert pris per kWh (inkludert alle avgifter og strømstøtte)
+          </h2>
+          <HourlyPrice reportData={reportData} />
         </div>
         <div>
           <h2>Sammenheng mellom forbruk og temperatur</h2>
-          <EnergyTemperature />
+          <EnergyTemperature reportData={reportData} />
         </div>
       </div>
       <footer>

@@ -540,5 +540,11 @@ export async function generateReportData(data: Data) {
     },
   };
 
+  return result;
+}
+
+export async function generateReportDataAndStore(data: Data) {
+  const result = await generateReportData(data);
+
   await fs.writeFile(REPORT_FILE, JSON.stringify(result, undefined, "  "));
 }
