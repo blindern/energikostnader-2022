@@ -377,6 +377,8 @@ export function generateHourlyReport(
         )
         .map((hour) => {
           const index = dateHourIndexer({ date, hour });
+          const stroem = indexedData.stroemByHour[index];
+          const fjernvarme = indexedData.fjernvarmeByHour[index];
           return {
             date,
             hour,
@@ -384,14 +386,17 @@ export function generateHourlyReport(
             stroem: indexedData.stroemByHour[index],
             fjernvarme: indexedData.fjernvarmeByHour[index],
             temperature: indexedData.temperatureByHour[index],
-            price: calculateHourlyPrice({
-              data,
-              indexedData,
-              date,
-              hour,
-              stroem: indexedData.stroemByHour[index] ?? 0,
-              fjernvarme: indexedData.fjernvarmeByHour[index] ?? 0,
-            }),
+            price:
+              stroem == null || fjernvarme == null
+                ? NaN
+                : calculateHourlyPrice({
+                    data,
+                    indexedData,
+                    date,
+                    hour,
+                    stroem,
+                    fjernvarme,
+                  }),
           };
         });
     })
