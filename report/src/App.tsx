@@ -257,10 +257,9 @@ function HourlyPrice({ reportData }: { reportData: ReportData }) {
             x2={hourEndRow.name}
             y1={0}
             y2={stroemPriceThisHour}
-            stroke="#000000"
-            strokeOpacity={1}
             fill="#6aa84f"
-            label="Inneværende time"
+            fillOpacity={1}
+            label="NÅ"
             ifOverflow="extendDomain"
           />
         )}
