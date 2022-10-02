@@ -17,6 +17,10 @@ import {
 } from "recharts";
 import { generateReportData } from "../../extractor/src/report/report";
 
+function roundTwoDec(value: number) {
+  return Math.round(value * 100) / 100;
+}
+
 type ReportData = Awaited<ReturnType<typeof generateReportData>>;
 
 function deriveTempTickCount(data: number[]): number[] {
@@ -393,7 +397,7 @@ function EnergyTemperature({ reportData }: { reportData: ReportData }) {
 }
 
 function App() {
-  const [reportData, setReportData] = useState();
+  const [reportData, setReportData] = useState<ReportData>();
   useEffect(() => {
     fetch("report.json")
       .then((it) => it.json())
@@ -434,7 +438,7 @@ function App() {
         <p>
           Fjernvarme benyttes til oppvarming av varmt vann samt oppvarming via
           radiatorer. Strøm benyttes til alt annet, inkludert varmekabler på
-          bad.
+          bad, kjøkken mv.
         </p>
         <p>
           Estimert kostnad inneværende måned avhenger av hva hele månedens
@@ -442,6 +446,25 @@ function App() {
           spotpris så langt i måneden. Kostnad for fjernvarme påvirkes ikke av
           timepris, men kostnad for strøm følger spotpris per time. Estimert
           kostnad inkluderer mva, nettleie, strømstøtte m.v.
+          {reportData.spotprices.currentMonth.spotprice && (
+            <>
+              {" "}
+              Beregnet månedlig spotpris fra Nordpool så langt denne måneden (
+              {reportData.spotprices.currentMonth.yearMonth}):{" "}
+              {roundTwoDec(reportData.spotprices.currentMonth.spotprice)}{" "}
+              øre/kWh.
+              {reportData.spotprices.previousMonth.spotprice && (
+                <>
+                  {" "}
+                  Forrige måned:{" "}
+                  {roundTwoDec(
+                    reportData.spotprices.previousMonth.spotprice
+                  )}{" "}
+                  øre/kWh.
+                </>
+              )}
+            </>
+          )}
         </p>
         <p>
           <a href="https://foreningenbs.no/energi">

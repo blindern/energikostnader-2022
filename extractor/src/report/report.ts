@@ -508,6 +508,10 @@ export async function generateReportData(data: Data) {
       })
     ] !== undefined;
 
+  const currentMonth =
+    Temporal.Now.plainDateISO("Europe/Oslo").toPlainYearMonth();
+  const previousMonth = currentMonth.subtract({ months: 1 });
+
   const result = {
     daily: {
       rows: generateDailyReport(
@@ -552,6 +556,16 @@ export async function generateReportData(data: Data) {
           days: haveSpotpriceTomorrow ? 1 : 0,
         })
       ),
+    },
+    spotprices: {
+      currentMonth: {
+        yearMonth: currentMonth.toString(),
+        spotprice: indexedData.spotpriceByMonth[currentMonth.toString()],
+      },
+      previousMonth: {
+        yearMonth: previousMonth.toString(),
+        spotprice: indexedData.spotpriceByMonth[previousMonth.toString()],
+      },
     },
   };
 
