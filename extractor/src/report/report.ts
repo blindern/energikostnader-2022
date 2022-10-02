@@ -24,12 +24,22 @@ export interface DailyReport {
 
 const hoursInADay = R.range(0, 24);
 
+const dayNames: Record<number, string> = {
+  1: "man",
+  2: "tir",
+  3: "ons",
+  4: "tor",
+  5: "fre",
+  6: "lør",
+  7: "søn",
+};
+
 interface IndexedData {
-  stroemByHour: Record<string, number>;
-  fjernvarmeByHour: Record<string, number>;
-  spotpriceByHour: Record<string, number>;
-  spotpriceByMonth: Record<string, number>;
-  temperatureByHour: Record<string, number>;
+  stroemByHour: Record<string, number | undefined>;
+  fjernvarmeByHour: Record<string, number | undefined>;
+  spotpriceByHour: Record<string, number | undefined>;
+  spotpriceByMonth: Record<string, number | undefined>;
+  temperatureByHour: Record<string, number | undefined>;
 }
 
 const dateHourIndexer = ({ date, hour }: { date: string; hour: number }) =>
@@ -320,14 +330,14 @@ export function generateDailyReport(
         indexedData,
         date,
         hour,
-        usageKwh: indexedData.stroemByHour[index],
+        usageKwh: indexedData.stroemByHour[index] ?? 0,
       });
       priceFjernvarme += calculateFjernvarmeHourlyPrice({
         data,
         indexedData,
         date,
         hour,
-        usageKwh: indexedData.fjernvarmeByHour[index],
+        usageKwh: indexedData.fjernvarmeByHour[index] ?? 0,
       });
     }
 
@@ -356,7 +366,7 @@ export function generateHourlyReport(
   return dates
     .map((date) => {
       const date1 = Temporal.PlainDate.from(date);
-      const dateStr = `${date1.day}.${date1.month}`;
+      const dateStr = dayNames[date1.dayOfWeek];
       return hoursInADay
         .filter(
           (hour) =>
@@ -370,7 +380,7 @@ export function generateHourlyReport(
           return {
             date,
             hour,
-            name: `${dateStr} kl ${hour}`,
+            name: `${dateStr} kl ${String(hour).padStart(2, "0")}`,
             stroem: indexedData.stroemByHour[index],
             fjernvarme: indexedData.fjernvarmeByHour[index],
             temperature: indexedData.temperatureByHour[index],
@@ -379,8 +389,8 @@ export function generateHourlyReport(
               indexedData,
               date,
               hour,
-              stroem: indexedData.stroemByHour[index],
-              fjernvarme: indexedData.fjernvarmeByHour[index],
+              stroem: indexedData.stroemByHour[index] ?? 0,
+              fjernvarme: indexedData.fjernvarmeByHour[index] ?? 0,
             }),
           };
         });
@@ -442,7 +452,7 @@ function generatePriceReport(
   return dates
     .map((date) => {
       const date1 = Temporal.PlainDate.from(date);
-      const dateStr = `${date1.day}.${date1.month}`;
+      const dateStr = dayNames[date1.dayOfWeek];
 
       return hoursInADay.map((hour) => {
         const index = dateHourIndexer({ date, hour });
@@ -471,7 +481,7 @@ function generatePriceReport(
         return {
           date,
           hour,
-          name: `${dateStr} kl ${hour}`,
+          name: `${dateStr} kl ${String(hour).padStart(2, "0")}`,
           priceStroemKwh: priceStroem / stroemUsage,
           priceFjernvarmeKwh: priceFjernvarme / fjernvarmeUsage,
         };

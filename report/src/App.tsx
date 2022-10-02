@@ -36,13 +36,40 @@ function deriveTempTickCount(data: number[]): number[] {
   return result;
 }
 
+function addEndItem<T extends { name: string }>(items: T[]): T[] {
+  return items.concat([{ ...items.at(-1)!, name: "" }]);
+}
+
+// Make the graph show the last point as a step as well,
+// for data in the middle of the graph.
+function expandLast(items: ReportData["hourly"]["rows"]) {
+  let prev = null;
+  const result = [];
+
+  for (const row of items) {
+    const newRow: ReportData["hourly"]["rows"][0] = {
+      ...row,
+      fjernvarme: row.fjernvarme == null ? prev?.fjernvarme : row.fjernvarme,
+      stroem: row.stroem == null ? prev?.stroem : row.stroem,
+      temperature:
+        row.temperature == null ? prev?.temperature : row.temperature,
+      price: row.price == null && prev != null ? prev.price : row.price,
+    };
+
+    result.push(newRow);
+    prev = row;
+  }
+
+  return result;
+}
+
 function Hourly({ reportData }: { reportData: ReportData }) {
   return (
     <ResponsiveContainer width="100%" height={400}>
-      <ComposedChart data={reportData.hourly.rows}>
+      <ComposedChart data={addEndItem(expandLast(reportData.hourly.rows))}>
         <CartesianGrid stroke="#dddddd" />
         <Area
-          type="step"
+          type="stepAfter"
           dataKey="fjernvarme"
           name="Fjernvarme"
           stroke="#ff0000"
@@ -54,7 +81,7 @@ function Hourly({ reportData }: { reportData: ReportData }) {
           strokeWidth={1.5}
         />
         <Area
-          type="step"
+          type="stepAfter"
           dataKey="stroem"
           name="Strøm"
           stroke="#6aa84f"
@@ -66,7 +93,7 @@ function Hourly({ reportData }: { reportData: ReportData }) {
           strokeWidth={1.5}
         />
         <Line
-          type="step"
+          type="stepAfter"
           dataKey="temperature"
           name="Utetemperatur Blindern"
           stroke="#0000ff"
@@ -77,7 +104,7 @@ function Hourly({ reportData }: { reportData: ReportData }) {
           strokeWidth={1.5}
         />
         <Line
-          type="step"
+          type="stepAfter"
           dataKey="price"
           name="Estimert kostnad"
           stroke="#555555"
@@ -87,14 +114,13 @@ function Hourly({ reportData }: { reportData: ReportData }) {
           legendType="plainline"
           strokeWidth={1.5}
         />
-        <XAxis
-          dataKey="name"
-          angle={-90}
-          height={100}
-          interval={1}
-          dy={25}
-          dx={-3}
-        />
+        {reportData.hourly.rows
+          .slice(1)
+          .filter((it) => it.name.endsWith("kl 00"))
+          .map((it) => (
+            <ReferenceLine x={it.name} stroke="#555555" />
+          ))}
+        <XAxis dataKey="name" angle={-90} height={100} interval={0} dy={25} />
         <YAxis unit=" kWh" tickCount={10} />
         <YAxis
           yAxisId="temp"
@@ -116,10 +142,10 @@ function Hourly({ reportData }: { reportData: ReportData }) {
 function Daily({ reportData }: { reportData: ReportData }) {
   return (
     <ResponsiveContainer width="100%" height={400}>
-      <ComposedChart data={reportData.daily.rows}>
+      <ComposedChart data={addEndItem(reportData.daily.rows)}>
         <CartesianGrid stroke="#dddddd" />
         <Area
-          type="step"
+          type="stepAfter"
           dataKey="fjernvarme"
           name="Fjernvarme"
           stroke="#ff0000"
@@ -131,7 +157,7 @@ function Daily({ reportData }: { reportData: ReportData }) {
           strokeWidth={1.5}
         />
         <Area
-          type="step"
+          type="stepAfter"
           dataKey="stroem"
           name="Strøm"
           stroke="#6aa84f"
@@ -143,7 +169,7 @@ function Daily({ reportData }: { reportData: ReportData }) {
           strokeWidth={1.5}
         />
         <Line
-          type="step"
+          type="stepAfter"
           dataKey="temperature"
           name="Utetemperatur Blindern"
           stroke="#0000ff"
@@ -154,7 +180,7 @@ function Daily({ reportData }: { reportData: ReportData }) {
           strokeWidth={1.5}
         />
         <Line
-          type="step"
+          type="stepAfter"
           dataKey="price"
           name="Estimert kostnad"
           stroke="#555555"
@@ -164,14 +190,7 @@ function Daily({ reportData }: { reportData: ReportData }) {
           legendType="plainline"
           strokeWidth={1.5}
         />
-        <XAxis
-          dataKey="name"
-          angle={-90}
-          height={40}
-          interval={0}
-          dy={20}
-          dx={-3}
-        />
+        <XAxis dataKey="name" angle={-90} height={40} interval={0} dy={20} />
         <YAxis unit="kWh" tickCount={15} />
         <YAxis
           yAxisId="temp"
@@ -192,26 +211,28 @@ function Daily({ reportData }: { reportData: ReportData }) {
 
 function HourlyPrice({ reportData }: { reportData: ReportData }) {
   const now = new Date();
-  const hourStart = `${now.getDate()}.${
-    now.getMonth() + 1
-  } kl ${now.getHours()}`;
+
+  const hourStartRow = reportData.prices.rows.find(
+    (it) =>
+      it.date == now.toISOString().slice(0, 10) && it.hour == now.getHours()
+  );
 
   const nextHour = new Date(now.getTime());
   nextHour.setHours(now.getHours() + 1);
-  const hourEnd = `${nextHour.getDate()}.${
-    nextHour.getMonth() + 1
-  } kl ${nextHour.getHours()}`;
+  const hourEndRow = reportData.prices.rows.find(
+    (it) =>
+      it.date == nextHour.toISOString().slice(0, 10) &&
+      it.hour == nextHour.getHours()
+  );
 
-  const stroemPriceThisHour = reportData.prices.rows.find(
-    (it) => it.name == hourStart
-  )?.priceStroemKwh;
+  const stroemPriceThisHour = hourStartRow?.priceStroemKwh;
 
   return (
     <ResponsiveContainer width="100%" height={400}>
-      <ComposedChart data={reportData.prices.rows}>
+      <ComposedChart data={addEndItem(reportData.prices.rows)}>
         <CartesianGrid stroke="#dddddd" />
         <Line
-          type="step"
+          type="stepAfter"
           dataKey="priceFjernvarmeKwh"
           name="Estimert pris fjernvarme per kWh"
           stroke="#ff0000"
@@ -230,10 +251,10 @@ function HourlyPrice({ reportData }: { reportData: ReportData }) {
           legendType="plainline"
           strokeWidth={1.5}
         />
-        {stroemPriceThisHour && (
+        {stroemPriceThisHour && hourStartRow && hourEndRow && (
           <ReferenceArea
-            x1={hourStart}
-            x2={hourEnd}
+            x1={hourStartRow.name}
+            x2={hourEndRow.name}
             y1={0}
             y2={stroemPriceThisHour}
             stroke="#000000"
@@ -249,13 +270,18 @@ function HourlyPrice({ reportData }: { reportData: ReportData }) {
           strokeWidth={3}
           strokeDasharray="3 3"
         />
+        {reportData.prices.rows
+          .slice(1)
+          .filter((it) => it.name.endsWith("kl 00"))
+          .map((it) => (
+            <ReferenceLine x={it.name} stroke="#555555" />
+          ))}
         <XAxis
           dataKey="name"
           angle={-90}
           height={40}
           interval={0}
           dy={20}
-          dx={-3}
           fontSize={8}
         />
         <YAxis unit=" kr" tickCount={15} />
