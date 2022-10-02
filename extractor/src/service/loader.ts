@@ -56,7 +56,7 @@ export async function loadNordpoolIfNeeded(
   if (
     (data.nordpool ?? []).find((it) => it.date == dateFormatted) !== undefined
   ) {
-    // return;
+    return;
   }
 
   console.log(`Loading nordpool data for ${date}`);
