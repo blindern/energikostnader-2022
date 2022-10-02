@@ -16,7 +16,7 @@ jobs:
       - name: Build container
         uses: docker/build-push-action@v3
         with:
-          context: "{{defaultContext}}:extraction"
+          context: "{{defaultContext}}:extractor"
           load: true
           tags: blindern/energi-extractor:latest
           cache-from: type=gha
@@ -27,7 +27,7 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v3
         with:
-          context: "{{defaultContext}}:extraction"
+          context: "{{defaultContext}}:extractor"
           push: true
           tags: blindern/energi-extractor:latest
 

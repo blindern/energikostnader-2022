@@ -15,7 +15,7 @@ import {
   YAxis,
   ZAxis,
 } from "recharts";
-import { generateReportData } from "../../extraction/src/report/report";
+import { generateReportData } from "../../extractor/src/report/report";
 
 type ReportData = Awaited<ReturnType<typeof generateReportData>>;
 
