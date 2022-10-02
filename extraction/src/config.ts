@@ -20,3 +20,5 @@ export const STROEM_PASSWORD = requireEnv("STROEM_PASSWORD");
 export const STROEM_METER_LIST = ["707057500051111111", "707057500051222222"];
 
 export const DATA_FILE = process.env["DATA_FILE"] ?? "data.json";
+
+export const REPORT_FILE = process.env["REPORT_FILE"] ?? "report.json";

@@ -1,5 +1,6 @@
 import { Temporal } from "@js-temporal/polyfill";
 import { DATA_FILE } from "../config.js";
+import { generateReportData } from "../report/report.js";
 import { DataStore } from "./data-store.js";
 import { datesInRange } from "./dates.js";
 import {
@@ -61,6 +62,8 @@ async function iteration() {
   );
 
   await dataStore.save(data);
+
+  await generateReportData(data);
 }
 
 while (true) {
