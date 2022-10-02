@@ -227,25 +227,38 @@ function HourlyPrice({ reportData }: { reportData: ReportData }) {
 
   const stroemPriceThisHour = hourStartRow?.priceStroemKwh;
 
+  const minPrice = reportData.prices.rows.reduce(
+    (acc, cur) => Math.min(acc, cur.priceFjernvarmeKwh, cur.priceStroemKwh),
+    0
+  );
+  const maxPrice = reportData.prices.rows.reduce(
+    (acc, cur) => Math.max(acc, cur.priceFjernvarmeKwh, cur.priceStroemKwh),
+    0
+  );
+
   return (
     <ResponsiveContainer width="100%" height={400}>
       <ComposedChart data={addEndItem(reportData.prices.rows)}>
         <CartesianGrid stroke="#dddddd" />
-        <Line
+        <Area
           type="stepAfter"
           dataKey="priceFjernvarmeKwh"
           name="Estimert pris fjernvarme per kWh"
           stroke="#ff0000"
+          fill="#ff0000"
+          fillOpacity={0.05}
           isAnimationActive={false}
           dot={false}
           legendType="plainline"
           strokeWidth={1.5}
         />
-        <Line
+        <Area
           type="stepAfter"
           dataKey="priceStroemKwh"
           name="Estimert pris strøm per kWh"
           stroke="#6aa84f"
+          fill="#6aa84f"
+          fillOpacity={0.1}
           isAnimationActive={false}
           dot={false}
           legendType="plainline"
