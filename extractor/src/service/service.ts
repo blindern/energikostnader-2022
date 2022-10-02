@@ -77,10 +77,10 @@ while (true) {
 
   const nextIteration =
     now.hour < 6
-      ? now.startOfDay().with({ hour: 2 })
+      ? now.startOfDay().with({ hour: 6 })
       : now.hour < 14
       ? now.startOfDay().with({ hour: 14 })
-      : now.startOfDay().with({ hour: 2 }).add({ days: 1 });
+      : now.startOfDay().with({ hour: 6 }).add({ days: 1 });
 
   const delaySeconds = now.until(nextIteration).total("seconds");
   console.log(`Sleeping until ${nextIteration.toString()} (${delaySeconds} s)`);
