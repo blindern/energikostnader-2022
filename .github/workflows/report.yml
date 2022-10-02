@@ -10,7 +10,7 @@ jobs:
           node-version: '18'
       # Cheating a bit on types from the other project, and it works if we install its deps.
       - run: npm ci
-        working-directory: extraction
+        working-directory: extractor
       - run: npm ci
         working-directory: report
       - run: npm run build
