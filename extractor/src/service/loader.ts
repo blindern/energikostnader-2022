@@ -51,12 +51,12 @@ export async function loadNordpoolIfNeeded(
   data: Data,
   date: Temporal.PlainDate
 ): Promise<void> {
-  const datePersisted = date.toString();
+  const dateFormatted = date.toString();
 
   if (
-    (data.nordpool ?? []).find((it) => it.date == datePersisted) !== undefined
+    (data.nordpool ?? []).find((it) => it.date == dateFormatted) !== undefined
   ) {
-    return;
+    // return;
   }
 
   console.log(`Loading nordpool data for ${date}`);
@@ -69,22 +69,24 @@ export async function loadNordpoolIfNeeded(
     price: it.price,
   }));
 
-  data.nordpool = data.nordpool ?? [];
-  data.nordpool.push(...nordpoolData);
+  data.nordpool = (data.nordpool ?? [])
+    .filter((it) => it.date !== dateFormatted)
+    .concat(nordpoolData)
+    .sort(compareDateAndHour);
 }
 
 export async function loadHourlyTemperatureIfNeeded(
   data: Data,
   date: Temporal.PlainDate
 ): Promise<void> {
-  const datePersisted = date.toString();
+  const dateFormatted = date.toString();
 
   // TODO: handle issue where 0am and 1am is loaded in previous date
 
   if (
     (data.hourlyTemperature ?? [])
       .filter((it) => it.hour == 23)
-      .find((it) => it.date == datePersisted) !== undefined
+      .find((it) => it.date == dateFormatted) !== undefined
   ) {
     // return;
   }
