@@ -416,21 +416,19 @@ function App() {
   return (
     <div>
       <h1>Energiforbruk på Blindern Studenterhjem</h1>
-      <h2>Timeforbruk siste dagene</h2>
+      <h2>Timeforbruk i det siste</h2>
       <Hourly reportData={reportData} />
       <div className="two-columns">
         <div>
-          <h2>Dagsforbruk siste dagene</h2>
+          <h2>Dagsforbruk i det siste</h2>
           <Daily reportData={reportData} />
         </div>
         <div>
-          <h2>
-            Estimert pris per kWh (inkludert alle avgifter og strømstøtte)
-          </h2>
+          <h2>Estimert pris per kWh</h2>
           <HourlyPrice reportData={reportData} />
         </div>
         <div>
-          <h2>Sammenheng mellom forbruk og temperatur</h2>
+          <h2>Forbruk sett mot temperatur</h2>
           <EnergyTemperature reportData={reportData} />
         </div>
       </div>
