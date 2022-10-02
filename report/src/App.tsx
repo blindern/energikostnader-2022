@@ -365,7 +365,7 @@ function App() {
       .catch((e) => {
         console.error("Failed to load data", e);
       });
-  });
+  }, []);
 
   if (!reportData) {
     return <p>Henter data...</p>;
