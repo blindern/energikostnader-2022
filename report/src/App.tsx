@@ -444,7 +444,7 @@ function App() {
         <p>
           Fjernvarme benyttes til oppvarming av varmt vann samt oppvarming via
           radiatorer. Strøm benyttes til alt annet, inkludert varmekabler på
-          bad, kjøkken mv.
+          bad, vaskemaskiner, tørketromler, kjøkkenmaskiner mv.
         </p>
         <p>
           Estimert kostnad inneværende måned avhenger av hva hele månedens
