@@ -289,14 +289,14 @@ export function generateDailyReport(
 
   const byDate = R.indexBy(({ date }: DataTemperatureDay) => date);
 
-  const temperatures = R.mapObjIndexed(
+  const temperatures: Record<string, number | undefined> = R.mapObjIndexed(
     (it) => it.meanTemperature,
     byDate(
       (data.dailyTemperature ?? []).filter((it) => dates.includes(it.date))
     )
   );
 
-  const stroem = R.mapObjIndexed(
+  const stroem: Record<string, number | undefined> = R.mapObjIndexed(
     sumHourUsages,
     byDateGroup(
       Object.entries(data.powerUsage ?? [])
@@ -306,7 +306,7 @@ export function generateDailyReport(
     )
   );
 
-  const fjernvarme = R.mapObjIndexed(
+  const fjernvarme: Record<string, number | undefined> = R.mapObjIndexed(
     sumHourUsages,
     byDateGroup(
       Object.entries(data.powerUsage ?? [])
@@ -347,8 +347,6 @@ export function generateDailyReport(
       stroem: stroem[date],
       fjernvarme: fjernvarme[date],
       temperature: temperatures[date],
-      priceStroemKwh: priceStroem / stroem[date],
-      priceFjernvarmeKwh: priceFjernvarme / fjernvarme[date],
       price: priceStroem + priceFjernvarme,
     };
   });

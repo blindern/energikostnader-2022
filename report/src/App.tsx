@@ -46,12 +46,14 @@ function addEndItem<T extends { name: string }>(items: T[]): T[] {
 
 // Make the graph show the last point as a step as well,
 // for data in the middle of the graph.
-function expandLast(items: ReportData["hourly"]["rows"]) {
+function expandLast<
+  T extends ReportData["daily"]["rows"][0] | ReportData["hourly"]["rows"][0]
+>(items: T[]): T[] {
   let prev = null;
-  const result = [];
+  const result: T[] = [];
 
   for (const row of items) {
-    const newRow: ReportData["hourly"]["rows"][0] = {
+    const newRow: T = {
       ...row,
       fjernvarme: row.fjernvarme == null ? prev?.fjernvarme : row.fjernvarme,
       stroem: row.stroem == null ? prev?.stroem : row.stroem,
@@ -70,7 +72,7 @@ function expandLast(items: ReportData["hourly"]["rows"]) {
 function Hourly({ reportData }: { reportData: ReportData }) {
   return (
     <ResponsiveContainer width="100%" height={400}>
-      <ComposedChart data={addEndItem(expandLast(reportData.hourly.rows))}>
+      <ComposedChart data={expandLast(addEndItem(reportData.hourly.rows))}>
         <CartesianGrid stroke="#dddddd" />
         <Area
           type="stepAfter"
@@ -146,7 +148,7 @@ function Hourly({ reportData }: { reportData: ReportData }) {
 function Daily({ reportData }: { reportData: ReportData }) {
   return (
     <ResponsiveContainer width="100%" height={400}>
-      <ComposedChart data={addEndItem(reportData.daily.rows)}>
+      <ComposedChart data={expandLast(addEndItem(reportData.daily.rows))}>
         <CartesianGrid stroke="#dddddd" />
         <Area
           type="stepAfter"
