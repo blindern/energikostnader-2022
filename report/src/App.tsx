@@ -249,7 +249,7 @@ function HourlyPrice({ reportData }: { reportData: ReportData }) {
         <Area
           type="stepAfter"
           dataKey="priceFjernvarmeKwh"
-          name="Fjernvarme per kWh"
+          name="Fjernvarme"
           stroke="#ff0000"
           fill="#ff0000"
           fillOpacity={0.05}
@@ -261,7 +261,7 @@ function HourlyPrice({ reportData }: { reportData: ReportData }) {
         <Area
           type="stepAfter"
           dataKey="priceStroemKwh"
-          name="Strøm per kWh"
+          name="Strøm"
           stroke="#6aa84f"
           fill="#6aa84f"
           fillOpacity={0.1}
@@ -273,7 +273,7 @@ function HourlyPrice({ reportData }: { reportData: ReportData }) {
         <Line
           type="stepAfter"
           dataKey="nordpoolKwh"
-          name="Nordpool per kWh"
+          name="Nordpool"
           stroke="#888"
           opacity={0.5}
           isAnimationActive={false}
