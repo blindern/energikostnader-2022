@@ -72,12 +72,12 @@ while (true) {
 
   const now = Temporal.Now.zonedDateTimeISO("Europe/Oslo");
 
-  // Run 06:00 due to data from Fortum.
+  // Run 09:00 due to data from Fortum.
   // Run 14:00 due to data from Nordpool.
 
   const nextIteration =
-    now.hour < 6
-      ? now.startOfDay().with({ hour: 6 })
+    now.hour < 9
+      ? now.startOfDay().with({ hour: 9 })
       : now.hour < 14
       ? now.startOfDay().with({ hour: 14 })
       : now.startOfDay().with({ hour: 6 }).add({ days: 1 });
