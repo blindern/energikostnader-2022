@@ -2,6 +2,7 @@ import { Temporal } from "@js-temporal/polyfill";
 import * as fs from "fs/promises";
 import * as R from "ramda";
 import { REPORT_FILE } from "../config.js";
+import { datesInRange } from "../dates.js";
 import {
   Data,
   DataNordpoolPriceHour,
@@ -9,7 +10,6 @@ import {
   DataTemperatureDay,
   DataTemperatureHour,
 } from "../service/data-store.js";
-import { datesInRange } from "../service/dates.js";
 
 function roundTwoDec(value: number) {
   return Math.round(value * 100) / 100;
@@ -51,8 +51,8 @@ const getMonthIndex = ({ year, month }: { year: number; month: number }) =>
 
 function indexData(data: Data): IndexedData {
   const stroemByHour = R.mapObjIndexed(
-    (it) => it.usage,
-    R.indexBy<DataPowerUsageHour>(
+    (it) => R.sum(it.map((x) => x.usage)),
+    R.groupBy<DataPowerUsageHour>(
       dateHourIndexer,
       Object.entries(data.powerUsage ?? [])
         .filter(([key, _]) => key !== "Fjernvarme")

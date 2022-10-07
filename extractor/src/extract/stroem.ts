@@ -1,85 +1,270 @@
 import { Temporal } from "@js-temporal/polyfill";
-import fetch from "node-fetch";
-import { read, utils } from "xlsx";
-import { formatDateDayFirst } from "../format.js";
+import * as crypto from "crypto";
+import fetch, { Response } from "node-fetch";
+import { v4 as uuidv4 } from "uuid";
 import { HourUsage } from "./common.js";
 
-export interface LoginState {
-  sessionId: string;
-  hafslundOnline: string;
+interface Consumption {
+  value: number;
+  isVerified: boolean;
+  status: string; // e.g. OK
 }
 
-async function login(username: string, password: string): Promise<LoginState> {
-  const response = await fetch(
-    "https://bedriftportal.fortum.no/Account/LoginPost",
-    {
-      method: "POST",
-      headers: {
-        "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-        "x-requested-with": "XMLHttpRequest",
-        cookie: "PortalVersion=Classic",
-      },
-      body: `btnLogin=Logg+inn&UserName=${encodeURIComponent(
-        username
-      )}&Password=${encodeURIComponent(
-        password
-      )}&ReturnUrl=&X-Requested-With=XMLHttpRequest`,
-    }
+interface MeterValuesResponse {
+  years: {
+    months: {
+      days: {
+        hours: {
+          id: string; // e.g. 2022010100
+          production: any; // null?
+          consumption?: Consumption;
+          level: string; // e.g. Unknown
+        }[];
+        isWeekendOrHoliday: true;
+        id: string; // e.g. 20220101
+        production: any; // null?
+        consumption: Consumption;
+      }[];
+      maxHourId: string; // e.g. 2022012613
+      maxHours: {
+        hours: {
+          id: string; // e.g. 2022013113
+          production: any; // null?
+          consumption: Consumption;
+        }[];
+        average: number;
+        consumptionUnitOfMeasure: string; // e.g. kWh
+      };
+      id: string; // e.g. 202201
+      production: any; // null?
+      consumption: Consumption;
+    }[];
+    daylightSavingTimeStart: string; // e.g. 2022103002
+    daylightSavingTimeEnd: string; // e.g. 2022032702
+    maxHourId: string; // e.g. 2022020310
+    id: string; // e.g. 2022
+    production: any; // null?
+    consumption: Consumption;
+  }[];
+  customerId: string;
+  contractId: string;
+}
+
+function cookiesHeader(cookies: Record<string, string>) {
+  return Object.entries(cookies)
+    .map(([key, value]) => `${key}=${value}`)
+    .join("; ");
+}
+
+function parseSetCookie(values: string[]): Record<string, string> {
+  return Object.fromEntries(
+    values.flatMap((setCookie) => {
+      const parts = setCookie.split(";").map((it) => it.trim());
+      const namedParts = Object.fromEntries(
+        parts.map((part) => part.split("=", 2))
+      );
+
+      if (
+        namedParts.expires == null ||
+        new Date(namedParts.expires).getTime() > new Date().getTime()
+      ) {
+        return [parts[0].split("=", 2)];
+      } else {
+        return [];
+      }
+    })
   );
+}
+
+function deriveCookies(response: Response, initial?: Record<string, string>) {
+  const additionalCookies = parseSetCookie(
+    response.headers.raw()["set-cookie"] ?? []
+  );
+
+  const updatedCookies = {
+    ...(initial ?? {}),
+    ...additionalCookies,
+  };
+
+  return updatedCookies;
+}
+
+function serializeQueryString(form: Record<string, string>): string {
+  return Object.entries(form)
+    .map(
+      ([key, value]) =>
+        `${encodeURIComponent(key)}=${encodeURIComponent(value)}`
+    )
+    .join("&");
+}
+
+async function getInitialLoginState(): Promise<{
+  cookies: Record<string, string>;
+  csrfToken: string;
+}> {
+  const response = await fetch("https://elvid.elvia.io/Account/Login", {
+    method: "GET",
+    redirect: "manual",
+  });
 
   if (!response.ok) {
     console.log(response);
     throw new Error("Unexpected response");
   }
 
-  let sessionId: string | null = null;
-  let hafslundOnline: string | null = null;
+  const cookies = parseSetCookie(response.headers.raw()["set-cookie"] ?? []);
+  const textContent = await response.text();
 
-  for (const [key, values] of Object.entries(response.headers.raw())) {
-    if (key.toLowerCase() === "set-cookie") {
-      for (const value of values) {
-        const parts = value.split(";");
-        if (parts[0].includes("=")) {
-          const [partName, partValue] = parts[0].split("=");
-          if (partName === "ASP.NET_SessionId") {
-            sessionId = partValue;
-          } else if (partName === "HafslundOnline") {
-            hafslundOnline = partValue;
-          }
-        }
-      }
-    }
+  const csrfTokenMatch = textContent.match(
+    /name="__RequestVerificationToken" type="hidden" value="([^"]+)"/
+  );
+  if (!csrfTokenMatch) {
+    console.log(textContent);
+    throw new Error("Failed to find csrf token");
   }
 
-  if (sessionId == null) {
-    console.log(response);
-    throw new Error("Couldn't extract session ID");
-  }
-
-  if (hafslundOnline == null) {
-    console.log(response);
-    throw new Error("Couldn't extract HafslundOnline");
-  }
-
-  return { sessionId, hafslundOnline };
+  return {
+    cookies,
+    csrfToken: csrfTokenMatch[1],
+  };
 }
 
-async function selectMeter(
-  loginState: LoginState,
-  maalepunktId: string
-): Promise<void> {
+async function getValidLoginState({
+  initialCookies,
+  csrfToken,
+  email,
+  password,
+}: {
+  initialCookies: Record<string, string>;
+  csrfToken: string;
+  email: string;
+  password: string;
+}): Promise<{
+  cookies: Record<string, string>;
+}> {
+  const form = {
+    ReturnUrl: "",
+    Email: email,
+    Password: password,
+    button: "login",
+    __RequestVerificationToken: csrfToken,
+    RememberLogin: "false",
+  };
+
+  const response = await fetch("https://elvid.elvia.io/Account/Login", {
+    method: "POST",
+    headers: {
+      "content-type": "application/x-www-form-urlencoded",
+      cookie: cookiesHeader(initialCookies),
+    },
+    body: serializeQueryString(form),
+    redirect: "manual",
+  });
+
+  if (response.status !== 302) {
+    console.log(response);
+    throw new Error("Unexpected response");
+  }
+
+  return {
+    cookies: deriveCookies(response, initialCookies),
+  };
+}
+
+async function getAuthorizeCode({
+  loggedInCookies: initialCookies,
+}: {
+  loggedInCookies: Record<string, string>;
+}): Promise<{
+  codeVerifier: string;
+  code: string;
+}> {
+  const state = String(new Date().getTime());
+
+  const codeVerifier = uuidv4() + uuidv4() + uuidv4();
+  const codeChallenge = crypto
+    .createHash("sha256")
+    .update(codeVerifier)
+    .digest("base64url");
+
+  const queryParams = {
+    client_id: "45df5938-75fa-4e76-abc8-9498cae9dfad",
+    redirect_uri: "https://www.elvia.no/auth/signin",
+    response_type: "code",
+    scope:
+      "openid profile email kunde.kundeportalapi elvid.delegation-token-create.useraccess",
+    state: state,
+    code_challenge: codeChallenge,
+    code_challenge_method: "S256",
+    response_mode: "query",
+  };
+
   const response = await fetch(
-    `https://bedriftportal.fortum.no/AssetTreeView/AssetSelectorSelectNodes?nodeId=${encodeURIComponent(
-      maalepunktId
-    )}&isChecked=true&nodeType=AnleggInGroup`,
+    `https://elvid.elvia.io/connect/authorize/callback?${serializeQueryString(
+      queryParams
+    )}`,
     {
+      method: "GET",
       headers: {
-        cookie: `ASP.NET_SessionId=${loginState.sessionId}; HafslundOnline=${loginState.hafslundOnline}`,
-        "x-requested-with": "XMLHttpRequest",
+        cookie: cookiesHeader(initialCookies),
       },
-      follow: 0,
+      redirect: "manual",
     }
   );
+
+  if (response.status !== 302) {
+    console.log(response);
+    throw new Error("Unexpected response");
+  }
+
+  const location = response.headers.get("location");
+  if (location == null) {
+    throw new Error("Missing location");
+  }
+
+  const queryStringPos = location.indexOf("?");
+  if (queryStringPos === -1) {
+    console.log(location);
+    throw new Error("Missing query string");
+  }
+
+  const parts = Object.fromEntries(
+    location
+      .slice(queryStringPos + 1)
+      .split("&")
+      .map((part) => part.split("=", 2).map((it) => decodeURIComponent(it)))
+  );
+
+  return {
+    code: parts["code"] as string,
+    codeVerifier,
+  };
+}
+
+async function getTokenFromCode({
+  code,
+  codeVerifier,
+}: {
+  code: string;
+  codeVerifier: string;
+}): Promise<{
+  accessToken: string;
+}> {
+  const form = {
+    grant_type: "authorization_code",
+    redirect_uri: "https://www.elvia.no/auth/signin",
+    code: code,
+    code_verifier: codeVerifier,
+    client_id: "45df5938-75fa-4e76-abc8-9498cae9dfad",
+  };
+
+  const response = await fetch("https://elvid.elvia.io/connect/token", {
+    method: "POST",
+    headers: {
+      "content-type": "application/x-www-form-urlencoded",
+    },
+    body: serializeQueryString(form),
+  });
 
   if (!response.ok) {
     console.log(response);
@@ -90,133 +275,96 @@ async function selectMeter(
     console.log(response);
     throw new Error("Unexpected content type");
   }
+
+  const responseJson = (await response.json()) as any;
+  const accessToken = responseJson.access_token as string;
+
+  return {
+    accessToken,
+  };
 }
 
-async function fetchExcel(
-  loginState: LoginState,
-  firstDate: Temporal.PlainDate,
-  lastDate: Temporal.PlainDate
-): Promise<Buffer> {
-  const fromDate = formatDateDayFirst(firstDate);
-  const toDate = formatDateDayFirst(lastDate);
+export async function getAccessTokenFromCredentials({
+  email,
+  password,
+}: {
+  email: string;
+  password: string;
+}): Promise<string> {
+  const { cookies: initialCookies, csrfToken } = await getInitialLoginState();
+  const { cookies: loggedInCookies } = await getValidLoginState({
+    initialCookies,
+    csrfToken,
+    email,
+    password,
+  });
+  const { code, codeVerifier } = await getAuthorizeCode({ loggedInCookies });
+  const { accessToken } = await getTokenFromCode({ code, codeVerifier });
+  return accessToken;
+}
 
-  const response = await fetch(
-    `https://bedriftportal.fortum.no/Consumption/Download?FromDate=${fromDate}&ToDate=${toDate}&FileName=Forbruksoversikt&IsProduction=False&RetrievePrices=False&ContainerId=SplitConsumptionContainer&Interval=Hours&SelectedInterval=1&HasAssets=True&IsEffect=False`,
-    {
-      headers: {
-        accept: "*/*",
-        cookie: `ASP.NET_SessionId=${loginState.sessionId}; HafslundOnline=${loginState.hafslundOnline}`,
-        "x-requested-with": "XMLHttpRequest",
-      },
-      follow: 0,
-    }
-  );
+export async function getMeterValues({
+  customerId,
+  contractId,
+  year,
+  accessToken,
+}: {
+  customerId: string;
+  contractId: string;
+  year: number;
+  accessToken: string;
+}): Promise<MeterValuesResponse> {
+  const queryParams = {
+    year: String(year),
+    includeUnverifiedValues: "true",
+    includeEmptyValues: "true",
+  };
+
+  const url = `https://kunde.elvia.io/portal/customer/${encodeURIComponent(
+    customerId
+  )}/contract/${encodeURIComponent(
+    contractId
+  )}/metervalue?${serializeQueryString(queryParams)}`;
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      authorization: `Bearer ${accessToken}`,
+    },
+  });
 
   if (!response.ok) {
     console.log(response);
     throw new Error("Unexpected response");
   }
 
-  if (!response.headers.get("content-type")?.includes("openxmlformats")) {
+  if (!response.headers.get("content-type")?.includes("application/json")) {
     console.log(response);
     throw new Error("Unexpected content type");
   }
 
-  const excelData = Buffer.from(await response.arrayBuffer());
-  return excelData;
+  const responseJson = (await response.json()) as MeterValuesResponse;
+
+  return responseJson;
 }
 
-export async function fetchExcelWithLogin({
-  username,
-  password,
-  meterList,
-  firstDate,
-  lastDate,
-}: {
-  username: string;
-  password: string;
-  meterList: string[]; // MålepunktId
-  firstDate: Temporal.PlainDate;
-  lastDate: Temporal.PlainDate;
-}): Promise<Buffer> {
-  const loginState = await login(username, password);
-
-  for (const meter of meterList) {
-    await selectMeter(loginState, meter);
-  }
-
-  const excelData = await fetchExcel(loginState, firstDate, lastDate);
-
-  return excelData;
-}
-
-export function parseExcel(excelData: Buffer): Record<string, HourUsage[]> {
-  const workBook = read(excelData);
-  const sheet = workBook.Sheets["Forbruksoversikt"];
-  const data: (string | number)[][] = utils.sheet_to_json(sheet, {
-    header: 1,
-  });
-
-  const headerRow = data.findIndex(
-    (value) => value.length > 0 && value[0] === "Dato"
+export function parseMeterValues(values: MeterValuesResponse): HourUsage[] {
+  return values.years.flatMap((year) =>
+    year.months.flatMap((month) =>
+      month.days.flatMap((day) =>
+        day.hours
+          .filter((it) => it.consumption != null)
+          .flatMap<HourUsage>((hour) => ({
+            date: Temporal.PlainDate.from({
+              year: Number(hour.id.slice(0, 4)),
+              month: Number(hour.id.slice(4, 6)),
+              day: Number(hour.id.slice(6, 8)),
+            }),
+            hour: Number(hour.id.slice(8, 10)),
+            usage: hour.consumption!.value,
+            verified: hour.consumption!.isVerified,
+          }))
+      )
+    )
   );
-  if (headerRow === -1) {
-    throw new Error("Couldn't find header row");
-  }
-
-  const datasetNames = data[headerRow].slice(1);
-
-  const result: Record<string, HourUsage[]> = Object.fromEntries(
-    datasetNames.map((it) => [it, []])
-  );
-
-  for (const row of data.slice(headerRow + 1)) {
-    if (row.length === 0 || row.length === 1) {
-      continue;
-    }
-
-    if (row[0] === "Dato") {
-      continue;
-    }
-
-    if (typeof row[0] !== "string") {
-      console.log(row);
-      throw new Error("Unexpected row");
-    }
-
-    if (row.length != datasetNames.length + 1) {
-      console.log(row);
-      throw new Error("Unexpected row column count");
-    }
-
-    // Verify e.g. 01.01.2022 00:00
-    if (row[0].length !== 16) {
-      console.log(row);
-      throw new Error("Unexpected row");
-    }
-
-    const date = Temporal.PlainDate.from({
-      year: Number(row[0].slice(6, 10)),
-      month: Number(row[0].slice(3, 5)),
-      day: Number(row[0].slice(0, 2)),
-    });
-
-    const hour = Number(row[0].slice(11, 13));
-
-    datasetNames.forEach((value, index) => {
-      const usage = row[index + 1];
-      if (typeof usage !== "number") {
-        console.log(row);
-        throw new Error("Unexpected value in row");
-      }
-
-      result[value].push({
-        date,
-        hour,
-        usage,
-      });
-    });
-  }
-
-  return result;
 }

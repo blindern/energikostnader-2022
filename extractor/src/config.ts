@@ -19,6 +19,19 @@ export const STROEM_USERNAME = requireEnv("STROEM_USERNAME");
 export const STROEM_PASSWORD = requireEnv("STROEM_PASSWORD");
 export const STROEM_METER_LIST = requireEnv("STROEM_METER_LIST").split(",");
 
+export const ELVIA_EMAIL = requireEnv("ELVIA_EMAIL");
+export const ELVIA_PASSWORD = requireEnv("ELVIA_PASSWORD");
+export const ELVIA_CUSTOMER_ID = requireEnv("ELVIA_CUSTOMER_ID");
+
+// meterId:contractId,meterId:contractId,...
+export const ELVIA_CONTRACT_LIST = requireEnv("ELVIA_CONTRACT_LIST")
+  .split(",")
+  .map((it) => {
+    const [meterId, contractId] = it.split(":", 2);
+    return { meterId, contractId };
+  });
+
 export const DATA_FILE = process.env["DATA_FILE"] ?? "data.json";
 
-export const REPORT_FILE = process.env["REPORT_FILE"] ?? "../report/report.json";
+export const REPORT_FILE =
+  process.env["REPORT_FILE"] ?? "../report/report.json";

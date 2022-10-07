@@ -4,4 +4,5 @@ export interface HourUsage {
   date: Temporal.PlainDate;
   hour: number;
   usage: number; // kWh
+  verified?: boolean; // for Elvia
 }

@@ -1,10 +1,18 @@
 import { Temporal } from "@js-temporal/polyfill";
+import * as R from "ramda";
 import {
-  STROEM_METER_LIST,
-  STROEM_PASSWORD,
-  STROEM_USERNAME,
+  ELVIA_CONTRACT_LIST,
+  ELVIA_CUSTOMER_ID,
+  ELVIA_EMAIL,
+  ELVIA_PASSWORD,
 } from "../config.js";
-import { fetchExcelWithLogin, parseExcel } from "../extract/stroem.js";
+import { isDateInRange } from "../dates.js";
+import { HourUsage } from "../extract/common.js";
+import {
+  getAccessTokenFromCredentials,
+  getMeterValues,
+  parseMeterValues,
+} from "../extract/stroem.js";
 import { generateHourUsageCsvRows } from "../format.js";
 
 if (process.argv.length < 4) {
@@ -12,23 +20,42 @@ if (process.argv.length < 4) {
   process.exit(1);
 }
 
-const firstDate = process.argv[2];
-const lastDate = process.argv[3];
+const firstDate = Temporal.PlainDate.from(process.argv[2]);
+const lastDate = Temporal.PlainDate.from(process.argv[3]);
 
-const excelData = await fetchExcelWithLogin({
-  username: STROEM_USERNAME,
-  password: STROEM_PASSWORD,
-  meterList: STROEM_METER_LIST,
-  firstDate: Temporal.PlainDate.from(firstDate),
-  lastDate: Temporal.PlainDate.from(lastDate),
+const accessToken = await getAccessTokenFromCredentials({
+  email: ELVIA_EMAIL,
+  password: ELVIA_PASSWORD,
 });
 
-const parsedData = parseExcel(excelData);
+const result: Record<string, HourUsage[]> = {};
+const years = R.range(firstDate.year, lastDate.year + 1);
 
-const result = Object.entries(parsedData)
+for (const contract of ELVIA_CONTRACT_LIST) {
+  const usages: HourUsage[] = [];
+
+  for (const year of years) {
+    const meterValues = await getMeterValues({
+      customerId: ELVIA_CUSTOMER_ID,
+      contractId: contract.contractId,
+      year: year,
+      accessToken,
+    });
+
+    usages.push(
+      ...parseMeterValues(meterValues).filter((it) =>
+        isDateInRange(firstDate, lastDate, it.date)
+      )
+    );
+  }
+
+  result[contract.meterId] = usages;
+}
+
+const csv = Object.entries(result)
   .map(([meterName, meterData]) =>
     generateHourUsageCsvRows(meterName, meterData)
   )
   .join("");
 
-process.stdout.write(result);
+process.stdout.write(csv);

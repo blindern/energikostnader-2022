@@ -2,19 +2,12 @@
 
 ## Bruk
 
-Opprett `.env` med følgende template:
-
-```env
-FJERNVARME_USERNAME=x@blindern-studenterhjem.no
-FJERNVARME_PASSWORD=passord
-STROEM_USERNAME=x@blindern-studenterhjem.no
-STROEM_PASSWORD=passord
-```
+Opprett `.env` og definer det som er påkrevet i `config.ts`.
 
 Installer avhengigheter:
 
 ```bash
-npm install
+npm ci
 ```
 
 Trekk ut data:

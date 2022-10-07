@@ -1,20 +1,27 @@
 import { Temporal } from "@js-temporal/polyfill";
+import * as R from "ramda";
 import {
+  ELVIA_CONTRACT_LIST,
+  ELVIA_CUSTOMER_ID,
+  ELVIA_EMAIL,
+  ELVIA_PASSWORD,
   FJERNVARME_ANLEGG_NUMMER,
   FJERNVARME_KUNDE_ID,
   FJERNVARME_PASSWORD,
   FJERNVARME_USERNAME,
-  STROEM_METER_LIST,
-  STROEM_PASSWORD,
-  STROEM_USERNAME,
 } from "../config.js";
+import { datesInRange, isDateInRange } from "../dates.js";
 import { HourUsage } from "../extract/common.js";
 import {
   getAccessToken,
   getHourlyData as getFjernvarmeHourlyData,
 } from "../extract/fjernvarme.js";
 import { getNordpoolData } from "../extract/nordpool.js";
-import { fetchExcelWithLogin, parseExcel } from "../extract/stroem.js";
+import {
+  getAccessTokenFromCredentials,
+  getMeterValues,
+  parseMeterValues,
+} from "../extract/stroem.js";
 import {
   getDailyData as getTemperatureDailyData,
   getHourlyData as getTemperatureHourlyData,
@@ -26,7 +33,6 @@ import {
   DataTemperatureDay,
   DataTemperatureHour,
 } from "./data-store.js";
-import { datesInRange } from "./dates.js";
 
 interface ObjWithDateHour {
   date: string;
@@ -191,11 +197,24 @@ export async function loadStroemIfNeeded(
   const dates = datesInRange(firstDate, lastDate);
   const datesFormatted = dates.map((it) => it.toString());
 
+  const meterIds = ELVIA_CONTRACT_LIST.map((it) => it.contractId);
+
   const storedDates = new Set(
-    STROEM_METER_LIST.map((it) => (data.powerUsage ?? {})[it] ?? [])
+    meterIds
+      .map((it) => (data.powerUsage ?? {})[it] ?? [])
+      .map((usages) => {
+        const verifiedMeasures = usages.filter(
+          (it) => it.verified == null || it.verified
+        );
+        const dateWithHours = R.groupBy(
+          (it) => it.date.toString(),
+          verifiedMeasures
+        );
+        return Object.entries(dateWithHours)
+          .filter(([_, values]) => values.length == 24)
+          .map(([date, _]) => date);
+      })
       .flat()
-      .filter((it) => it.hour == 23)
-      .map((it) => it.date)
   );
 
   if (datesFormatted.every((it) => storedDates.has(it))) {
@@ -204,18 +223,28 @@ export async function loadStroemIfNeeded(
 
   console.log("Loading data for strøm");
 
-  const excelData = await fetchExcelWithLogin({
-    username: STROEM_USERNAME,
-    password: STROEM_PASSWORD,
-    meterList: STROEM_METER_LIST,
-    firstDate,
-    lastDate,
+  const accessToken = await getAccessTokenFromCredentials({
+    email: ELVIA_EMAIL,
+    password: ELVIA_PASSWORD,
   });
 
-  const parsedData = parseExcel(excelData);
+  const years = R.range(firstDate.year, lastDate.year + 1);
 
-  for (const [meterName, items] of Object.entries(parsedData)) {
-    mergePowerUsageForMeter(data, meterName, items);
+  for (const contract of ELVIA_CONTRACT_LIST) {
+    for (const year of years) {
+      const meterValues = await getMeterValues({
+        customerId: ELVIA_CUSTOMER_ID,
+        contractId: contract.contractId,
+        year: year,
+        accessToken,
+      });
+
+      const parsed = parseMeterValues(meterValues).filter((it) =>
+        isDateInRange(firstDate, lastDate, it.date)
+      );
+
+      mergePowerUsageForMeter(data, contract.meterId, parsed);
+    }
   }
 }
 

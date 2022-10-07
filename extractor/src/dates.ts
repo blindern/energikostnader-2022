@@ -18,3 +18,14 @@ export function datesInRange(
 
   return result;
 }
+
+export function isDateInRange(
+  firstDate: Temporal.PlainDate,
+  lastDate: Temporal.PlainDate,
+  target: Temporal.PlainDate
+): boolean {
+  return (
+    Temporal.PlainDate.compare(firstDate, target) <= 0 &&
+    Temporal.PlainDate.compare(target, lastDate) <= 0
+  );
+}

@@ -23,6 +23,7 @@ export interface DataPowerUsageHour {
   date: string; // yyyy-mm-dd
   hour: number;
   usage: number;
+  verified?: boolean;
 }
 
 export interface Data {

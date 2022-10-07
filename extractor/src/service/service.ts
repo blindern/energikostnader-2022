@@ -1,8 +1,8 @@
 import { Temporal } from "@js-temporal/polyfill";
 import { DATA_FILE } from "../config.js";
+import { datesInRange } from "../dates.js";
 import { generateReportDataAndStore } from "../report/report.js";
 import { DataStore } from "./data-store.js";
-import { datesInRange } from "./dates.js";
 import {
   loadDailyTemperatureIfNeeded,
   loadFjernvarmeIfNeeded,
@@ -30,6 +30,8 @@ async function handleFailure(fn: () => Promise<void>): Promise<void> {
 const dataStore = new DataStore(DATA_FILE);
 
 async function iteration() {
+  const now = Temporal.Now.zonedDateTimeISO("Europe/Oslo");
+
   const firstDate = Temporal.Now.plainDateISO("Europe/Oslo").subtract({
     days: 4,
   });
@@ -72,15 +74,17 @@ while (true) {
 
   const now = Temporal.Now.zonedDateTimeISO("Europe/Oslo");
 
-  // Run 09:00 due to data from Fortum.
-  // Run 14:00 due to data from Nordpool.
-
-  const nextIteration =
-    now.hour < 9
-      ? now.startOfDay().with({ hour: 9 })
-      : now.hour < 14
-      ? now.startOfDay().with({ hour: 14 })
-      : now.startOfDay().with({ hour: 6 }).add({ days: 1 });
+  const nextIteration = now
+    .round({
+      smallestUnit: "hour",
+      roundingMode: "floor",
+    })
+    .with({
+      minute: 15,
+    })
+    .add({
+      hours: now.minute >= 15 ? 1 : 0,
+    });
 
   const delaySeconds = now.until(nextIteration).total("seconds");
   console.log(`Sleeping until ${nextIteration.toString()} (${delaySeconds} s)`);
