@@ -1,3 +1,4 @@
+import { Temporal } from "@js-temporal/polyfill";
 import { useEffect, useState } from "react";
 import {
   Area,
@@ -216,31 +217,20 @@ function Daily({ reportData }: { reportData: ReportData }) {
 }
 
 function HourlyPrice({ reportData }: { reportData: ReportData }) {
-  const now = new Date();
+  const now = Temporal.Now.zonedDateTimeISO("Europe/Oslo");
+  const nowDate = now.toPlainDate().toString();
 
   const hourStartRow = reportData.prices.rows.find(
-    (it) =>
-      it.date == now.toISOString().slice(0, 10) && it.hour == now.getHours()
+    (it) => it.date == nowDate && it.hour == now.hour
   );
 
-  const nextHour = new Date(now.getTime());
-  nextHour.setHours(now.getHours() + 1);
+  const nextHour = now.add({ hours: 1 });
+  const nextHourDate = nextHour.toPlainDate().toString();
   const hourEndRow = reportData.prices.rows.find(
-    (it) =>
-      it.date == nextHour.toISOString().slice(0, 10) &&
-      it.hour == nextHour.getHours()
+    (it) => it.date == nextHourDate && it.hour == nextHour.hour
   );
 
   const stroemPriceThisHour = hourStartRow?.priceStroemKwh;
-
-  const minPrice = reportData.prices.rows.reduce(
-    (acc, cur) => Math.min(acc, cur.priceFjernvarmeKwh, cur.priceStroemKwh),
-    0
-  );
-  const maxPrice = reportData.prices.rows.reduce(
-    (acc, cur) => Math.max(acc, cur.priceFjernvarmeKwh, cur.priceStroemKwh),
-    0
-  );
 
   return (
     <ResponsiveContainer width="100%" height={400}>
