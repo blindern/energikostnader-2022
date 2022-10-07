@@ -76,16 +76,18 @@ while (true) {
 
   const now = Temporal.Now.zonedDateTimeISO("Europe/Oslo");
 
+  const minuteToRefresh = 20;
+
   const nextIteration = now
     .round({
       smallestUnit: "hour",
       roundingMode: "floor",
     })
     .with({
-      minute: 15,
+      minute: minuteToRefresh,
     })
     .add({
-      hours: now.minute >= 15 ? 1 : 0,
+      hours: now.minute >= minuteToRefresh ? 1 : 0,
     });
 
   const delaySeconds = now.until(nextIteration).total("seconds");
