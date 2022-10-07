@@ -72,7 +72,7 @@ function expandLast<
 
 function Hourly({ reportData }: { reportData: ReportData }) {
   return (
-    <ResponsiveContainer width="100%" height={380}>
+    <ResponsiveContainer width="100%" height={360}>
       <ComposedChart data={expandLast(addEndItem(reportData.hourly.rows))}>
         <CartesianGrid stroke="#dddddd" />
         <Area
