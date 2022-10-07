@@ -562,7 +562,7 @@ export async function generateReportData(data: Data) {
         data,
         indexedData,
         Temporal.Now.plainDateISO("Europe/Oslo").subtract({
-          days: 2,
+          days: haveSpotpriceTomorrow ? 2 : 3,
         }),
         Temporal.Now.plainDateISO("Europe/Oslo").add({
           days: haveSpotpriceTomorrow ? 1 : 0,

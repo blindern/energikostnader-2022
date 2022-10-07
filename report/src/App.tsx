@@ -72,7 +72,7 @@ function expandLast<
 
 function Hourly({ reportData }: { reportData: ReportData }) {
   return (
-    <ResponsiveContainer width="100%" height={400}>
+    <ResponsiveContainer width="100%" height={380}>
       <ComposedChart data={expandLast(addEndItem(reportData.hourly.rows))}>
         <CartesianGrid stroke="#dddddd" />
         <Area
@@ -103,7 +103,7 @@ function Hourly({ reportData }: { reportData: ReportData }) {
           type="stepAfter"
           dataKey="temperature"
           name="Utetemperatur Blindern"
-          stroke="#0000ff"
+          stroke="#336EFF"
           yAxisId="temp"
           isAnimationActive={false}
           dot={false}
@@ -127,7 +127,14 @@ function Hourly({ reportData }: { reportData: ReportData }) {
           .map((it) => (
             <ReferenceLine x={it.name} stroke="#555555" />
           ))}
-        <XAxis dataKey="name" angle={-90} height={100} interval={0} dy={25} />
+        <XAxis
+          dataKey="name"
+          angle={-90}
+          height={50}
+          interval={0}
+          tickMargin={20}
+          fontSize={8}
+        />
         <YAxis unit=" kWh" tickCount={10} />
         <YAxis
           yAxisId="temp"
@@ -140,7 +147,7 @@ function Hourly({ reportData }: { reportData: ReportData }) {
           width={40}
         />
         <YAxis yAxisId="price" unit=" kr" orientation="right" tickCount={15} />
-        <Legend verticalAlign="top" height={30} />
+        <Legend verticalAlign="top" height={20} />
       </ComposedChart>
     </ResponsiveContainer>
   );
@@ -148,7 +155,7 @@ function Hourly({ reportData }: { reportData: ReportData }) {
 
 function Daily({ reportData }: { reportData: ReportData }) {
   return (
-    <ResponsiveContainer width="100%" height={400}>
+    <ResponsiveContainer width="100%" height={380}>
       <ComposedChart data={expandLast(addEndItem(reportData.daily.rows))}>
         <CartesianGrid stroke="#dddddd" />
         <Area
@@ -179,7 +186,7 @@ function Daily({ reportData }: { reportData: ReportData }) {
           type="stepAfter"
           dataKey="temperature"
           name="Utetemperatur Blindern"
-          stroke="#0000ff"
+          stroke="#336EFF"
           yAxisId="temp"
           isAnimationActive={false}
           dot={false}
@@ -197,8 +204,15 @@ function Daily({ reportData }: { reportData: ReportData }) {
           legendType="plainline"
           strokeWidth={1.5}
         />
-        <XAxis dataKey="name" angle={-90} height={40} interval={0} dy={20} />
-        <YAxis unit="kWh" tickCount={15} />
+        <XAxis
+          dataKey="name"
+          angle={-90}
+          height={35}
+          interval={0}
+          tickMargin={15}
+          fontSize={7}
+        />
+        <YAxis unit=" kWh" tickCount={15} />
         <YAxis
           yAxisId="temp"
           unit=" &#8451;"
@@ -210,7 +224,7 @@ function Daily({ reportData }: { reportData: ReportData }) {
           width={40}
         />
         <YAxis yAxisId="price" unit=" kr" orientation="right" tickCount={15} />
-        <Legend verticalAlign="top" height={30} />
+        <Legend verticalAlign="top" height={20} />
       </ComposedChart>
     </ResponsiveContainer>
   );
@@ -233,7 +247,7 @@ function HourlyPrice({ reportData }: { reportData: ReportData }) {
   const stroemPriceThisHour = hourStartRow?.priceStroemKwh;
 
   return (
-    <ResponsiveContainer width="100%" height={400}>
+    <ResponsiveContainer width="100%" height={310}>
       <ComposedChart data={addEndItem(reportData.prices.rows)}>
         <CartesianGrid stroke="#dddddd" />
         <Area
@@ -263,7 +277,7 @@ function HourlyPrice({ reportData }: { reportData: ReportData }) {
         <Line
           type="stepAfter"
           dataKey="nordpoolKwh"
-          name="Nordpool"
+          name="Nord Pool (spotpris)"
           stroke="#888"
           opacity={0.5}
           isAnimationActive={false}
@@ -284,6 +298,28 @@ function HourlyPrice({ reportData }: { reportData: ReportData }) {
           />
         )}
         <ReferenceLine y={0} stroke="#555" strokeWidth={1} />
+        {/* Tall fra regnskap. Årlig kostnad / sum årlig forbruk. */}
+        <ReferenceLine
+          y={1.053}
+          stroke="#555"
+          strokeWidth={1}
+          strokeDasharray="3 4"
+          label="2019"
+        />
+        <ReferenceLine
+          y={0.7569}
+          stroke="#555"
+          strokeWidth={1}
+          strokeDasharray="3 4"
+          label="2020"
+        />
+        <ReferenceLine
+          y={1.4354}
+          stroke="#555"
+          strokeWidth={1}
+          strokeDasharray="3 4"
+          label="2021"
+        />
         {reportData.prices.rows
           .slice(1)
           .filter((it) => it.name.endsWith("kl 00"))
@@ -295,11 +331,11 @@ function HourlyPrice({ reportData }: { reportData: ReportData }) {
           angle={-90}
           height={40}
           interval={0}
-          dy={20}
-          fontSize={8}
+          tickMargin={20}
+          fontSize={6}
         />
         <YAxis unit=" kr" tickCount={15} />
-        <Legend verticalAlign="top" height={30} />
+        <Legend verticalAlign="top" height={20} />
       </ComposedChart>
     </ResponsiveContainer>
   );
@@ -322,7 +358,7 @@ function EnergyTemperature({ reportData }: { reportData: ReportData }) {
       items: finalData
         .slice(0, -10)
         .filter((it) => it.date >= "2022-01-01" && it.date < "2022-07-01"),
-      color: "#8884d8",
+      color: "#336EFF",
       fillOpacity: 0.3,
     },
     {
@@ -354,7 +390,7 @@ function EnergyTemperature({ reportData }: { reportData: ReportData }) {
     });
 
   return (
-    <ResponsiveContainer width="100%" height={400}>
+    <ResponsiveContainer width="100%" height={380}>
       <ScatterChart>
         <CartesianGrid />
         <XAxis
@@ -362,7 +398,7 @@ function EnergyTemperature({ reportData }: { reportData: ReportData }) {
           dataKey="temperature"
           name="Temperatur"
           label={{ dy: 5, value: "Utetemperatur Blindern" }}
-          height={40}
+          height={35}
           interval={0}
           ticks={deriveTempTickCount(
             finalData.map((it) => it.temperature ?? 0)
@@ -413,63 +449,64 @@ function App() {
 
   return (
     <div>
-      <h1>Energiforbruk på Blindern Studenterhjem</h1>
-      <h2>Timeforbruk i det siste</h2>
+      <div className="header">
+        <h1>Energiforbruk på Blindern Studenterhjem</h1>
+        <p>
+          <a href="https://foreningenbs.no/energi">foreningenbs.no/energi</a>
+          <br />
+          <a href="https://github.com/blindern/energi">
+            github.com/blindern/energi
+          </a>
+        </p>
+      </div>
+      <h2>Time for time siste dager</h2>
       <Hourly reportData={reportData} />
-      <div className="two-columns">
+      <div className="columns">
         <div>
-          <h2>Dagsforbruk i det siste</h2>
+          <h2>Daglig forbruk i det siste</h2>
           <Daily reportData={reportData} />
         </div>
         <div>
-          <h2>Estimert reell pris per kWh</h2>
-          <HourlyPrice reportData={reportData} />
+          <h2>Daglig forbruk vs. utetemperatur (siden 1. juli 2021)</h2>
+          <EnergyTemperature reportData={reportData} />
         </div>
         <div>
-          <h2>Forbruk sett mot temperatur</h2>
-          <EnergyTemperature reportData={reportData} />
+          <h2>Estimert pris per kWh</h2>
+          <p style={{ marginBottom: 0 }}>
+            Endelig pris påvirkes blant annet av månedens gjennomsnittlige
+            spotpris. Estimatet er mer unøyaktig i starten av måneden enn
+            slutten.
+            {reportData.spotprices.currentMonth.spotprice && (
+              <>
+                {" "}
+                Gjennomsnittlig spotpris inkl mva fra Nord Pool så langt denne
+                måneden:{" "}
+                {roundTwoDec(reportData.spotprices.currentMonth.spotprice)}{" "}
+                øre/kWh.
+                {reportData.spotprices.previousMonth.spotprice && (
+                  <>
+                    {" "}
+                    Forrige måned:{" "}
+                    {roundTwoDec(
+                      reportData.spotprices.previousMonth.spotprice
+                    )}{" "}
+                    øre/kWh.
+                  </>
+                )}
+              </>
+            )}
+          </p>
+          <HourlyPrice reportData={reportData} />
         </div>
       </div>
       <footer>
         <p>
           Fjernvarme benyttes til oppvarming av varmt vann samt oppvarming via
           radiatorer. Strøm benyttes til alt annet, inkludert varmekabler på
-          bad, vaskemaskiner, tørketromler, kjøkkenmaskiner mv.
-        </p>
-        <p>
-          Estimert kostnad inneværende måned avhenger av hva hele månedens
-          gjennomsnittlige spotpris blir. Beregningene benytter tilgjengelig
-          spotpris så langt i måneden. Kostnad for fjernvarme påvirkes ikke av
-          timepris, men kostnad for strøm følger spotpris per time. Estimert
-          kostnad inkluderer mva, nettleie, strømstøtte m.v.
-          {reportData.spotprices.currentMonth.spotprice && (
-            <>
-              {" "}
-              Beregnet månedlig spotpris fra Nordpool så langt denne måneden (
-              {reportData.spotprices.currentMonth.yearMonth}):{" "}
-              {roundTwoDec(reportData.spotprices.currentMonth.spotprice)}{" "}
-              øre/kWh.
-              {reportData.spotprices.previousMonth.spotprice && (
-                <>
-                  {" "}
-                  Forrige måned:{" "}
-                  {roundTwoDec(
-                    reportData.spotprices.previousMonth.spotprice
-                  )}{" "}
-                  øre/kWh.
-                </>
-              )}
-            </>
-          )}
-        </p>
-        <p>
-          <a href="https://foreningenbs.no/energi">
-            https://foreningenbs.no/energi
-          </a>
-          <br />
-          <a href="https://github.com/blindern/energi">
-            https://github.com/blindern/energi
-          </a>
+          bad, vaskemaskiner, tørketromler, kjøkkenmaskiner mv. Pris for
+          fjernvarme er flat hele måneden (utifra månedlig spotpris), men pris
+          for strøm følger spotpris per time. Estimert kostnad inkluderer mva,
+          nettleie, strømstøtte m.v.
         </p>
       </footer>
     </div>

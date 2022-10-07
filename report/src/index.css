@@ -14,12 +14,12 @@ code {
     monospace;
 }
 
-.two-columns {
+.columns {
   display: flex;
   overflow: hidden;
 }
 
-.two-columns > div {
+.columns > div {
   flex: 1;
   flex-direction: column;
 }
@@ -30,4 +30,25 @@ h1 {
 
 h2 {
   margin: 0;
+}
+
+p {
+  font-size: 1.1em;
+}
+
+.header {
+  display: flex;
+}
+
+.header > p {
+  margin: 0;
+  flex-grow: 1;
+  font-size: 1.5em;
+  text-align: right;
+}
+
+@media (max-width: 600px) {
+  .columns {
+    display: block;
+  }
 }
