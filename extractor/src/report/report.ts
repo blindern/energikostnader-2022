@@ -54,7 +54,7 @@ function indexData(data: Data): IndexedData {
     (it) => R.sum(it.map((x) => x.usage)),
     R.groupBy<DataPowerUsageHour>(
       dateHourIndexer,
-      Object.entries(data.powerUsage ?? [])
+      Object.entries(data.powerUsage ?? {})
         .filter(([key, _]) => key !== "Fjernvarme")
         .map(([_, values]) => values)
         .flat()
@@ -65,7 +65,7 @@ function indexData(data: Data): IndexedData {
     (it) => it.usage,
     R.indexBy<DataPowerUsageHour>(
       dateHourIndexer,
-      Object.entries(data.powerUsage ?? [])
+      Object.entries(data.powerUsage ?? {})
         .filter(([key, _]) => key === "Fjernvarme")
         .map(([_, values]) => values)
         .flat()
@@ -299,7 +299,7 @@ export function generateDailyReport(
   const stroem: Record<string, number | undefined> = R.mapObjIndexed(
     sumHourUsages,
     byDateGroup(
-      Object.entries(data.powerUsage ?? [])
+      Object.entries(data.powerUsage ?? {})
         .filter(([key, _]) => key !== "Fjernvarme")
         .map(([_, values]) => values)
         .flat()
@@ -309,7 +309,7 @@ export function generateDailyReport(
   const fjernvarme: Record<string, number | undefined> = R.mapObjIndexed(
     sumHourUsages,
     byDateGroup(
-      Object.entries(data.powerUsage ?? [])
+      Object.entries(data.powerUsage ?? {})
         .filter(([key, _]) => key === "Fjernvarme")
         .map(([_, values]) => values)
         .flat()
@@ -330,14 +330,14 @@ export function generateDailyReport(
         indexedData,
         date,
         hour,
-        usageKwh: indexedData.stroemByHour[index] ?? 0,
+        usageKwh: indexedData.stroemByHour[index] ?? NaN,
       });
       priceFjernvarme += calculateFjernvarmeHourlyPrice({
         data,
         indexedData,
         date,
         hour,
-        usageKwh: indexedData.fjernvarmeByHour[index] ?? 0,
+        usageKwh: indexedData.fjernvarmeByHour[index] ?? NaN,
       });
     }
 
@@ -403,6 +403,7 @@ export function generateHourlyReport(
 
 export function generateEnergyTemperatureReport(
   data: Data,
+  indexedData: IndexedData,
   firstDate: Temporal.PlainDate,
   lastDate: Temporal.PlainDate
 ) {
@@ -424,24 +425,33 @@ export function generateEnergyTemperatureReport(
   const power = R.mapObjIndexed(
     sumHourUsages,
     byDateGroup(
-      Object.entries(data.powerUsage ?? [])
+      Object.entries(data.powerUsage ?? {})
         .map(([_, values]) => values)
         .flat()
     )
   );
 
-  return dates.map((date, index) => {
-    const date1 = Temporal.PlainDate.from(date);
-    const name = `${date1.day}.${date1.month}`;
+  return dates
+    .filter((date) => {
+      // Skip dates with incomplete data.
+      const index = dateHourIndexer({ date, hour: 23 });
+      return (
+        indexedData.stroemByHour[index] != null &&
+        indexedData.fjernvarmeByHour[index] != null
+      );
+    })
+    .map((date, index) => {
+      const date1 = Temporal.PlainDate.from(date);
+      const name = `${date1.day}.${date1.month}`;
 
-    return {
-      date,
-      name,
-      power: power[date],
-      temperature: temperatures[date],
-      index,
-    };
-  });
+      return {
+        date,
+        name,
+        power: power[date],
+        temperature: temperatures[date],
+        index,
+      };
+    });
 }
 
 function generatePriceReport(
@@ -540,6 +550,7 @@ export async function generateReportData(data: Data) {
     et: {
       rows: generateEnergyTemperatureReport(
         data,
+        indexedData,
         Temporal.PlainDate.from("2021-07-01"),
         Temporal.Now.plainDateISO("Europe/Oslo").subtract({
           days: 1,
