@@ -47,12 +47,14 @@ async function iteration() {
   }
 
   // Spot prices tomorrow.
-  await handleFailure(() =>
-    loadNordpoolIfNeeded(data, lastDate.add({ days: 1 }))
-  );
+  if (now.hour >= 13) {
+    await handleFailure(() =>
+      loadNordpoolIfNeeded(data, lastDate.add({ days: 1 }))
+    );
+  }
 
   await handleFailure(() =>
-    loadDailyTemperatureIfNeeded(data, previousDays[0], previousDays.at(-1)!)
+    loadDailyTemperatureIfNeeded(data, previousDays[0], previousDays.at(-2)!)
   );
 
   await handleFailure(() =>

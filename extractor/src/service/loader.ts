@@ -94,7 +94,7 @@ export async function loadHourlyTemperatureIfNeeded(
       .filter((it) => it.hour == 23)
       .find((it) => it.date == dateFormatted) !== undefined
   ) {
-    // return;
+    return;
   }
 
   console.log(`Loading hourly temperature data for ${date}`);
