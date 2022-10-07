@@ -411,6 +411,7 @@ function EnergyTemperature({ reportData }: { reportData: ReportData }) {
           name="Forbruk kWh"
           unit=" kWh"
           tickCount={12}
+          width={70}
         />
         <ZAxis type="category" dataKey="date" name="Dato" range={[20, 20]} />
         <Tooltip cursor={{ strokeDasharray: "3 3" }} />
