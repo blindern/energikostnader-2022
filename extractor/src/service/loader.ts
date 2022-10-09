@@ -87,14 +87,22 @@ export async function loadHourlyTemperatureIfNeeded(
 ): Promise<void> {
   const dateFormatted = date.toString();
 
-  // TODO: handle issue where 0am and 1am is loaded in previous date
+  // Data from Yr ("one day") follows UTC time, while the data
+  // we store is in local timezone.
 
-  if (
-    (data.hourlyTemperature ?? [])
-      .filter((it) => it.hour == 23)
-      .find((it) => it.date == dateFormatted) !== undefined
-  ) {
-    return;
+  for (const hourData of data.hourlyTemperature ?? []) {
+    const utcDateTime = Temporal.PlainDate.from(hourData.date)
+      .toPlainDateTime({ hour: hourData.hour })
+      .toZonedDateTime("Europe/Oslo")
+      .withTimeZone("UTC");
+
+    if (
+      utcDateTime.toPlainDate().toString() === dateFormatted &&
+      utcDateTime.hour === 23
+    ) {
+      // Got data for full day, nothing to load.
+      return;
+    }
   }
 
   console.log(`Loading hourly temperature data for ${date}`);
