@@ -76,7 +76,7 @@ while (true) {
 
   const now = Temporal.Now.zonedDateTimeISO("Europe/Oslo");
 
-  const minuteToRefresh = 20;
+  const minuteToRefresh = 30;
 
   const nextIteration = now
     .round({
