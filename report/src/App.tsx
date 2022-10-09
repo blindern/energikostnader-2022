@@ -147,6 +147,7 @@ function Hourly({ reportData }: { reportData: ReportData }) {
           width={40}
         />
         <YAxis yAxisId="price" unit=" kr" orientation="right" tickCount={15} />
+        <Tooltip />
         <Legend verticalAlign="top" height={20} />
       </ComposedChart>
     </ResponsiveContainer>
@@ -224,6 +225,7 @@ function Daily({ reportData }: { reportData: ReportData }) {
           width={40}
         />
         <YAxis yAxisId="price" unit=" kr" orientation="right" tickCount={15} />
+        <Tooltip />
         <Legend verticalAlign="top" height={20} />
       </ComposedChart>
     </ResponsiveContainer>
@@ -335,6 +337,7 @@ function HourlyPrice({ reportData }: { reportData: ReportData }) {
           fontSize={6}
         />
         <YAxis unit=" kr" tickCount={15} />
+        <Tooltip />
         <Legend verticalAlign="top" height={20} />
       </ComposedChart>
     </ResponsiveContainer>
@@ -414,7 +417,7 @@ function EnergyTemperature({ reportData }: { reportData: ReportData }) {
           width={70}
         />
         <ZAxis type="category" dataKey="date" name="Dato" range={[20, 20]} />
-        <Tooltip cursor={{ strokeDasharray: "3 3" }} />
+        <Tooltip />
         {result2.map((it, idx) => (
           <Scatter
             key={idx}
