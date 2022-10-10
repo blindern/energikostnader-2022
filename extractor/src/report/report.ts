@@ -123,14 +123,14 @@ function getPriceSupportOfMonth(
 
 function getFinansieltResultat(yearMonth: string, averageSpotPrice: number) {
   const base: Record<string, number> = {
-    "2022-01": -21.87,
-    "2022-02": -18.47,
-    "2022-03": -58.55,
-    "2022-04": -35.21,
-    "2022-05": -32.89,
-    "2022-06": -25.49,
-    "2022-07": -21.77,
-    "2022-08": -79.12,
+    "2022-01": -21.87, // From invoice.
+    "2022-02": -18.47, // From invoice.
+    "2022-03": -58.55, // From invoice.
+    "2022-04": -35.21, // From invoice.
+    "2022-05": -32.89, // From invoice.
+    "2022-06": -25.49, // From invoice.
+    "2022-07": -21.77, // From invoice.
+    "2022-08": -79.12, // From invoice.
   };
 
   // Guessing 5 % increased usage over spot and 10 % discount.
@@ -139,6 +139,14 @@ function getFinansieltResultat(yearMonth: string, averageSpotPrice: number) {
 
 function getEnergileddKwh(yearMonth: string) {
   const base: Record<string, number> = {
+    "2022-01": 7 * 1.25,
+    "2022-02": 7 * 1.25,
+    "2022-03": 7 * 1.25,
+    "2022-04": 3.9 * 1.25,
+    "2022-05": 6 * 1.25,
+    "2022-06": 6 * 1.25,
+    "2022-07": 6 * 1.25,
+    "2022-08": 6 * 1.25,
     "2022-09": 6 * 1.25,
     "2022-10": 6 * 1.25,
     "2022-11": 8.5 * 1.25,
@@ -148,12 +156,39 @@ function getEnergileddKwh(yearMonth: string) {
   return base[yearMonth] ?? 8;
 }
 
+function getForbruksavgiftKwh(yearMonth: string) {
+  const base: Record<string, number> = {
+    "2022-01": 8.91 * 1.25,
+    "2022-02": 8.91 * 1.25,
+    "2022-03": 8.91 * 1.25,
+    "2022-04": 15.4 * 1.25,
+    "2022-05": 15.4 * 1.25,
+    "2022-06": 15.4 * 1.25,
+    "2022-07": 15.4 * 1.25,
+    "2022-08": 15.4 * 1.25,
+    "2022-09": 15.4 * 1.25,
+    "2022-10": 15.4 * 1.25,
+    "2022-11": 15.4 * 1.25,
+    "2022-12": 15.4 * 1.25,
+  };
+
+  return base[yearMonth] ?? 8;
+}
+
 function getEffektleddMaaned(yearMonth: string) {
   const base: Record<string, number> = {
-    "2022-09": 100 * 40 * 1.25,
-    "2022-10": 110 * 40 * 1.25,
-    "2022-11": 130 * 90 * 1.25,
-    "2022-12": 130 * 90 * 1.25,
+    "2022-01": 122 * 84 * 1.25, // From invoice.
+    "2022-02": 141.6 * 84 * 1.25, // From invoice.
+    "2022-03": 120.2 * 84 * 1.25, // From invoice.
+    "2022-04": 106.8 * 35 * 1.25, // From invoice.
+    "2022-05": 104.2 * 40 * 1.25, // From invoice.
+    "2022-06": 102.4 * 40 * 1.25, // From invoice.
+    "2022-07": 96.2 * 40 * 1.25, // From invoice.
+    "2022-08": 112.8 * 40 * 1.25, // From invoice.
+    "2022-09": 100 * 40 * 1.25, // Guess.
+    "2022-10": 110 * 40 * 1.25, // Guess.
+    "2022-11": 130 * 90 * 1.25, // Guess.
+    "2022-12": 130 * 90 * 1.25, // Guess.
   };
 
   return base[yearMonth] ?? 5000;
@@ -166,25 +201,32 @@ function calculateStroemHourlyPrice(props: {
   hour: number;
   usageKwh: number;
 }) {
+  // Different price model before 2022 not implemented.
+  if (Number(props.date.slice(0, 4)) < 2022) {
+    return NaN;
+  }
+
   const yearMonth = monthIndexer(props);
   const dateHour = dateHourIndexer(props);
 
+  const daysInMonth = Temporal.PlainDate.from(props.date).daysInMonth;
+
   const fastleddMaaned = 425;
-  const fastleddHour = fastleddMaaned / 30 / 24;
+  const fastleddHour = fastleddMaaned / daysInMonth / 24;
 
   const effektleddMaaned = getEffektleddMaaned(yearMonth);
-  const effektleddHour = effektleddMaaned / 30 / 24;
+  const effektleddHour = effektleddMaaned / daysInMonth / 24;
 
-  const forbruksavgiftKwh = 15.41 * 1.25;
+  const forbruksavgiftKwh = getForbruksavgiftKwh(yearMonth);
   const energileddKwh = getEnergileddKwh(yearMonth);
   const paaslagKwh = 2.5;
 
-  const spotPrice = props.indexedData.spotpriceByHour[dateHour] ?? NaN;
+  const spotprice = props.indexedData.spotpriceByHour[dateHour] ?? NaN;
 
-  const finansieltResultat = getFinansieltResultat(yearMonth, spotPrice);
+  const finansieltResultat = getFinansieltResultat(yearMonth, spotprice);
 
   const finalPriceKwh =
-    spotPrice +
+    spotprice +
     finansieltResultat +
     paaslagKwh +
     energileddKwh +
@@ -212,6 +254,11 @@ function calculateFjernvarmeHourlyPrice(props: {
   hour: number;
   usageKwh: number;
 }) {
+  // Different price model before 2022 not implemented.
+  if (Number(props.date.slice(0, 4)) < 2022) {
+    return NaN;
+  }
+
   const yearMonth = monthIndexer(props);
 
   const priceSupport = getPriceSupportOfMonth(
@@ -220,7 +267,7 @@ function calculateFjernvarmeHourlyPrice(props: {
     Number(props.date.slice(5, 7))
   );
 
-  const spotPriceMonth = props.indexedData.spotpriceByMonth[yearMonth] ?? NaN;
+  const spotpriceMonth = props.indexedData.spotpriceByMonth[yearMonth] ?? NaN;
 
   // https://www.celsio.no/fjernvarme-og-kjoling/
 
@@ -230,11 +277,11 @@ function calculateFjernvarmeHourlyPrice(props: {
   const nettleieKwh = 23.15 * 1.25;
   const forbruksavgiftKwh = 15.41 * 1.25;
 
-  const spotPriceWithSupport = spotPriceMonth - priceSupport;
+  const spotpriceWithSupport = spotpriceMonth - priceSupport;
 
   const fjernvarmePriceKwh =
-    spotPriceWithSupport -
-    spotPriceWithSupport * rabattPercent +
+    spotpriceWithSupport -
+    spotpriceWithSupport * rabattPercent +
     administrativtPaaslagKwh +
     nettleieKwh +
     forbruksavgiftKwh;
@@ -318,7 +365,7 @@ export function generateDailyReport(
 
   return dates.map((date) => {
     const date1 = Temporal.PlainDate.from(date);
-    const name = `${date1.day}.${date1.month}`;
+    const name = `${date1.day}.${date1.month}.${date1.year}`;
 
     let priceStroem = 0;
     let priceFjernvarme = 0;
@@ -528,9 +575,7 @@ export async function generateReportData(data: Data) {
       rows: generateDailyReport(
         data,
         indexedData,
-        Temporal.Now.plainDateISO("Europe/Oslo").subtract({
-          days: 60,
-        }),
+        Temporal.PlainDate.from("2021-11-01"),
         Temporal.Now.plainDateISO("Europe/Oslo").subtract({
           days: 1,
         })

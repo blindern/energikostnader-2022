@@ -25,6 +25,10 @@ code {
   flex-direction: column;
 }
 
+.columns > :nth-child(2) {
+  flex: 0.3;
+}
+
 h1 {
   margin: 0;
 }

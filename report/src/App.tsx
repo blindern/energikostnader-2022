@@ -7,6 +7,7 @@ import {
   Legend,
   Line,
   ReferenceArea,
+  ReferenceDot,
   ReferenceLine,
   ResponsiveContainer,
   Scatter,
@@ -21,6 +22,21 @@ import { generateReportData } from "../../extractor/src/report/report";
 function roundTwoDec(value: number) {
   return Math.round(value * 100) / 100;
 }
+
+const monthNames: Record<number, string> = {
+  1: "jan",
+  2: "feb",
+  3: "mar",
+  4: "apr",
+  5: "mai",
+  6: "jun",
+  7: "jul",
+  8: "aug",
+  9: "sep",
+  10: "okt",
+  11: "nov",
+  12: "des",
+};
 
 type ReportData = Awaited<ReturnType<typeof generateReportData>>;
 
@@ -127,8 +143,22 @@ function Hourly({ reportData }: { reportData: ReportData }) {
           .map((it) => (
             <ReferenceLine x={it.name} stroke="#555555" />
           ))}
+        {reportData.hourly.rows
+          .filter((it) => it.name.endsWith("kl 13"))
+          .map((it) => (
+            <ReferenceDot
+              x={it.name}
+              y={-0.05}
+              label={it.name.split(" ")[0]}
+              fillOpacity={0}
+              strokeWidth={0}
+              ifOverflow="visible"
+              yAxisId="label"
+            />
+          ))}
         <XAxis
           dataKey="name"
+          ticks={reportData.hourly.rows.slice(-3).map((it) => it.name)}
           angle={-90}
           height={50}
           interval={0}
@@ -147,6 +177,7 @@ function Hourly({ reportData }: { reportData: ReportData }) {
           width={40}
         />
         <YAxis yAxisId="price" unit=" kr" orientation="right" tickCount={15} />
+        <YAxis yAxisId="label" hide domain={[0, 1]} />
         <Tooltip />
         <Legend verticalAlign="top" height={20} />
       </ComposedChart>
@@ -155,9 +186,11 @@ function Hourly({ reportData }: { reportData: ReportData }) {
 }
 
 function Daily({ reportData }: { reportData: ReportData }) {
+  const graphData = reportData.daily.rows;
+
   return (
     <ResponsiveContainer width="100%" height={380}>
-      <ComposedChart data={expandLast(addEndItem(reportData.daily.rows))}>
+      <ComposedChart data={expandLast(addEndItem(graphData))}>
         <CartesianGrid stroke="#dddddd" />
         <Area
           type="stepAfter"
@@ -169,7 +202,7 @@ function Daily({ reportData }: { reportData: ReportData }) {
           isAnimationActive={false}
           dot={false}
           legendType="plainline"
-          strokeWidth={1.5}
+          strokeWidth={1.2}
         />
         <Area
           type="stepAfter"
@@ -181,7 +214,7 @@ function Daily({ reportData }: { reportData: ReportData }) {
           isAnimationActive={false}
           dot={false}
           legendType="plainline"
-          strokeWidth={1.5}
+          strokeWidth={1.2}
         />
         <Line
           type="stepAfter"
@@ -192,7 +225,7 @@ function Daily({ reportData }: { reportData: ReportData }) {
           isAnimationActive={false}
           dot={false}
           legendType="plainline"
-          strokeWidth={1.5}
+          strokeWidth={1.2}
         />
         <Line
           type="stepAfter"
@@ -203,14 +236,34 @@ function Daily({ reportData }: { reportData: ReportData }) {
           isAnimationActive={false}
           dot={false}
           legendType="plainline"
-          strokeWidth={1.5}
+          strokeWidth={1.2}
         />
+        {graphData
+          .slice(1)
+          .filter((it) => it.date.endsWith("-01"))
+          .map((it) => (
+            <ReferenceLine x={it.name} stroke="#555555" />
+          ))}
+        {graphData
+          .filter((it) => it.date.endsWith("-15"))
+          .map((it) => (
+            <ReferenceDot
+              x={it.name}
+              y={-0.05}
+              label={monthNames[Number(it.date.slice(5, 7))]}
+              fillOpacity={0}
+              strokeWidth={0}
+              ifOverflow="visible"
+              yAxisId="label"
+            />
+          ))}
         <XAxis
           dataKey="name"
           angle={-90}
-          height={35}
+          height={40}
           interval={0}
           tickMargin={15}
+          ticks={graphData.slice(-1).map((it) => it.name)}
           fontSize={7}
         />
         <YAxis unit=" kWh" tickCount={15} />
@@ -220,11 +273,13 @@ function Daily({ reportData }: { reportData: ReportData }) {
           orientation="right"
           interval={0}
           ticks={deriveTempTickCount(
-            reportData.daily.rows.map((it) => it.temperature ?? 0)
+            graphData.map((it) => it.temperature ?? 0)
           )}
+          domain={["dataMin", "dataMax"]}
           width={40}
         />
         <YAxis yAxisId="price" unit=" kr" orientation="right" tickCount={15} />
+        <YAxis yAxisId="label" hide domain={[0, 1]} />
         <Tooltip />
         <Legend verticalAlign="top" height={20} />
       </ComposedChart>
@@ -249,7 +304,7 @@ function HourlyPrice({ reportData }: { reportData: ReportData }) {
   const stroemPriceThisHour = hourStartRow?.priceStroemKwh;
 
   return (
-    <ResponsiveContainer width="100%" height={310}>
+    <ResponsiveContainer width="100%" height={230}>
       <ComposedChart data={addEndItem(reportData.prices.rows)}>
         <CartesianGrid stroke="#dddddd" />
         <Area
@@ -323,20 +378,27 @@ function HourlyPrice({ reportData }: { reportData: ReportData }) {
           label="2021"
         />
         {reportData.prices.rows
+          .filter((it) => it.name.endsWith("kl 13"))
+          .map((it) => (
+            <ReferenceDot
+              x={it.name}
+              y={-0.05}
+              label={it.name.split(" ")[0]}
+              fillOpacity={0}
+              strokeWidth={0}
+              ifOverflow="visible"
+              yAxisId="label"
+            />
+          ))}
+        {reportData.prices.rows
           .slice(1)
           .filter((it) => it.name.endsWith("kl 00"))
           .map((it) => (
             <ReferenceLine x={it.name} stroke="#555555" />
           ))}
-        <XAxis
-          dataKey="name"
-          angle={-90}
-          height={40}
-          interval={0}
-          tickMargin={20}
-          fontSize={6}
-        />
+        <XAxis dataKey="name" tick={false} axisLine={false} />
         <YAxis unit=" kr" tickCount={15} />
+        <YAxis yAxisId="label" hide domain={[0, 1]} />
         <Tooltip />
         <Legend verticalAlign="top" height={20} />
       </ComposedChart>
@@ -393,7 +455,7 @@ function EnergyTemperature({ reportData }: { reportData: ReportData }) {
     });
 
   return (
-    <ResponsiveContainer width="100%" height={380}>
+    <ResponsiveContainer width="100%" height={350}>
       <ScatterChart>
         <CartesianGrid />
         <XAxis
@@ -407,6 +469,7 @@ function EnergyTemperature({ reportData }: { reportData: ReportData }) {
             finalData.map((it) => it.temperature ?? 0)
           )}
           domain={["dataMin", 10]}
+          fontSize={7}
         />
         <YAxis
           type="number"
@@ -428,7 +491,7 @@ function EnergyTemperature({ reportData }: { reportData: ReportData }) {
             isAnimationActive={false}
           />
         ))}
-        <Legend verticalAlign="top" height={25} />
+        <Legend verticalAlign="top" height={40} />
       </ScatterChart>
     </ResponsiveContainer>
   );
@@ -463,16 +526,10 @@ function App() {
           </a>
         </p>
       </div>
-      <h2>Time for time siste dager</h2>
-      <Hourly reportData={reportData} />
       <div className="columns">
         <div>
-          <h2>Daglig forbruk i det siste</h2>
-          <Daily reportData={reportData} />
-        </div>
-        <div>
-          <h2>Daglig forbruk vs. utetemperatur (siden 1. juli 2021)</h2>
-          <EnergyTemperature reportData={reportData} />
+          <h2>Time for time siste 7 dager</h2>
+          <Hourly reportData={reportData} />
         </div>
         <div>
           <h2>Estimert pris per kWh</h2>
@@ -501,6 +558,16 @@ function App() {
             )}
           </p>
           <HourlyPrice reportData={reportData} />
+        </div>
+      </div>
+      <div className="columns">
+        <div>
+          <h2>Daglig forbruk siden 1. november 2021</h2>
+          <Daily reportData={reportData} />
+        </div>
+        <div>
+          <h2>Daglig forbruk vs. utetemperatur (siden 1. juli 2021)</h2>
+          <EnergyTemperature reportData={reportData} />
         </div>
       </div>
       <footer>
