@@ -1,3 +1,12 @@
+import { Temporal } from "@js-temporal/polyfill";
+import { Data } from "../service/data-store.js";
+import { multiplyWithUsage, UsagePrice } from "./helpers.js";
+import {
+  dateHourIndexer,
+  IndexedData,
+  yearMonthIndexer,
+} from "./indexed-data.js";
+
 export const stroemFastbeloepAar = 600 * 1.25;
 export const stroemPaaslagPerKwh = 0.02 * 1.25;
 export const nettFastleddMaaned = 340 * 1.25;
@@ -156,4 +165,92 @@ export function getPriceSupportOfMonthPerKwh(
   }
 
   return Math.max(0, (averageSpotPrice - 0.7 * 1.25) * percent);
+}
+
+export function calculateStroemHourlyPrice(props: {
+  data: Data;
+  indexedData: IndexedData;
+  date: string;
+  hour: number;
+  usageKwh: number;
+}): UsagePrice | null {
+  // Different price model before 2022 not implemented.
+  if (Number(props.date.slice(0, 4)) < 2022) {
+    return null;
+  }
+
+  const plainDate = Temporal.PlainDate.from(props.date);
+  const yearMonth = yearMonthIndexer(props);
+  const dateHour = dateHourIndexer(props);
+
+  const spotpriceHourPerKwh =
+    props.indexedData.spotpriceByHour[dateHour] ?? NaN;
+  const spotpriceMonthPerKwh =
+    props.indexedData.spotpriceByMonth[yearMonth] ?? NaN;
+
+  const components = {
+    usageKwh: props.usageKwh,
+    variableByKwh: multiplyWithUsage(props.usageKwh, {
+      "Strøm: Strømforbruk": spotpriceHourPerKwh,
+      "Strøm: Finansielt resultat": getFinansieltResultatPerKwh(
+        yearMonth,
+        spotpriceMonthPerKwh
+      ),
+      "Strøm: Påslag": stroemPaaslagPerKwh,
+      "Nettleie: Energiledd": energileddPerKwhByMonth[yearMonth] ?? NaN,
+      "Nettleie: Forbruksavgift": forbruksavgiftPerKwhByMonth[yearMonth] ?? NaN,
+      Strømstøtte: -getPriceSupportOfMonthPerKwh(
+        yearMonth,
+        props.indexedData.spotpriceByMonth[yearMonth] ?? 0
+      ),
+    }),
+    static: {
+      "Strøm: Fastbeløp": stroemFastbeloepAar / plainDate.daysInYear / 24,
+      "Nettleie: Fastledd": nettFastleddMaaned / plainDate.daysInMonth / 24,
+      "Nettleie: Effektledd":
+        (effektleddPerKwhByMonth[yearMonth] ?? NaN) /
+        plainDate.daysInMonth /
+        24,
+    },
+  };
+
+  return components;
+}
+
+export function calculateFjernvarmeHourlyPrice(props: {
+  data: Data;
+  indexedData: IndexedData;
+  date: string;
+  hour: number;
+  usageKwh: number;
+}): UsagePrice | null {
+  // Different price model before 2022 not implemented.
+  if (Number(props.date.slice(0, 4)) < 2022) {
+    return null;
+  }
+
+  const plainDate = Temporal.PlainDate.from(props.date);
+  const yearMonth = yearMonthIndexer(props);
+
+  const priceSupport = getPriceSupportOfMonthPerKwh(
+    yearMonth,
+    props.indexedData.spotpriceByMonth[yearMonth] ?? 0
+  );
+
+  const spotpriceMonth = props.indexedData.spotpriceByMonth[yearMonth] ?? NaN;
+
+  return {
+    usageKwh: props.usageKwh,
+    variableByKwh: multiplyWithUsage(props.usageKwh, {
+      Kraft: spotpriceMonth,
+      Rabatt: -(spotpriceMonth - priceSupport) * fjernvarmeRabattPercent,
+      "Administrativt påslag": fjernvarmeAdministativtPaaslagPerKwh,
+      Nettleie: fjernvarmeNettleiePerKwh,
+      Forbruksavgift: forbruksavgiftPerKwhByMonth[yearMonth] ?? NaN,
+      Strømstøtte: -priceSupport,
+    }),
+    static: {
+      Fastledd: fjernvarmeFastleddAar / plainDate.daysInYear / 24,
+    },
+  };
 }
