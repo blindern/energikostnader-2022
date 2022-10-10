@@ -34,12 +34,195 @@ const dayNames: Record<number, string> = {
   7: "søn",
 };
 
+const stroemFastbeloepKrAar = 600 * 1.25;
+const stroemPaaslagOerePerKwh = 2 * 1.25;
+const nettFastleddKrMaaned = 340 * 1.25;
+const fjernvarmeFastleddKrAar = 3000 * 1.25;
+
+// https://www.celsio.no/fjernvarme-og-kjoling/
+const fjernvarmeAdministativtPaaslagOerePerKwh = 3.5 * 1.25;
+const fjernvarmeNettleieOerePerKwh = 23.15 * 1.25;
+const fjernvarmeRabattPercent = 0.05;
+
+// Uten MVA.
+const finansieltResultatOerePerKwhActualByMonth: Record<
+  string,
+  number | undefined
+> = {
+  "2022-01": -21.87, // From invoice.
+  "2022-02": -18.47, // From invoice.
+  "2022-03": -58.55, // From invoice.
+  "2022-04": -35.21, // From invoice.
+  "2022-05": -32.89, // From invoice.
+  "2022-06": -25.49, // From invoice.
+  "2022-07": -21.77, // From invoice.
+  "2022-08": -79.12, // From invoice.
+};
+
+// https://www.elvia.no/nettleie/alt-om-nettleiepriser/nettleiepriser-og-effekttariff-for-bedrifter-med-arsforbruk-over-100000-kwh/
+const energileddOerePerKwhByMonth: Record<string, number | undefined> = {
+  "2022-01": 7 * 1.25,
+  "2022-02": 7 * 1.25,
+  "2022-03": 7 * 1.25,
+  "2022-04": 3.9 * 1.25,
+  "2022-05": 6 * 1.25,
+  "2022-06": 6 * 1.25,
+  "2022-07": 6 * 1.25,
+  "2022-08": 6 * 1.25,
+  "2022-09": 6 * 1.25,
+  "2022-10": 6 * 1.25,
+  "2022-11": 8.5 * 1.25,
+  "2022-12": 8.5 * 1.25,
+  "2023-01": 8.5 * 1.25, // Asssumption.
+  "2023-02": 8.5 * 1.25, // Asssumption.
+  "2023-03": 8.5 * 1.25, // Asssumption.
+  "2023-04": 8.5 * 1.25, // Asssumption.
+  "2023-05": 6 * 1.25, // Asssumption.
+  "2023-06": 6 * 1.25, // Asssumption.
+  "2023-07": 6 * 1.25, // Asssumption.
+  "2023-08": 6 * 1.25, // Asssumption.
+  "2023-09": 6 * 1.25, // Asssumption.
+  "2023-10": 6 * 1.25, // Asssumption.
+  "2023-11": 8.5 * 1.25, // Asssumption.
+  "2023-12": 8.5 * 1.25, // Asssumption.
+};
+
+// https://www.skatteetaten.no/bedrift-og-organisasjon/avgifter/saravgifter/om/elektrisk-kraft/
+const forbruksavgiftOerePerKwhByMonth: Record<string, number | undefined> = {
+  "2022-01": 8.91 * 1.25,
+  "2022-02": 8.91 * 1.25,
+  "2022-03": 8.91 * 1.25,
+  "2022-04": 15.41 * 1.25,
+  "2022-05": 15.41 * 1.25,
+  "2022-06": 15.41 * 1.25,
+  "2022-07": 15.41 * 1.25,
+  "2022-08": 15.41 * 1.25,
+  "2022-09": 15.41 * 1.25,
+  "2022-10": 15.41 * 1.25,
+  "2022-11": 15.41 * 1.25,
+  "2022-12": 15.41 * 1.25,
+  "2023-01": 15.41 * 1.25, // Assumption.
+  "2023-02": 15.41 * 1.25, // Assumption.
+  "2023-03": 15.41 * 1.25, // Assumption.
+  "2023-04": 15.41 * 1.25, // Assumption.
+  "2023-05": 15.41 * 1.25, // Assumption.
+  "2023-06": 15.41 * 1.25, // Assumption.
+  "2023-07": 15.41 * 1.25, // Assumption.
+  "2023-08": 15.41 * 1.25, // Assumption.
+  "2023-09": 15.41 * 1.25, // Assumption.
+  "2023-10": 15.41 * 1.25, // Assumption.
+  "2023-11": 15.41 * 1.25, // Assumption.
+  "2023-12": 15.41 * 1.25, // Assumption.
+};
+
+// https://www.elvia.no/nettleie/alt-om-nettleiepriser/nettleiepriser-og-effekttariff-for-bedrifter-med-arsforbruk-over-100000-kwh/
+const effektleddKrPerKwhByMonth: Record<string, number | undefined> = {
+  "2022-01": 122 * 84 * 1.25, // From invoice.
+  "2022-02": 141.6 * 84 * 1.25, // From invoice.
+  "2022-03": 120.2 * 84 * 1.25, // From invoice.
+  "2022-04": 106.8 * 35 * 1.25, // From invoice.
+  "2022-05": 104.2 * 40 * 1.25, // From invoice.
+  "2022-06": 102.4 * 40 * 1.25, // From invoice.
+  "2022-07": 96.2 * 40 * 1.25, // From invoice.
+  "2022-08": 112.8 * 40 * 1.25, // From invoice.
+  "2022-09": 100 * 40 * 1.25, // Guess.
+  "2022-10": 110 * 40 * 1.25, // Guess.
+  "2022-11": 130 * 90 * 1.25, // Guess.
+  "2022-12": 130 * 90 * 1.25, // Guess.
+  "2023-01": 122 * 90 * 1.25, // Guess.
+  "2023-02": 141.6 * 90 * 1.25, // Guess.
+  "2023-03": 120.2 * 90 * 1.25, // Guess.
+  "2023-04": 106.8 * 90 * 1.25, // Guess.
+  "2023-05": 104.2 * 40 * 1.25, // Guess.
+  "2023-06": 102.4 * 40 * 1.25, // Guess.
+  "2023-07": 96.2 * 40 * 1.25, // Guess.
+  "2023-08": 112.8 * 40 * 1.25, // Guess.
+  "2023-09": 100 * 40 * 1.25, // Guess.
+  "2023-10": 110 * 40 * 1.25, // Guess.
+  "2023-11": 130 * 90 * 1.25, // Guess.
+  "2023-12": 130 * 90 * 1.25, // Guess.
+};
+
+// https://www.regjeringen.no/no/aktuelt/vil-forlenge-stromstotten-til-husholdninger-ut-2023/id2930621/
+const priceSupportPercentByMonth: Record<string, number | undefined> = {
+  "2022-01": 0.8,
+  "2022-02": 0.8,
+  "2022-03": 0.8,
+  "2022-04": 0.8,
+  "2022-05": 0.8,
+  "2022-06": 0.8,
+  "2022-07": 0.8,
+  "2022-08": 0.8,
+  "2022-09": 0.9,
+  "2022-10": 0.9,
+  "2022-11": 0.9,
+  "2022-12": 0.9,
+  "2023-01": 0.9,
+  "2023-02": 0.9,
+  "2023-03": 0.9,
+  "2023-04": 0.8,
+  "2023-05": 0.8,
+  "2023-06": 0.8,
+  "2023-07": 0.8,
+  "2023-08": 0.8,
+  "2023-09": 0.8,
+  "2023-10": 0.9,
+  "2023-11": 0.9,
+  "2023-12": 0.9,
+};
+
 interface IndexedData {
   stroemByHour: Record<string, number | undefined>;
   fjernvarmeByHour: Record<string, number | undefined>;
   spotpriceByHour: Record<string, number | undefined>;
   spotpriceByMonth: Record<string, number | undefined>;
   temperatureByHour: Record<string, number | undefined>;
+}
+
+interface UsagePrice {
+  usageKwh: number;
+  variableByKwh: Record<string, number>;
+  static: Record<string, number>;
+}
+
+function multiplyWithUsage(usage: number, values: Record<string, number>) {
+  return R.mapObjIndexed((it) => it * usage, values);
+}
+
+function sumPrice(usagePrice: UsagePrice | null): number {
+  if (usagePrice == null) {
+    return NaN;
+  }
+  return roundTwoDec(
+    R.sum(Object.values(usagePrice.variableByKwh)) +
+      R.sum(Object.values(usagePrice.static))
+  );
+}
+
+function zeroForNaN(value: number) {
+  return isNaN(value) ? 0 : value;
+}
+
+function addPricesInner(
+  one: Record<string, number>,
+  two: Record<string, number>
+): Record<string, number> {
+  if (Object.keys(one).length != Object.keys(two).length) {
+    throw new Error("Not implemented");
+  }
+
+  return R.mapObjIndexed(
+    (value, key) => zeroForNaN(value) + zeroForNaN(two[key]),
+    one
+  );
+}
+
+function addPrices(one: UsagePrice, two: UsagePrice): UsagePrice {
+  return {
+    usageKwh: one.usageKwh + two.usageKwh,
+    variableByKwh: addPricesInner(one.variableByKwh, two.variableByKwh),
+    static: addPricesInner(one.static, two.static),
+  };
 }
 
 const dateHourIndexer = ({ date, hour }: { date: string; hour: number }) =>
@@ -98,170 +281,104 @@ function indexData(data: Data): IndexedData {
   };
 }
 
-function getPriceSupportOfMonth(
+function getPriceSupportOfMonthOerePerKwh(
   indexedData: IndexedData,
   year: number,
   month: number
 ): number {
-  if (year < 2022) {
-    return 0;
-  }
-
-  if (year > 2022) {
-    return 0;
-  }
-
   const yearMonth = getMonthIndex({ year, month });
+
+  const percent = priceSupportPercentByMonth[yearMonth];
+  if (percent == null) {
+    return 0;
+  }
+
   const averageSpotPrice = indexedData.spotpriceByMonth[yearMonth] ?? 0;
 
-  if (month < 9) {
-    return Math.max(0, (averageSpotPrice - 70 * 1.25) * 0.8);
-  }
-
-  return Math.max(0, (averageSpotPrice - 70 * 1.25) * 0.9);
+  return Math.max(0, (averageSpotPrice - 70 * 1.25) * percent);
 }
 
-function getFinansieltResultat(yearMonth: string, averageSpotPrice: number) {
-  const base: Record<string, number> = {
-    "2022-01": -21.87, // From invoice.
-    "2022-02": -18.47, // From invoice.
-    "2022-03": -58.55, // From invoice.
-    "2022-04": -35.21, // From invoice.
-    "2022-05": -32.89, // From invoice.
-    "2022-06": -25.49, // From invoice.
-    "2022-07": -21.77, // From invoice.
-    "2022-08": -79.12, // From invoice.
-  };
-
+function getFinansieltResultatOerePerKwh(
+  yearMonth: string,
+  averageSpotPrice: number
+) {
   // Guessing 5 % increased usage over spot and 10 % discount.
-  return base[yearMonth] ?? averageSpotPrice * 0.05 * -0.1;
+  return (
+    finansieltResultatOerePerKwhActualByMonth[yearMonth] ??
+    averageSpotPrice * 1.05 * -0.1
+  );
 }
 
-function getEnergileddKwh(yearMonth: string) {
-  const base: Record<string, number> = {
-    "2022-01": 7 * 1.25,
-    "2022-02": 7 * 1.25,
-    "2022-03": 7 * 1.25,
-    "2022-04": 3.9 * 1.25,
-    "2022-05": 6 * 1.25,
-    "2022-06": 6 * 1.25,
-    "2022-07": 6 * 1.25,
-    "2022-08": 6 * 1.25,
-    "2022-09": 6 * 1.25,
-    "2022-10": 6 * 1.25,
-    "2022-11": 8.5 * 1.25,
-    "2022-12": 8.5 * 1.25,
-  };
-
-  return base[yearMonth] ?? 8;
-}
-
-function getForbruksavgiftKwh(yearMonth: string) {
-  const base: Record<string, number> = {
-    "2022-01": 8.91 * 1.25,
-    "2022-02": 8.91 * 1.25,
-    "2022-03": 8.91 * 1.25,
-    "2022-04": 15.4 * 1.25,
-    "2022-05": 15.4 * 1.25,
-    "2022-06": 15.4 * 1.25,
-    "2022-07": 15.4 * 1.25,
-    "2022-08": 15.4 * 1.25,
-    "2022-09": 15.4 * 1.25,
-    "2022-10": 15.4 * 1.25,
-    "2022-11": 15.4 * 1.25,
-    "2022-12": 15.4 * 1.25,
-  };
-
-  return base[yearMonth] ?? 8;
-}
-
-function getEffektleddMaaned(yearMonth: string) {
-  const base: Record<string, number> = {
-    "2022-01": 122 * 84 * 1.25, // From invoice.
-    "2022-02": 141.6 * 84 * 1.25, // From invoice.
-    "2022-03": 120.2 * 84 * 1.25, // From invoice.
-    "2022-04": 106.8 * 35 * 1.25, // From invoice.
-    "2022-05": 104.2 * 40 * 1.25, // From invoice.
-    "2022-06": 102.4 * 40 * 1.25, // From invoice.
-    "2022-07": 96.2 * 40 * 1.25, // From invoice.
-    "2022-08": 112.8 * 40 * 1.25, // From invoice.
-    "2022-09": 100 * 40 * 1.25, // Guess.
-    "2022-10": 110 * 40 * 1.25, // Guess.
-    "2022-11": 130 * 90 * 1.25, // Guess.
-    "2022-12": 130 * 90 * 1.25, // Guess.
-  };
-
-  return base[yearMonth] ?? 5000;
-}
-
-function calculateStroemHourlyPrice(props: {
+function calculateStroemHourlyPriceKr(props: {
   data: Data;
   indexedData: IndexedData;
   date: string;
   hour: number;
   usageKwh: number;
-}) {
+}): UsagePrice | null {
   // Different price model before 2022 not implemented.
   if (Number(props.date.slice(0, 4)) < 2022) {
-    return NaN;
+    return null;
   }
 
+  const plainDate = Temporal.PlainDate.from(props.date);
   const yearMonth = monthIndexer(props);
   const dateHour = dateHourIndexer(props);
 
-  const daysInMonth = Temporal.PlainDate.from(props.date).daysInMonth;
+  const spotpriceOerePerKwh =
+    props.indexedData.spotpriceByHour[dateHour] ?? NaN;
 
-  const fastleddMaaned = 425;
-  const fastleddHour = fastleddMaaned / daysInMonth / 24;
+  const spotpriceMonthOerePerKwh =
+    props.indexedData.spotpriceByMonth[yearMonth] ?? NaN;
 
-  const effektleddMaaned = getEffektleddMaaned(yearMonth);
-  const effektleddHour = effektleddMaaned / daysInMonth / 24;
+  const components = {
+    usageKwh: props.usageKwh,
+    variableByKwh: multiplyWithUsage(props.usageKwh, {
+      "Strøm: Strømforbruk": spotpriceOerePerKwh / 100,
+      "Strøm: Finansielt resultat":
+        getFinansieltResultatOerePerKwh(yearMonth, spotpriceMonthOerePerKwh) /
+        100,
+      "Strøm: Påslag": stroemPaaslagOerePerKwh / 100,
+      "Nettleie: Energiledd":
+        (energileddOerePerKwhByMonth[yearMonth] ?? NaN) / 100,
+      "Nettleie: Forbruksavgift":
+        (forbruksavgiftOerePerKwhByMonth[yearMonth] ?? NaN) / 100,
+      Strømstøtte:
+        -getPriceSupportOfMonthOerePerKwh(
+          props.indexedData,
+          Number(props.date.slice(0, 4)),
+          Number(props.date.slice(5, 7))
+        ) / 100,
+    }),
+    static: {
+      "Strøm: Fastbeløp": stroemFastbeloepKrAar / plainDate.daysInYear / 24,
+      "Nettleie: Fastledd": nettFastleddKrMaaned / plainDate.daysInMonth / 24,
+      "Nettleie: Effektledd":
+        (effektleddKrPerKwhByMonth[yearMonth] ?? NaN) /
+        plainDate.daysInMonth /
+        24,
+    },
+  };
 
-  const forbruksavgiftKwh = getForbruksavgiftKwh(yearMonth);
-  const energileddKwh = getEnergileddKwh(yearMonth);
-  const paaslagKwh = 2.5;
-
-  const spotprice = props.indexedData.spotpriceByHour[dateHour] ?? NaN;
-
-  const finansieltResultat = getFinansieltResultat(yearMonth, spotprice);
-
-  const finalPriceKwh =
-    spotprice +
-    finansieltResultat +
-    paaslagKwh +
-    energileddKwh +
-    forbruksavgiftKwh;
-
-  const priceSupport = getPriceSupportOfMonth(
-    props.indexedData,
-    Number(props.date.slice(0, 4)),
-    Number(props.date.slice(5, 7))
-  );
-
-  const stroemPrice =
-    finalPriceKwh * props.usageKwh +
-    fastleddHour +
-    effektleddHour -
-    priceSupport * props.usageKwh;
-
-  return roundTwoDec(stroemPrice / 100);
+  return components;
 }
 
-function calculateFjernvarmeHourlyPrice(props: {
+function calculateFjernvarmeHourlyPriceKr(props: {
   data: Data;
   indexedData: IndexedData;
   date: string;
   hour: number;
   usageKwh: number;
-}) {
+}): UsagePrice | null {
   // Different price model before 2022 not implemented.
   if (Number(props.date.slice(0, 4)) < 2022) {
-    return NaN;
+    return null;
   }
 
+  const plainDate = Temporal.PlainDate.from(props.date);
   const yearMonth = monthIndexer(props);
 
-  const priceSupport = getPriceSupportOfMonth(
+  const priceSupport = getPriceSupportOfMonthOerePerKwh(
     props.indexedData,
     Number(props.date.slice(0, 4)),
     Number(props.date.slice(5, 7))
@@ -269,24 +386,21 @@ function calculateFjernvarmeHourlyPrice(props: {
 
   const spotpriceMonth = props.indexedData.spotpriceByMonth[yearMonth] ?? NaN;
 
-  // https://www.celsio.no/fjernvarme-og-kjoling/
-
-  const rabattPercent = 0.05;
-
-  const administrativtPaaslagKwh = 3.5 * 1.25;
-  const nettleieKwh = 23.15 * 1.25;
-  const forbruksavgiftKwh = 15.41 * 1.25;
-
-  const spotpriceWithSupport = spotpriceMonth - priceSupport;
-
-  const fjernvarmePriceKwh =
-    spotpriceWithSupport -
-    spotpriceWithSupport * rabattPercent +
-    administrativtPaaslagKwh +
-    nettleieKwh +
-    forbruksavgiftKwh;
-
-  return roundTwoDec((fjernvarmePriceKwh * props.usageKwh) / 100);
+  return {
+    usageKwh: props.usageKwh,
+    variableByKwh: multiplyWithUsage(props.usageKwh, {
+      Kraft: spotpriceMonth / 100,
+      Rabatt:
+        (-(spotpriceMonth - priceSupport) * fjernvarmeRabattPercent) / 100,
+      "Administrativt påslag": fjernvarmeAdministativtPaaslagOerePerKwh / 100,
+      Nettleie: fjernvarmeNettleieOerePerKwh / 100,
+      Forbruksavgift: (forbruksavgiftOerePerKwhByMonth[yearMonth] ?? NaN) / 100,
+      Strømstøtte: -priceSupport / 100,
+    }),
+    static: {
+      Fastledd: fjernvarmeFastleddKrAar / plainDate.daysInYear / 24,
+    },
+  };
 }
 
 function calculateHourlyPrice({
@@ -305,20 +419,24 @@ function calculateHourlyPrice({
   fjernvarme: number;
 }) {
   return (
-    calculateStroemHourlyPrice({
-      data,
-      indexedData,
-      date,
-      hour,
-      usageKwh: stroem,
-    }) +
-    calculateFjernvarmeHourlyPrice({
-      data,
-      indexedData,
-      date,
-      hour,
-      usageKwh: fjernvarme,
-    })
+    sumPrice(
+      calculateStroemHourlyPriceKr({
+        data,
+        indexedData,
+        date,
+        hour,
+        usageKwh: stroem,
+      })
+    ) +
+    sumPrice(
+      calculateFjernvarmeHourlyPriceKr({
+        data,
+        indexedData,
+        date,
+        hour,
+        usageKwh: fjernvarme,
+      })
+    )
   );
 }
 
@@ -372,20 +490,24 @@ export function generateDailyReport(
 
     for (const hour of hoursInADay) {
       const index = dateHourIndexer({ date, hour });
-      priceStroem += calculateStroemHourlyPrice({
-        data,
-        indexedData,
-        date,
-        hour,
-        usageKwh: indexedData.stroemByHour[index] ?? NaN,
-      });
-      priceFjernvarme += calculateFjernvarmeHourlyPrice({
-        data,
-        indexedData,
-        date,
-        hour,
-        usageKwh: indexedData.fjernvarmeByHour[index] ?? NaN,
-      });
+      priceStroem += sumPrice(
+        calculateStroemHourlyPriceKr({
+          data,
+          indexedData,
+          date,
+          hour,
+          usageKwh: indexedData.stroemByHour[index] ?? NaN,
+        })
+      );
+      priceFjernvarme += sumPrice(
+        calculateFjernvarmeHourlyPriceKr({
+          data,
+          indexedData,
+          date,
+          hour,
+          usageKwh: indexedData.fjernvarmeByHour[index] ?? NaN,
+        })
+      );
     }
 
     return {
@@ -522,21 +644,25 @@ function generatePriceReport(
         const stroemUsage = indexedData.stroemByHour[index] ?? 50;
         const fjernvarmeUsage = indexedData.fjernvarmeByHour[index] ?? 80;
 
-        const priceStroem = calculateStroemHourlyPrice({
-          data,
-          indexedData,
-          date,
-          hour,
-          usageKwh: stroemUsage,
-        });
+        const priceStroem = sumPrice(
+          calculateStroemHourlyPriceKr({
+            data,
+            indexedData,
+            date,
+            hour,
+            usageKwh: stroemUsage,
+          })
+        );
 
-        const priceFjernvarme = calculateFjernvarmeHourlyPrice({
-          data,
-          indexedData,
-          date,
-          hour,
-          usageKwh: fjernvarmeUsage,
-        });
+        const priceFjernvarme = sumPrice(
+          calculateFjernvarmeHourlyPriceKr({
+            data,
+            indexedData,
+            date,
+            hour,
+            usageKwh: fjernvarmeUsage,
+          })
+        );
 
         const nordpoolKwh = indexedData.spotpriceByHour[index];
 
@@ -553,6 +679,66 @@ function generatePriceReport(
     .flat();
 }
 
+function generateCostReport(
+  data: Data,
+  indexedData: IndexedData,
+  dates: Temporal.PlainDate[]
+) {
+  function flatten(items: UsagePrice[]): UsagePrice {
+    if (items.length === 0) {
+      return {
+        usageKwh: 0,
+        variableByKwh: {},
+        static: {},
+      };
+    }
+    return items.reduce(addPrices);
+  }
+
+  const stroemItems = dates
+    .flatMap((dateObj) => {
+      const date = dateObj.toString();
+      return R.range(0, 24).map((hour) => {
+        const index = dateHourIndexer({ date, hour });
+        return calculateStroemHourlyPriceKr({
+          data,
+          indexedData,
+          date,
+          hour,
+          usageKwh: indexedData.stroemByHour[index] ?? NaN,
+        });
+      });
+    })
+    .filter((it): it is UsagePrice => it != null && !isNaN(it.usageKwh));
+
+  const fjernvarmeItems = dates
+    .flatMap((dateObj) => {
+      const date = dateObj.toString();
+      return R.range(0, 24).map((hour) => {
+        const index = dateHourIndexer({ date, hour });
+        return calculateFjernvarmeHourlyPriceKr({
+          data,
+          indexedData,
+          date,
+          hour,
+          usageKwh: indexedData.fjernvarmeByHour[index] ?? NaN,
+        });
+      });
+    })
+    .filter((it): it is UsagePrice => it != null && !isNaN(it.usageKwh));
+
+  const stroem = flatten(stroemItems);
+  const fjernvarme = flatten(fjernvarmeItems);
+
+  return {
+    stroem,
+    stroemSum: sumPrice(stroem),
+    fjernvarme,
+    fjernvarmeSum: sumPrice(fjernvarme),
+    sum: sumPrice(stroem) + sumPrice(fjernvarme),
+  };
+}
+
 export async function generateReportData(data: Data) {
   const indexedData = indexData(data);
 
@@ -566,9 +752,35 @@ export async function generateReportData(data: Data) {
       })
     ] !== undefined;
 
-  const currentMonth =
-    Temporal.Now.plainDateISO("Europe/Oslo").toPlainYearMonth();
+  const now = Temporal.Now.zonedDateTimeISO("Europe/Oslo");
+
+  const currentMonth = now.toPlainYearMonth();
   const previousMonth = currentMonth.subtract({ months: 1 });
+
+  const currentMonthDates = datesInRange(
+    currentMonth.toPlainDate({ day: 1 }),
+    currentMonth
+      .toPlainDate({ day: 1 })
+      .add({ months: 1 })
+      .subtract({ days: 1 })
+  );
+
+  const previousMonthDates = datesInRange(
+    previousMonth.toPlainDate({ day: 1 }),
+    previousMonth
+      .toPlainDate({ day: 1 })
+      .add({ months: 1 })
+      .subtract({ days: 1 })
+  );
+
+  const currentYearDates = datesInRange(
+    now.toPlainDate().with({ month: 1, day: 1 }),
+    now
+      .toPlainDate()
+      .with({ month: 1, day: 1 })
+      .add({ years: 1 })
+      .subtract({ days: 1 })
+  );
 
   const result = {
     daily: {
@@ -622,6 +834,20 @@ export async function generateReportData(data: Data) {
       previousMonth: {
         yearMonth: previousMonth.toString(),
         spotprice: indexedData.spotpriceByMonth[previousMonth.toString()],
+      },
+    },
+    cost: {
+      currentMonth: {
+        yearMonth: currentMonth.toString(),
+        cost: generateCostReport(data, indexedData, currentMonthDates),
+      },
+      previousMonth: {
+        yearMonth: previousMonth.toString(),
+        cost: generateCostReport(data, indexedData, previousMonthDates),
+      },
+      currentYear: {
+        year: now.year,
+        cost: generateCostReport(data, indexedData, currentYearDates),
       },
     },
   };

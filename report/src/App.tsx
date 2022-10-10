@@ -38,6 +38,21 @@ const monthNames: Record<number, string> = {
   12: "des",
 };
 
+const monthNamesLong: Record<number, string> = {
+  1: "Januar",
+  2: "Februar",
+  3: "Mars",
+  4: "April",
+  5: "Mai",
+  6: "Juni",
+  7: "Juli",
+  8: "August",
+  9: "September",
+  10: "Oktober",
+  11: "November",
+  12: "Desember",
+};
+
 type ReportData = Awaited<ReturnType<typeof generateReportData>>;
 
 function deriveTempTickCount(data: number[]): number[] {
@@ -88,7 +103,7 @@ function expandLast<
 
 function Hourly({ reportData }: { reportData: ReportData }) {
   return (
-    <ResponsiveContainer width="100%" height={360}>
+    <ResponsiveContainer width="100%" height={300}>
       <ComposedChart data={expandLast(addEndItem(reportData.hourly.rows))}>
         <CartesianGrid stroke="#dddddd" />
         <Area
@@ -497,6 +512,50 @@ function EnergyTemperature({ reportData }: { reportData: ReportData }) {
   );
 }
 
+function PrettyNumber({ children }: { children: number }) {
+  return <>{children.toLocaleString("nb")}</>;
+}
+
+function MonthPrice({
+  data,
+  current,
+}: {
+  data: ReportData["cost"]["currentMonth"] | ReportData["cost"]["currentYear"];
+  current?: boolean;
+}) {
+  const sumKwh = data.cost.stroem.usageKwh + data.cost.fjernvarme.usageKwh;
+  const sumPrice = data.cost.stroemSum + data.cost.fjernvarmeSum;
+  const sumSupport =
+    data.cost.stroem.variableByKwh["Strømstøtte"] +
+    data.cost.fjernvarme.variableByKwh["Strømstøtte"];
+
+  let label: string;
+  if ("yearMonth" in data) {
+    const year = data.yearMonth.slice(0, 4);
+    const month = monthNamesLong[Number(data.yearMonth.slice(5))];
+    label = `${month} ${year}`;
+  } else {
+    label = String(data["year"]);
+  }
+
+  return (
+    <div className="usage-cost">
+      <h2>
+        {label}
+        {current && " (så langt)"}
+      </h2>
+      <p>
+        kr <PrettyNumber>{Math.round(sumPrice)}</PrettyNumber> for{" "}
+        <PrettyNumber>{Math.round(sumKwh)}</PrettyNumber> kWh
+        <br />
+        <span className="usage-cost-support">
+          Strømstøtte: kr <PrettyNumber>{-Math.round(sumSupport)}</PrettyNumber>
+        </span>
+      </p>
+    </div>
+  );
+}
+
 function App() {
   const [reportData, setReportData] = useState<ReportData>();
   useEffect(() => {
@@ -528,6 +587,15 @@ function App() {
       </div>
       <div className="columns">
         <div>
+          <div className="usage-cost-list">
+            <MonthPrice data={reportData.cost.currentYear} current />
+            <MonthPrice data={reportData.cost.currentMonth} current />
+            <MonthPrice data={reportData.cost.previousMonth} />
+          </div>
+          <p className="usage-cost-desc">
+            Merk at prismodellen mangler enkelte detaljer, slik at endelig
+            regnskapsmessig kostnad vil avvike noe.
+          </p>
           <h2>Time for time siste 7 dager</h2>
           <Hourly reportData={reportData} />
         </div>
