@@ -23,6 +23,13 @@ function roundTwoDec(value: number) {
   return Math.round(value * 100) / 100;
 }
 
+// Tall fra regnskap. Årlig kostnad / sum årlig forbruk.
+const averagePrices = {
+  2018: 1.0888,
+  2019: 1.053,
+  2020: 0.7569,
+};
+
 const monthNames: Record<number, string> = {
   1: "jan",
   2: "feb",
@@ -103,7 +110,7 @@ function expandLast<
 
 function Hourly({ reportData }: { reportData: ReportData }) {
   return (
-    <ResponsiveContainer width="100%" height={300}>
+    <ResponsiveContainer width="100%" height={350}>
       <ComposedChart data={expandLast(addEndItem(reportData.hourly.rows))}>
         <CartesianGrid stroke="#dddddd" />
         <Area
@@ -156,12 +163,17 @@ function Hourly({ reportData }: { reportData: ReportData }) {
           .slice(1)
           .filter((it) => it.name.endsWith("kl 00"))
           .map((it) => (
-            <ReferenceLine x={it.name} stroke="#555555" />
+            <ReferenceLine
+              key={`date-${it.name}`}
+              x={it.name}
+              stroke="#555555"
+            />
           ))}
         {reportData.hourly.rows
           .filter((it) => it.name.endsWith("kl 13"))
           .map((it) => (
             <ReferenceDot
+              key={`date-text-${it.name}`}
               x={it.name}
               y={-0.05}
               label={it.name.split(" ")[0]}
@@ -194,7 +206,7 @@ function Hourly({ reportData }: { reportData: ReportData }) {
         <YAxis yAxisId="price" unit=" kr" orientation="right" tickCount={15} />
         <YAxis yAxisId="label" hide domain={[0, 1]} />
         <Tooltip />
-        <Legend verticalAlign="top" height={20} />
+        <Legend verticalAlign="top" height={30} />
       </ComposedChart>
     </ResponsiveContainer>
   );
@@ -204,7 +216,7 @@ function Daily({ reportData }: { reportData: ReportData }) {
   const graphData = reportData.daily.rows;
 
   return (
-    <ResponsiveContainer width="100%" height={380}>
+    <ResponsiveContainer width="100%" height={450}>
       <ComposedChart data={expandLast(addEndItem(graphData))}>
         <CartesianGrid stroke="#dddddd" />
         <Area
@@ -257,12 +269,17 @@ function Daily({ reportData }: { reportData: ReportData }) {
           .slice(1)
           .filter((it) => it.date.endsWith("-01"))
           .map((it) => (
-            <ReferenceLine x={it.name} stroke="#555555" />
+            <ReferenceLine
+              key={`month-${it.name}`}
+              x={it.name}
+              stroke="#555555"
+            />
           ))}
         {graphData
           .filter((it) => it.date.endsWith("-15"))
           .map((it) => (
             <ReferenceDot
+              key={`month-text-${it.name}`}
               x={it.name}
               y={-0.05}
               label={monthNames[Number(it.date.slice(5, 7))]}
@@ -319,7 +336,7 @@ function HourlyPrice({ reportData }: { reportData: ReportData }) {
   const stroemPriceThisHour = hourStartRow?.priceStroemKwh;
 
   return (
-    <ResponsiveContainer width="100%" height={230}>
+    <ResponsiveContainer width="100%" height={300} className="price-graph">
       <ComposedChart data={addEndItem(reportData.prices.rows)}>
         <CartesianGrid stroke="#dddddd" />
         <Area
@@ -396,6 +413,7 @@ function HourlyPrice({ reportData }: { reportData: ReportData }) {
           .filter((it) => it.name.endsWith("kl 13"))
           .map((it) => (
             <ReferenceDot
+              key={`date-text-${it.name}`}
               x={it.name}
               y={-0.05}
               label={it.name.split(" ")[0]}
@@ -409,7 +427,11 @@ function HourlyPrice({ reportData }: { reportData: ReportData }) {
           .slice(1)
           .filter((it) => it.name.endsWith("kl 00"))
           .map((it) => (
-            <ReferenceLine x={it.name} stroke="#555555" />
+            <ReferenceLine
+              key={`date-${it.name}`}
+              x={it.name}
+              stroke="#555555"
+            />
           ))}
         <XAxis dataKey="name" tick={false} axisLine={false} />
         <YAxis unit=" kr" tickCount={15} />
@@ -470,7 +492,7 @@ function EnergyTemperature({ reportData }: { reportData: ReportData }) {
     });
 
   return (
-    <ResponsiveContainer width="100%" height={350}>
+    <ResponsiveContainer width="100%" height={350} className="et-graph">
       <ScatterChart>
         <CartesianGrid />
         <XAxis
@@ -484,7 +506,7 @@ function EnergyTemperature({ reportData }: { reportData: ReportData }) {
             finalData.map((it) => it.temperature ?? 0)
           )}
           domain={["dataMin", 10]}
-          fontSize={7}
+          fontSize={10}
         />
         <YAxis
           type="number"
@@ -539,19 +561,116 @@ function MonthPrice({
   }
 
   return (
-    <div className="usage-cost">
-      <h2>
+    <>
+      <h3>
         {label}
         {current && " (så langt)"}
-      </h2>
+      </h3>
       <p>
         kr <PrettyNumber>{Math.round(sumPrice)}</PrettyNumber> for{" "}
         <PrettyNumber>{Math.round(sumKwh)}</PrettyNumber> kWh
         <br />
-        <span className="usage-cost-support">
+        <span>
           Strømstøtte: kr <PrettyNumber>{-Math.round(sumSupport)}</PrettyNumber>
         </span>
       </p>
+    </>
+  );
+}
+
+function Presentation({
+  reportData,
+  presentationMode,
+}: {
+  reportData: ReportData;
+  presentationMode: boolean;
+}) {
+  const currentMonthCost =
+    reportData.cost.currentMonth.cost.fjernvarmeSum +
+    reportData.cost.currentMonth.cost.stroemSum;
+
+  const previousMonthCost =
+    reportData.cost.previousMonth.cost.fjernvarmeSum +
+    reportData.cost.previousMonth.cost.stroemSum;
+
+  const now = Temporal.Now.zonedDateTimeISO("Europe/Oslo");
+  const nowDate = now.toPlainDate().toString();
+
+  const todayRows = reportData.prices.rows.filter((it) => it.date == nowDate);
+
+  const todayPrices = todayRows.flatMap((it) => [
+    it.priceFjernvarmeKwh,
+    it.priceStroemKwh,
+  ]);
+  const sumTodayPrices = todayPrices.reduce((acc, cur) => acc + cur, 0);
+  const averagePriceToday = sumTodayPrices / todayPrices.length;
+
+  const averagePreviousYears =
+    Object.values(averagePrices).reduce((acc, cur) => acc + cur, 0) /
+    Object.values(averagePrices).length;
+  const priceDifference =
+    (averagePriceToday - averagePreviousYears) / averagePreviousYears;
+
+  return (
+    <div className="presentation">
+      <h1>Energiforbruk på Blindern Studenterhjem</h1>
+      <div className="presentation-key-numbers">
+        <div className="presentation-key-number">
+          <h2>Gjennomsnittlig kostnad i dag</h2>
+          <div className="presentation-key-number-value">
+            <PrettyNumber>{Math.round(averagePriceToday * 100)}</PrettyNumber>{" "}
+            øre/kWh
+          </div>
+          <div className="presentation-key-number-desc">
+            Inkluderer også strømstøtte
+          </div>
+        </div>
+        <div className="presentation-key-number">
+          <h2>Hva koster energien i dag i forhold til tidligere?</h2>
+          <div
+            className="presentation-key-number-value"
+            style={priceDifference > 0 ? { color: "#FF0000" } : {}}
+          >
+            {Math.round((1 + priceDifference) * 100)} %
+          </div>
+          <div className="presentation-key-number-desc">
+            Sammenliknet mot snittpris i 2018-2020
+          </div>
+        </div>
+        <div className="presentation-key-number">
+          <h2>
+            Kostnad så langt i{" "}
+            {monthNamesLong[
+              Number(reportData.cost.currentMonth.yearMonth.slice(5))
+            ].toLowerCase()}
+          </h2>
+          <div className="presentation-key-number-value">
+            kr <PrettyNumber>{Math.round(currentMonthCost)}</PrettyNumber>
+          </div>
+          <div className="presentation-key-number-desc">
+            {
+              monthNamesLong[
+                Number(reportData.cost.previousMonth.yearMonth.slice(5))
+              ]
+            }
+            : kr <PrettyNumber>{Math.round(previousMonthCost)}</PrettyNumber>
+          </div>
+        </div>
+      </div>
+      <div className="presentation-hourly">
+        <h2>Forbruk time for time siste 7 dager</h2>
+        <Hourly reportData={reportData} />
+      </div>
+      <div className="presentation-show-more">
+        {presentationMode ? (
+          <>
+            Se mer data på{" "}
+            <a href="https://foreningenbs.no/energi">foreningenbs.no/energi</a>
+          </>
+        ) : (
+          <>Scroll ned for mer data</>
+        )}
+      </div>
     </div>
   );
 }
@@ -573,35 +692,40 @@ function App() {
     return <p>Henter data...</p>;
   }
 
+  const presentationMode = window.location.href.includes("?presentation");
+
   return (
     <div>
-      <div className="header">
-        <h1>Energiforbruk på Blindern Studenterhjem</h1>
-        <p>
-          <a href="https://foreningenbs.no/energi">foreningenbs.no/energi</a>
-          <br />
-          <a href="https://github.com/blindern/energi">
-            github.com/blindern/energi
-          </a>
-        </p>
-      </div>
-      <div className="columns">
-        <div>
-          <div className="usage-cost-list">
-            <MonthPrice data={reportData.cost.currentYear} current />
-            <MonthPrice data={reportData.cost.currentMonth} current />
-            <MonthPrice data={reportData.cost.previousMonth} />
-          </div>
-          <p className="usage-cost-desc">
+      <Presentation
+        reportData={reportData}
+        presentationMode={presentationMode}
+      />
+      {!presentationMode && (
+        <div className="more-data">
+          <p>
+            Fjernvarme benyttes til oppvarming av varmt vann samt oppvarming via
+            radiatorer. Strøm benyttes til alt annet, inkludert varmekabler på
+            bad, vaskemaskiner, tørketromler, kjøkkenmaskiner mv. Pris for
+            fjernvarme er flat hele måneden (utifra månedlig spotpris), men pris
+            for strøm følger spotpris per time. Estimert kostnad inkluderer mva,
+            nettleie, strømstøtte m.v.
+          </p>
+
+          <p>
             Merk at prismodellen mangler enkelte detaljer, slik at endelig
             regnskapsmessig kostnad vil avvike noe.
           </p>
-          <h2>Time for time siste 7 dager</h2>
-          <Hourly reportData={reportData} />
-        </div>
-        <div>
+
+          <h2>Daglig forbruk vs. utetemperatur (siden 1. juli 2021)</h2>
+          <EnergyTemperature reportData={reportData} />
+
+          <h2>Kostnader så langt</h2>
+          <MonthPrice data={reportData.cost.previousMonth} />
+          <MonthPrice data={reportData.cost.currentMonth} current />
+          <MonthPrice data={reportData.cost.currentYear} current />
+
           <h2>Estimert pris per kWh</h2>
-          <p style={{ marginBottom: 0 }}>
+          <p>
             Endelig pris påvirkes blant annet av månedens gjennomsnittlige
             spotpris. Estimatet er mer unøyaktig i starten av måneden enn
             slutten.
@@ -626,28 +750,17 @@ function App() {
             )}
           </p>
           <HourlyPrice reportData={reportData} />
-        </div>
-      </div>
-      <div className="columns">
-        <div>
+
           <h2>Daglig forbruk siden 1. november 2021</h2>
           <Daily reportData={reportData} />
+
+          <p>
+            <a href="https://github.com/blindern/energi">
+              github.com/blindern/energi
+            </a>
+          </p>
         </div>
-        <div>
-          <h2>Daglig forbruk vs. utetemperatur (siden 1. juli 2021)</h2>
-          <EnergyTemperature reportData={reportData} />
-        </div>
-      </div>
-      <footer>
-        <p>
-          Fjernvarme benyttes til oppvarming av varmt vann samt oppvarming via
-          radiatorer. Strøm benyttes til alt annet, inkludert varmekabler på
-          bad, vaskemaskiner, tørketromler, kjøkkenmaskiner mv. Pris for
-          fjernvarme er flat hele måneden (utifra månedlig spotpris), men pris
-          for strøm følger spotpris per time. Estimert kostnad inkluderer mva,
-          nettleie, strømstøtte m.v.
-        </p>
-      </footer>
+      )}
     </div>
   );
 }
