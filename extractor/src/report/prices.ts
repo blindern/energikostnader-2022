@@ -176,7 +176,15 @@ export function calculateStroemHourlyPrice(props: {
 }): UsagePrice | null {
   // Different price model before 2022 not implemented.
   if (Number(props.date.slice(0, 4)) < 2022) {
-    return null;
+    return {
+      usageKwh: props.usageKwh,
+      variableByKwh: {
+        "Unsupported price model": NaN,
+      },
+      static: {
+        "Unsupported price model": NaN,
+      },
+    };
   }
 
   const plainDate = Temporal.PlainDate.from(props.date);
@@ -226,7 +234,15 @@ export function calculateFjernvarmeHourlyPrice(props: {
 }): UsagePrice | null {
   // Different price model before 2022 not implemented.
   if (Number(props.date.slice(0, 4)) < 2022) {
-    return null;
+    return {
+      usageKwh: props.usageKwh,
+      variableByKwh: {
+        "Unsupported price model": NaN,
+      },
+      static: {
+        "Unsupported price model": NaN,
+      },
+    };
   }
 
   const plainDate = Temporal.PlainDate.from(props.date);

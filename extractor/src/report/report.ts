@@ -15,6 +15,17 @@ import {
   calculateStroemHourlyPrice,
 } from "./prices.js";
 
+// @ts-ignore
+import { default as _createTrend } from "trendline";
+import { trendlineTemperatureLowerThan } from "./constants.js";
+
+function createTrend(...args: any): {
+  slope: number;
+  yStart: number;
+} {
+  return _createTrend(...args);
+}
+
 const hoursInADay = R.range(0, 24);
 
 const dayNames: Record<number, string> = {
@@ -247,6 +258,52 @@ export function generateEnergyTemperatureReport(
     });
 }
 
+export function generateEnergyTemperatureReportFjernvarme(
+  data: Data,
+  indexedData: IndexedData,
+  firstDate: Temporal.PlainDate,
+  lastDate: Temporal.PlainDate
+) {
+  const dates = datesInRange(firstDate, lastDate).map((it) => it.toString());
+
+  const byDateGroup = R.groupBy(({ date }: DataPowerUsageHour) => date);
+  const sumHourUsages = (items: DataPowerUsageHour[]) =>
+    roundTwoDec(R.sum(items.map((it) => it.usage)));
+
+  const byDate = R.indexBy(({ date }: DataTemperatureDay) => date);
+
+  const temperatures = R.mapObjIndexed(
+    (it) => it.meanTemperature,
+    byDate(
+      (data.dailyTemperature ?? []).filter((it) => dates.includes(it.date))
+    )
+  );
+
+  const power = R.mapObjIndexed(
+    sumHourUsages,
+    byDateGroup((data.powerUsage ?? {})["Fjernvarme"] ?? [])
+  );
+
+  return dates
+    .filter((date) => {
+      // Skip dates with incomplete data.
+      const index = dateHourIndexer({ date, hour: 23 });
+      return indexedData.fjernvarmeByHour[index] != null;
+    })
+    .map((date, index) => {
+      const date1 = Temporal.PlainDate.from(date);
+      const name = `${date1.day}.${date1.month}`;
+
+      return {
+        date,
+        name,
+        power: power[date],
+        temperature: temperatures[date],
+        index,
+      };
+    });
+}
+
 function generatePriceReport(
   data: Data,
   indexedData: IndexedData,
@@ -258,7 +315,9 @@ function generatePriceReport(
   return dates
     .map((date) => {
       const date1 = Temporal.PlainDate.from(date);
-      const dateStr = dayNames[date1.dayOfWeek];
+      const dateStr = `${dayNames[date1.dayOfWeek]} ${date1.day}.${
+        date1.month
+      }`;
 
       return hoursInADay.map((hour) => {
         const index = dateHourIndexer({ date, hour });
@@ -383,10 +442,13 @@ export async function generateReportData(data: Data) {
 
   const currentMonthDates = datesInRange(
     currentMonth.toPlainDate({ day: 1 }),
-    currentMonth
-      .toPlainDate({ day: 1 })
-      .add({ months: 1 })
-      .subtract({ days: 1 })
+    now.toPlainDate()
+  );
+
+  const sameMonthLastYear = currentMonth.subtract({ years: 1 });
+  const sameMonthLastYearDates = datesInRange(
+    sameMonthLastYear.toPlainDate({ day: 1 }),
+    now.subtract({ years: 1, hours: 4, days: 1 }).toPlainDate()
   );
 
   const previousMonthDates = datesInRange(
@@ -406,12 +468,31 @@ export async function generateReportData(data: Data) {
       .subtract({ days: 1 })
   );
 
+  const energyTemperatureReport = generateEnergyTemperatureReport(
+    data,
+    indexedData,
+    Temporal.PlainDate.from("2021-07-01"),
+    Temporal.Now.plainDateISO("Europe/Oslo").subtract({
+      days: 1,
+    })
+  );
+
+  const energyTemperatureReportFjernvarme =
+    generateEnergyTemperatureReportFjernvarme(
+      data,
+      indexedData,
+      Temporal.PlainDate.from("2021-07-01"),
+      Temporal.Now.plainDateISO("Europe/Oslo").subtract({
+        days: 1,
+      })
+    );
+
   const result = {
     daily: {
       rows: generateDailyReport(
         data,
         indexedData,
-        Temporal.PlainDate.from("2021-11-01"),
+        Temporal.PlainDate.from("2021-09-01"),
         Temporal.Now.plainDateISO("Europe/Oslo").subtract({
           days: 1,
         })
@@ -429,13 +510,101 @@ export async function generateReportData(data: Data) {
       ),
     },
     et: {
-      rows: generateEnergyTemperatureReport(
-        data,
-        indexedData,
-        Temporal.PlainDate.from("2021-07-01"),
-        Temporal.Now.plainDateISO("Europe/Oslo").subtract({
-          days: 1,
-        })
+      rows: energyTemperatureReport,
+      linearAll: createTrend(
+        energyTemperatureReport.filter(
+          (it) =>
+            it.temperature != null &&
+            it.power != null &&
+            it.temperature < trendlineTemperatureLowerThan
+        ),
+        "temperature",
+        "power"
+      ),
+      linearH21: createTrend(
+        energyTemperatureReport
+          .filter(
+            (it) =>
+              it.temperature != null &&
+              it.power != null &&
+              it.temperature < trendlineTemperatureLowerThan
+          )
+          .filter((it) => it.date >= "2021-07" && it.date <= "2021-12"),
+        "temperature",
+        "power"
+      ),
+      linearV22: createTrend(
+        energyTemperatureReport
+          .filter(
+            (it) =>
+              it.temperature != null &&
+              it.power != null &&
+              it.temperature < trendlineTemperatureLowerThan
+          )
+          .filter((it) => it.date >= "2022-01" && it.date <= "2022-06"),
+        "temperature",
+        "power"
+      ),
+      linearH22: createTrend(
+        energyTemperatureReport
+          .filter(
+            (it) =>
+              it.temperature != null &&
+              it.power != null &&
+              it.temperature < trendlineTemperatureLowerThan
+          )
+          .filter((it) => it.date >= "2022-07"),
+        "temperature",
+        "power"
+      ),
+    },
+    etFjernvarme: {
+      rows: energyTemperatureReportFjernvarme,
+      linearAll: createTrend(
+        energyTemperatureReportFjernvarme.filter(
+          (it) =>
+            it.temperature != null &&
+            it.power != null &&
+            it.temperature < trendlineTemperatureLowerThan
+        ),
+        "temperature",
+        "power"
+      ),
+      linearH21: createTrend(
+        energyTemperatureReportFjernvarme
+          .filter(
+            (it) =>
+              it.temperature != null &&
+              it.power != null &&
+              it.temperature < trendlineTemperatureLowerThan
+          )
+          .filter((it) => it.date >= "2021-07" && it.date <= "2021-12"),
+        "temperature",
+        "power"
+      ),
+      linearV22: createTrend(
+        energyTemperatureReportFjernvarme
+          .filter(
+            (it) =>
+              it.temperature != null &&
+              it.power != null &&
+              it.temperature < trendlineTemperatureLowerThan
+          )
+          .filter((it) => it.date >= "2022-01" && it.date <= "2022-06"),
+        "temperature",
+        "power"
+      ),
+      linearH22: createTrend(
+        energyTemperatureReportFjernvarme
+          .filter(
+            (it) =>
+              it.temperature != null &&
+              it.power != null &&
+              it.temperature < trendlineTemperatureLowerThan
+          )
+          .filter((it) => it.date >= "2022-07"),
+        "temperature",
+        "power"
       ),
     },
     prices: {
@@ -443,7 +612,7 @@ export async function generateReportData(data: Data) {
         data,
         indexedData,
         Temporal.Now.plainDateISO("Europe/Oslo").subtract({
-          days: haveSpotpriceTomorrow ? 2 : 3,
+          days: haveSpotpriceTomorrow ? 9 : 10,
         }),
         Temporal.Now.plainDateISO("Europe/Oslo").add({
           days: haveSpotpriceTomorrow ? 1 : 0,
@@ -466,6 +635,11 @@ export async function generateReportData(data: Data) {
       currentMonth: {
         yearMonth: currentMonth.toString(),
         cost: generateCostReport(data, indexedData, currentMonthDates),
+      },
+      sameMonthLastYear: {
+        yearMonth: sameMonthLastYear.toString(),
+        lastDate: sameMonthLastYearDates.at(-1)?.toString(),
+        cost: generateCostReport(data, indexedData, sameMonthLastYearDates),
       },
       previousMonth: {
         yearMonth: previousMonth.toString(),

@@ -11,13 +11,13 @@ import {
   ReferenceLine,
   ResponsiveContainer,
   Scatter,
-  ScatterChart,
   Tooltip,
   XAxis,
   YAxis,
   ZAxis,
 } from "recharts";
-import { generateReportData } from "../../extractor/src/report/report";
+import { trendlineTemperatureLowerThan } from "../../extractor/src/report/constants.js";
+import { generateReportData } from "../../extractor/src/report/report.js";
 
 function roundTwoDec(value: number) {
   return Math.round(value * 100) / 100;
@@ -416,7 +416,7 @@ function HourlyPrice({ reportData }: { reportData: ReportData }) {
               key={`date-text-${it.name}`}
               x={it.name}
               y={-0.05}
-              label={it.name.split(" ")[0]}
+              label={it.name.split(" kl")[0]}
               fillOpacity={0}
               strokeWidth={0}
               ifOverflow="visible"
@@ -443,8 +443,8 @@ function HourlyPrice({ reportData }: { reportData: ReportData }) {
   );
 }
 
-function EnergyTemperature({ reportData }: { reportData: ReportData }) {
-  const finalData = reportData.et.rows.filter(
+function EnergyTemperature({ etData }: { etData: ReportData["et"] }) {
+  const finalData = etData.rows.filter(
     (it) => it.temperature !== undefined && it.temperature < 20
   );
 
@@ -491,46 +491,103 @@ function EnergyTemperature({ reportData }: { reportData: ReportData }) {
       };
     });
 
+  function trendData(data: ReportData["et"]["linearAll"]) {
+    return [
+      {
+        temperature: -10,
+        power: data.yStart + data.slope * -10,
+      },
+      {
+        temperature: 20,
+        power: data.yStart + data.slope * 20,
+      },
+    ];
+  }
+
   return (
-    <ResponsiveContainer width="100%" height={350} className="et-graph">
-      <ScatterChart>
-        <CartesianGrid />
-        <XAxis
-          type="number"
-          dataKey="temperature"
-          name="Temperatur"
-          label={{ dy: 5, value: "Utetemperatur Blindern" }}
-          height={35}
-          interval={0}
-          ticks={deriveTempTickCount(
-            finalData.map((it) => it.temperature ?? 0)
-          )}
-          domain={["dataMin", 10]}
-          fontSize={10}
-        />
-        <YAxis
-          type="number"
-          dataKey="power"
-          name="Forbruk kWh"
-          unit=" kWh"
-          tickCount={12}
-          width={70}
-        />
-        <ZAxis type="category" dataKey="date" name="Dato" range={[20, 20]} />
-        <Tooltip />
-        {result2.map((it, idx) => (
-          <Scatter
-            key={idx}
-            name={it.name}
-            data={it.items}
-            fill={it.color}
-            fillOpacity={it.fillOpacity}
+    <>
+      <ResponsiveContainer width="100%" height={400} className="et-graph">
+        <ComposedChart>
+          <CartesianGrid />
+          <XAxis
+            type="number"
+            dataKey="temperature"
+            name="Temperatur"
+            label={{ dy: 5, value: "Utetemperatur Blindern" }}
+            height={35}
+            interval={0}
+            ticks={deriveTempTickCount(
+              finalData.map((it) => it.temperature ?? 0)
+            )}
+            domain={["dataMin", 10]}
+            fontSize={10}
+          />
+          <YAxis
+            type="number"
+            dataKey="power"
+            name="Forbruk kWh"
+            unit=" kWh"
+            tickCount={12}
+            width={70}
+          />
+          <ZAxis type="category" dataKey="date" name="Dato" range={[20, 20]} />
+          <Tooltip />
+          {result2.map((it, idx) => (
+            <Scatter
+              key={idx}
+              name={it.name}
+              data={it.items}
+              fill={it.color}
+              fillOpacity={it.fillOpacity}
+              isAnimationActive={false}
+            />
+          ))}
+          <Line
+            data={trendData(etData.linearH21)}
+            dataKey="power"
+            stroke="#888888"
+            name="Høst 2021"
             isAnimationActive={false}
           />
-        ))}
-        <Legend verticalAlign="top" height={40} />
-      </ScatterChart>
-    </ResponsiveContainer>
+          <Line
+            data={trendData(etData.linearH22)}
+            dataKey="power"
+            stroke="#6aa84f"
+            name="Høst 2022"
+            isAnimationActive={false}
+          />
+          <Line
+            data={trendData(etData.linearV22)}
+            dataKey="power"
+            stroke="#336EFF"
+            name="Vår 2022"
+            isAnimationActive={false}
+          />
+          <Legend verticalAlign="top" height={40} />
+        </ComposedChart>
+      </ResponsiveContainer>
+      <ul>
+        <li>
+          Høst 2021: forbruk = f(temperatur) ={" "}
+          {roundTwoDec(etData.linearH21.slope)} * temperatur +{" "}
+          {Math.round(etData.linearH21.yStart)}
+        </li>
+        <li>
+          Vår 2022: forbruk = f(temperatur) ={" "}
+          {roundTwoDec(etData.linearV22.slope)} * temperatur +{" "}
+          {Math.round(etData.linearV22.yStart)}
+        </li>
+        <li>
+          Høst 2022: forbruk = f(temperatur) ={" "}
+          {roundTwoDec(etData.linearH22.slope)} * temperatur +{" "}
+          {Math.round(etData.linearH22.yStart)}
+        </li>
+      </ul>
+      <p>
+        Lineær regresjon tar utgangspunkt i dager med temperatur kaldere enn{" "}
+        {trendlineTemperatureLowerThan} grader.
+      </p>
+    </>
   );
 }
 
@@ -541,9 +598,11 @@ function PrettyNumber({ children }: { children: number }) {
 function MonthPrice({
   data,
   current,
+  lastYear,
 }: {
-  data: ReportData["cost"]["currentMonth"] | ReportData["cost"]["currentYear"];
+  data: ReportData["cost"][keyof ReportData["cost"]];
   current?: boolean;
+  lastYear?: boolean;
 }) {
   const sumKwh = data.cost.stroem.usageKwh + data.cost.fjernvarme.usageKwh;
   const sumPrice = data.cost.stroemSum + data.cost.fjernvarmeSum;
@@ -564,15 +623,39 @@ function MonthPrice({
     <>
       <h3>
         {label}
-        {current && " (så langt)"}
+        {current && !lastYear && " (så langt)"}
+        {current &&
+          lastYear &&
+          "lastDate" in data &&
+          data.lastDate &&
+          ` (til ${data.lastDate})`}
       </h3>
       <p>
-        kr <PrettyNumber>{Math.round(sumPrice)}</PrettyNumber> for{" "}
+        {!lastYear && (
+          <>
+            kr <PrettyNumber>{Math.round(sumPrice)}</PrettyNumber> for{" "}
+          </>
+        )}
         <PrettyNumber>{Math.round(sumKwh)}</PrettyNumber> kWh
-        <br />
-        <span>
-          Strømstøtte: kr <PrettyNumber>{-Math.round(sumSupport)}</PrettyNumber>
-        </span>
+        {!lastYear && (
+          <>
+            {" "}
+            (
+            <PrettyNumber>
+              {Math.round((sumPrice * 100) / sumKwh)}
+            </PrettyNumber>{" "}
+            øre / kWh)
+          </>
+        )}
+        {!lastYear && (
+          <>
+            <br />
+            <span>
+              Strømstøtte: kr{" "}
+              <PrettyNumber>{-Math.round(sumSupport)}</PrettyNumber>
+            </span>
+          </>
+        )}
       </p>
     </>
   );
@@ -717,11 +800,22 @@ function App() {
           </p>
 
           <h2>Daglig forbruk vs. utetemperatur (siden 1. juli 2021)</h2>
-          <EnergyTemperature reportData={reportData} />
+          <EnergyTemperature etData={reportData.et} />
+
+          <h2>
+            Daglig forbruk vs. utetemperatur (siden 1. juli 2021) - kun
+            fjernvarme
+          </h2>
+          <EnergyTemperature etData={reportData.etFjernvarme} />
 
           <h2>Kostnader så langt</h2>
           <MonthPrice data={reportData.cost.previousMonth} />
           <MonthPrice data={reportData.cost.currentMonth} current />
+          <MonthPrice
+            data={reportData.cost.sameMonthLastYear}
+            current
+            lastYear
+          />
           <MonthPrice data={reportData.cost.currentYear} current />
 
           <h2>Estimert pris per kWh</h2>
@@ -751,7 +845,7 @@ function App() {
           </p>
           <HourlyPrice reportData={reportData} />
 
-          <h2>Daglig forbruk siden 1. november 2021</h2>
+          <h2>Daglig forbruk siden 1. september 2021</h2>
           <Daily reportData={reportData} />
 
           <p>
