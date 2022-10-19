@@ -498,8 +498,8 @@ function EnergyTemperature({ etData }: { etData: ReportData["et"] }) {
         power: data.yStart + data.slope * -10,
       },
       {
-        temperature: 20,
-        power: data.yStart + data.slope * 20,
+        temperature: trendlineTemperatureLowerThan,
+        power: data.yStart + data.slope * trendlineTemperatureLowerThan,
       },
     ];
   }
