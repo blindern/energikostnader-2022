@@ -11,6 +11,7 @@ import {
   ReferenceLine,
   ResponsiveContainer,
   Scatter,
+  ScatterChart,
   Tooltip,
   XAxis,
   YAxis,
@@ -444,6 +445,8 @@ function HourlyPrice({ reportData }: { reportData: ReportData }) {
 }
 
 function EnergyTemperature({ etData }: { etData: ReportData["et"] }) {
+  const [showScatterDetails, setShowScatterDetails] = useState(false);
+
   const finalData = etData.rows.filter(
     (it) => it.temperature !== undefined && it.temperature < 20
   );
@@ -504,10 +507,12 @@ function EnergyTemperature({ etData }: { etData: ReportData["et"] }) {
     ];
   }
 
+  const ChartType = showScatterDetails ? ScatterChart : ComposedChart;
+
   return (
     <>
       <ResponsiveContainer width="100%" height={400} className="et-graph">
-        <ComposedChart>
+        <ChartType>
           <CartesianGrid />
           <XAxis
             type="number"
@@ -564,7 +569,7 @@ function EnergyTemperature({ etData }: { etData: ReportData["et"] }) {
             isAnimationActive={false}
           />
           <Legend verticalAlign="top" height={40} />
-        </ComposedChart>
+        </ChartType>
       </ResponsiveContainer>
       <ul>
         <li>
@@ -583,6 +588,16 @@ function EnergyTemperature({ etData }: { etData: ReportData["et"] }) {
           {Math.round(etData.linearH22.yStart)}
         </li>
       </ul>
+      <p>
+        <label>
+          <input
+            type="checkbox"
+            checked={showScatterDetails}
+            onClick={() => setShowScatterDetails(!showScatterDetails)}
+          />{" "}
+          Bytt modus for å kunne peke på punktene
+        </label>
+      </p>
       <p>
         Lineær regresjon tar utgangspunkt i dager med temperatur kaldere enn{" "}
         {trendlineTemperatureLowerThan} grader.
