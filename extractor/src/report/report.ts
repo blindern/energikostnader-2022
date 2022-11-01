@@ -446,10 +446,17 @@ export async function generateReportData(data: Data) {
   );
 
   const sameMonthLastYear = currentMonth.subtract({ years: 1 });
-  const sameMonthLastYearDates = datesInRange(
-    sameMonthLastYear.toPlainDate({ day: 1 }),
-    now.subtract({ years: 1, hours: 4, days: 1 }).toPlainDate()
-  );
+  const sameMonthLastYearDateFrom = sameMonthLastYear.toPlainDate({ day: 1 });
+  const sameMonthLastYearDateTo = now
+    .subtract({ years: 1, hours: 4, days: 1 })
+    .toPlainDate();
+  const sameMonthLastYearDates =
+    Temporal.PlainDate.compare(
+      sameMonthLastYearDateFrom,
+      sameMonthLastYearDateTo
+    ) > 0
+      ? []
+      : datesInRange(sameMonthLastYearDateFrom, sameMonthLastYearDateTo);
 
   const previousMonthDates = datesInRange(
     previousMonth.toPlainDate({ day: 1 }),
@@ -638,7 +645,10 @@ export async function generateReportData(data: Data) {
       },
       sameMonthLastYear: {
         yearMonth: sameMonthLastYear.toString(),
-        lastDate: sameMonthLastYearDates.at(-1)?.toString(),
+        lastDate:
+          sameMonthLastYearDates.length === 0
+            ? null
+            : sameMonthLastYearDates.at(-1)?.toString(),
         cost: generateCostReport(data, indexedData, sameMonthLastYearDates),
       },
       previousMonth: {
