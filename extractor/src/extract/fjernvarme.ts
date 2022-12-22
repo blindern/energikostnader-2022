@@ -8,15 +8,12 @@ export async function getAccessToken(
 ): Promise<string> {
   const basicAuth = Buffer.from(`${username}:${password}`).toString("base64");
 
-  const response = await fetch(
-    "https://api.fortumoslovarme.no/minside/login/auth0/",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Basic ${basicAuth}`,
-      },
-    }
-  );
+  const response = await fetch("https://api.celsio.no/minside/login/auth0/", {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${basicAuth}`,
+    },
+  });
 
   if (!response.ok) {
     console.log(response);
@@ -51,7 +48,7 @@ export async function getHourlyData({
   const fromTime = firstDate.toString() + " 00:00:00";
   const toTime = lastDate.toString() + " 23:00:00";
 
-  const url = `https://api.fortumoslovarme.no/minside/forbruk/automatisk/export/hourly?anleggNummer=${anleggNummer}&kundeId=${kundeId}&fromTime=${encodeURIComponent(
+  const url = `https://api.celsio.no/minside/forbruk/automatic/export/hourly?anleggNummer=${anleggNummer}&kundeId=${kundeId}&fromTime=${encodeURIComponent(
     fromTime
   )}&toTime=${encodeURIComponent(toTime)}`;
 
@@ -92,7 +89,7 @@ function parseCsvData(csvData: string): HourUsage[] {
   const lines = csvData.split("\n");
 
   const firstLine = lines[0].split(";");
-  if (firstLine[0] !== "Tid" || firstLine[1] !== "Forbruk (kWh)") {
+  if (firstLine[0] !== "Tid" || firstLine[1] !== "Forbruk [kWh]") {
     console.log(csvData);
     throw new Error("Unexpected csv data");
   }
