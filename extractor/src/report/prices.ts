@@ -111,9 +111,9 @@ export const forbruksavgiftPerKwhByMonth: Record<string, number | undefined> = {
   "2022-11": 0.1541 * 1.25,
   "2022-12": 0.1541 * 1.25,
   // https://www.regjeringen.no/no/aktuelt/lavere-elavgift-de-forste-tre-manedene-i-2023/id2951105/
-  "2023-01": 0.916 * 1.25,
-  "2023-02": 0.916 * 1.25,
-  "2023-03": 0.916 * 1.25,
+  "2023-01": 0.0916 * 1.25,
+  "2023-02": 0.0916 * 1.25,
+  "2023-03": 0.0916 * 1.25,
   "2023-04": 0.1541 * 1.25, // Assumption.
   "2023-05": 0.1541 * 1.25, // Assumption.
   "2023-06": 0.1541 * 1.25, // Assumption.
