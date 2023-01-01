@@ -30,6 +30,9 @@ export const finansieltResultatPerKwhActualByMonth: Record<
   "2022-06": -0.2549, // From invoice.
   "2022-07": -0.2177, // From invoice.
   "2022-08": -0.7912, // From invoice.
+  "2022-09": -0.6712, // From invoice.
+  "2022-10": 0.3261, // From invoice.
+  "2022-11": 0.436, // From invoice.
 };
 
 // https://www.elvia.no/nettleie/alt-om-nettleiepriser/nettleiepriser-og-effekttariff-for-bedrifter-med-arsforbruk-over-100000-kwh/
@@ -98,9 +101,9 @@ export const effektleddPerKwhByMonth: Record<string, number | undefined> = {
   "2022-06": 102.4 * 40 * 1.25, // From invoice.
   "2022-07": 96.2 * 40 * 1.25, // From invoice.
   "2022-08": 112.8 * 40 * 1.25, // From invoice.
-  "2022-09": 100 * 40 * 1.25, // Guess.
-  "2022-10": 110 * 40 * 1.25, // Guess.
-  "2022-11": 130 * 90 * 1.25, // Guess.
+  "2022-09": 105.6 * 40 * 1.25, // From invoice.
+  "2022-10": 117.6 * 40 * 1.25, // From invoice.
+  "2022-11": 110.6 * 90 * 1.25, // From invoice.
   "2022-12": 130 * 90 * 1.25, // Guess.
   "2023-01": 122 * 90 * 1.25, // Guess.
   "2023-02": 141.6 * 90 * 1.25, // Guess.
