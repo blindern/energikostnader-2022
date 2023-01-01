@@ -18,7 +18,7 @@ import {
   ZAxis,
 } from "recharts";
 import { trendlineTemperatureLowerThan } from "../../extractor/src/report/constants.js";
-import { UsagePrice } from "../../extractor/src/report/helpers.js";
+import { UsagePrice } from "../../extractor/src/report/prices.js";
 import { generateReportData } from "../../extractor/src/report/report.js";
 
 function roundTwoDec(value: number) {

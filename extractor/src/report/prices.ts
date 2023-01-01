@@ -1,11 +1,18 @@
 import { Temporal } from "@js-temporal/polyfill";
+import * as R from "ramda";
 import { Data } from "../service/data-store.js";
-import { multiplyWithUsage, UsagePrice } from "./helpers.js";
+import { multiplyWithUsage, roundTwoDec } from "./helpers.js";
 import {
   dateHourIndexer,
   IndexedData,
   yearMonthIndexer,
 } from "./indexed-data.js";
+
+export interface UsagePrice {
+  usageKwh: number;
+  variableByKwh: Record<string, number>;
+  static: Record<string, number>;
+}
 
 export const stroemFastbeloepAar = 600 * 1.25;
 export const stroemPaaslagPerKwh = 0.02 * 1.25;
@@ -272,4 +279,88 @@ export function calculateFjernvarmeHourlyPrice(props: {
       Fastledd: fjernvarmeFastleddAar / plainDate.daysInYear / 24,
     },
   };
+}
+
+export function calculateHourlyPrice({
+  data,
+  indexedData,
+  date,
+  hour,
+  stroem,
+  fjernvarme,
+}: {
+  data: Data;
+  indexedData: IndexedData;
+  date: string;
+  hour: number;
+  stroem: number;
+  fjernvarme: number;
+}) {
+  return (
+    sumPrice(
+      calculateStroemHourlyPrice({
+        data,
+        indexedData,
+        date,
+        hour,
+        usageKwh: stroem,
+      })
+    ) +
+    sumPrice(
+      calculateFjernvarmeHourlyPrice({
+        data,
+        indexedData,
+        date,
+        hour,
+        usageKwh: fjernvarme,
+      })
+    )
+  );
+}
+
+function zeroForNaN(value: number) {
+  return isNaN(value) ? 0 : value;
+}
+
+function addPricesInner(
+  one: Record<string, number>,
+  two: Record<string, number>
+): Record<string, number> {
+  if (Object.keys(one).length != Object.keys(two).length) {
+    throw new Error("Not implemented");
+  }
+
+  return R.mapObjIndexed(
+    (value, key) => zeroForNaN(value) + zeroForNaN(two[key]),
+    one
+  );
+}
+
+export function addPrices(one: UsagePrice, two: UsagePrice): UsagePrice {
+  return {
+    usageKwh: one.usageKwh + two.usageKwh,
+    variableByKwh: addPricesInner(one.variableByKwh, two.variableByKwh),
+    static: addPricesInner(one.static, two.static),
+  };
+}
+
+export function sumPrice(usagePrice: UsagePrice | null): number {
+  if (usagePrice == null) {
+    return NaN;
+  }
+  return roundTwoDec(
+    R.sum(Object.values(usagePrice.variableByKwh)) +
+      R.sum(Object.values(usagePrice.static))
+  );
+}
+
+export function flattenPrices(items: UsagePrice[]): UsagePrice {
+  if (items.length === 0) {
+    return {
+      usageKwh: 0,
+      variableByKwh: {},
+      static: {},
+    };
+  }
+  return items.reduce(addPrices);
 }

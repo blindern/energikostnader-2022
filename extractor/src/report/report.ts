@@ -11,73 +11,31 @@ import {
 import {
   averageSpotprice,
   averageTemperature,
-  flattenPrices,
   roundTwoDec,
-  sumPrice,
-  UsagePrice,
 } from "./helpers.js";
 import { dateHourIndexer, indexData, IndexedData } from "./indexed-data.js";
 import {
   calculateFjernvarmeHourlyPrice,
+  calculateHourlyPrice,
   calculateStroemHourlyPrice,
+  flattenPrices,
+  sumPrice,
+  UsagePrice,
 } from "./prices.js";
 
 // @ts-ignore
 import { default as _createTrend } from "trendline";
-import { hoursInADay, trendlineTemperatureLowerThan } from "./constants.js";
+import {
+  dayNames,
+  hoursInADay,
+  trendlineTemperatureLowerThan,
+} from "./constants.js";
 
 function createTrend(...args: any): {
   slope: number;
   yStart: number;
 } {
   return _createTrend(...args);
-}
-
-const dayNames: Record<number, string> = {
-  1: "man",
-  2: "tir",
-  3: "ons",
-  4: "tor",
-  5: "fre",
-  6: "lør",
-  7: "søn",
-};
-
-function calculateHourlyPrice({
-  data,
-  indexedData,
-  date,
-  hour,
-  stroem,
-  fjernvarme,
-}: {
-  data: Data;
-  indexedData: IndexedData;
-  date: string;
-  hour: number;
-  stroem: number;
-  fjernvarme: number;
-}) {
-  return (
-    sumPrice(
-      calculateStroemHourlyPrice({
-        data,
-        indexedData,
-        date,
-        hour,
-        usageKwh: stroem,
-      })
-    ) +
-    sumPrice(
-      calculateFjernvarmeHourlyPrice({
-        data,
-        indexedData,
-        date,
-        hour,
-        usageKwh: fjernvarme,
-      })
-    )
-  );
 }
 
 export function generateDailyReport(
