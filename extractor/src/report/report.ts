@@ -8,7 +8,14 @@ import {
   DataPowerUsageHour,
   DataTemperatureDay,
 } from "../service/data-store.js";
-import { addPrices, roundTwoDec, sumPrice, UsagePrice } from "./helpers.js";
+import {
+  averageSpotprice,
+  averageTemperature,
+  flattenPrices,
+  roundTwoDec,
+  sumPrice,
+  UsagePrice,
+} from "./helpers.js";
 import { dateHourIndexer, indexData, IndexedData } from "./indexed-data.js";
 import {
   calculateFjernvarmeHourlyPrice,
@@ -17,7 +24,7 @@ import {
 
 // @ts-ignore
 import { default as _createTrend } from "trendline";
-import { trendlineTemperatureLowerThan } from "./constants.js";
+import { hoursInADay, trendlineTemperatureLowerThan } from "./constants.js";
 
 function createTrend(...args: any): {
   slope: number;
@@ -25,8 +32,6 @@ function createTrend(...args: any): {
 } {
   return _createTrend(...args);
 }
-
-const hoursInADay = R.range(0, 24);
 
 const dayNames: Record<number, string> = {
   1: "man",
@@ -367,17 +372,6 @@ function generateCostReport(
   indexedData: IndexedData,
   dates: Temporal.PlainDate[]
 ) {
-  function flatten(items: UsagePrice[]): UsagePrice {
-    if (items.length === 0) {
-      return {
-        usageKwh: 0,
-        variableByKwh: {},
-        static: {},
-      };
-    }
-    return items.reduce(addPrices);
-  }
-
   const stroemItems = dates
     .flatMap((dateObj) => {
       const date = dateObj.toString();
@@ -410,16 +404,76 @@ function generateCostReport(
     })
     .filter((it): it is UsagePrice => it != null && !isNaN(it.usageKwh));
 
-  const stroem = flatten(stroemItems);
-  const fjernvarme = flatten(fjernvarmeItems);
+  const stroem = flattenPrices(stroemItems);
+  const fjernvarme = flattenPrices(fjernvarmeItems);
 
   return {
     stroem,
     stroemSum: sumPrice(stroem),
+    stroemDatapointsCount: stroemItems.length,
     fjernvarme,
     fjernvarmeSum: sumPrice(fjernvarme),
+    fjernvarmeDatapointsCount: stroemItems.length,
     sum: sumPrice(stroem) + sumPrice(fjernvarme),
   };
+}
+
+function generateTableData(
+  data: Data,
+  indexedData: IndexedData,
+  name: string,
+  bucketDates: Temporal.PlainDate[]
+) {
+  return {
+    name,
+    spotprice: averageSpotprice(indexedData, bucketDates),
+    temperature: averageTemperature(indexedData, bucketDates),
+    ...generateCostReport(data, indexedData, bucketDates),
+  };
+}
+
+function generateYearlyTableReport(data: Data, indexedData: IndexedData) {
+  const firstDate = Temporal.PlainDate.from("2021-01-01");
+
+  const dates = datesInRange(firstDate, indexedData.lastDate);
+  const byYear = R.groupBy((value: Temporal.PlainDate) =>
+    value.year.toString()
+  );
+
+  return Object.values(
+    R.mapObjIndexed(
+      (bucketDates, year) =>
+        generateTableData(data, indexedData, String(year), bucketDates),
+      byYear(dates)
+    )
+  );
+}
+
+function generateMonthlyTableReport(data: Data, indexedData: IndexedData) {
+  const firstDate = Temporal.PlainDate.from("2021-01-01");
+
+  const dates = datesInRange(firstDate, indexedData.lastDate);
+  const byMonth = R.groupBy((value: Temporal.PlainDate) =>
+    value.toPlainYearMonth().toString()
+  );
+
+  return Object.values(
+    R.mapObjIndexed(
+      (bucketDates, month) =>
+        generateTableData(data, indexedData, String(month), bucketDates),
+      byMonth(dates)
+    )
+  );
+}
+
+function generateLastDaysTableReport(data: Data, indexedData: IndexedData) {
+  const firstDate = Temporal.PlainDate.from("2021-01-01");
+
+  const dates = datesInRange(firstDate, indexedData.lastDate).slice(-60);
+
+  return dates.map((date) =>
+    generateTableData(data, indexedData, date.toString(), [date])
+  );
 }
 
 export async function generateReportData(data: Data) {
@@ -659,6 +713,11 @@ export async function generateReportData(data: Data) {
         year: now.year,
         cost: generateCostReport(data, indexedData, currentYearDates),
       },
+    },
+    table: {
+      yearly: generateYearlyTableReport(data, indexedData),
+      monthly: generateMonthlyTableReport(data, indexedData),
+      lastDays: generateLastDaysTableReport(data, indexedData),
     },
   };
 

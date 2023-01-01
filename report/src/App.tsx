@@ -18,6 +18,7 @@ import {
   ZAxis,
 } from "recharts";
 import { trendlineTemperatureLowerThan } from "../../extractor/src/report/constants.js";
+import { UsagePrice } from "../../extractor/src/report/helpers.js";
 import { generateReportData } from "../../extractor/src/report/report.js";
 
 function roundTwoDec(value: number) {
@@ -676,6 +677,115 @@ function MonthPrice({
   );
 }
 
+function sum(items: Record<string, number>) {
+  return Object.values(items).reduce((acc, cur) => acc + cur, 0);
+}
+
+function sumall(usage: UsagePrice) {
+  return sum(usage.static) + sum(usage.variableByKwh);
+}
+
+function PriceDetails({
+  item,
+  datapointsCount,
+}: {
+  item: UsagePrice;
+  datapointsCount: number;
+}) {
+  const [show, setShow] = useState(false);
+  const stroemkostnad = item.variableByKwh["Strøm: Strømforbruk"];
+
+  return (
+    <div
+      className="pricedetails"
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      {Math.round(sumall(item))}
+      {show && (
+        <div className="item">
+          Fastpriser
+          <ul>
+            {Object.entries(item.static).map(([key, val]) => (
+              <li key={key}>
+                {key}: {roundTwoDec(val)}
+              </li>
+            ))}
+          </ul>
+          Variable priser
+          <ul>
+            {Object.entries(item.variableByKwh).map(([key, val]) => (
+              <li key={key}>
+                {key}: {roundTwoDec(val)}
+              </li>
+            ))}
+          </ul>
+          {stroemkostnad != null && (
+            <div>
+              Snitt kraftpris:{" "}
+              {roundTwoDec((stroemkostnad / item.usageKwh) * 100)} øre / kWh
+            </div>
+          )}
+          <div>Datapunkter: {datapointsCount}</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TableData({
+  item,
+  title,
+}: {
+  item: ReportData["table"]["yearly"];
+  title: string;
+}) {
+  return (
+    <table className="usagetable">
+      <thead>
+        <tr>
+          <th>{title}</th>
+          <th>Temperatur</th>
+          <th>Spotpris</th>
+          <th>Forbruk strøm</th>
+          <th>Forbruk fjernvarme</th>
+          <th>Forbruk alt</th>
+          <th>Kostnad strøm</th>
+          <th>Kostnad fjernvarme</th>
+          <th>Kostnad alt</th>
+        </tr>
+      </thead>
+      <tbody>
+        {item.map((it) => (
+          <tr key={it.name}>
+            <td>{it.name}</td>
+            <td>{it.temperature == null ? "" : roundTwoDec(it.temperature)}</td>
+            <td>
+              {it.spotprice == null ? "" : roundTwoDec(it.spotprice * 100)}
+            </td>
+            <td>{Math.round(it.stroem.usageKwh)}</td>
+            <td>{Math.round(it.fjernvarme.usageKwh)}</td>
+            <td>{Math.round(it.stroem.usageKwh + it.fjernvarme.usageKwh)}</td>
+            <td>
+              <PriceDetails
+                item={it.stroem}
+                datapointsCount={it.stroemDatapointsCount}
+              />
+            </td>
+            <td>
+              <PriceDetails
+                item={it.fjernvarme}
+                datapointsCount={it.fjernvarmeDatapointsCount}
+              />
+            </td>
+            <td>{Math.round(sumall(it.stroem) + sumall(it.fjernvarme))}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
 function Presentation({
   reportData,
   presentationMode,
@@ -862,6 +972,16 @@ function App() {
 
           <h2>Daglig forbruk siden 1. september 2021</h2>
           <Daily reportData={reportData} />
+
+          <h2>Detaljerte årstall</h2>
+          Tall for 2021 kan være mangelfulle.
+          <TableData title="År" item={reportData.table.yearly} />
+
+          <h2>Detaljerte månedstall</h2>
+          <TableData title="Måned" item={reportData.table.monthly} />
+
+          <h2>Detaljerte dagstall siste dager</h2>
+          <TableData title="Dato" item={reportData.table.lastDays} />
 
           <p>
             <a href="https://github.com/blindern/energi">

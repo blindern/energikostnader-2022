@@ -95,3 +95,29 @@ p {
 .et-graph {
   max-width: 700px;
 }
+
+.usagetable th,
+.usagetable td {
+  text-align: right;
+}
+
+.usagetable th:first-child,
+.usagetable td:first-child {
+  text-align: left;
+}
+
+.pricedetails {
+  position: relative;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.pricedetails .item {
+  text-align: left;
+  margin-left: 100%;
+  position: absolute;
+  left: -15px;
+  padding: 10px;
+  background: white;
+  border: 1px solid #ddd;
+  z-index: 2;
+}
