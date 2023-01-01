@@ -20,9 +20,35 @@ export const nettFastleddMaaned = 340 * 1.25;
 export const fjernvarmeFastleddAar = 3000 * 1.25;
 
 // https://www.celsio.no/fjernvarme-og-kjoling/
-export const fjernvarmeAdministativtPaaslagPerKwh = 0.035 * 1.25;
-export const fjernvarmeNettleiePerKwh = 0.2315 * 1.25;
-export const fjernvarmeRabattPercent = 0.05;
+const fjernvarmeAdministativtPaaslagPerKwh = 0.035 * 1.25;
+const fjernvarmeNettleiePerKwh = 0.2315 * 1.25;
+
+export function fjernvarmeRabatt(
+  month: Temporal.PlainYearMonth,
+  spotpriceMonth: number,
+  priceSupport: number
+) {
+  const cutoff = Temporal.PlainYearMonth.from("2022-11");
+  const priceWithSupport = spotpriceMonth - priceSupport;
+
+  if (Temporal.PlainYearMonth.compare(month, cutoff) < 0) {
+    return -priceWithSupport * 0.05;
+  }
+
+  // 5 % for 0-90 øre (eks mva)
+  // 30 % for 90-250 øre (eks mva)
+  // 60 % fra 250 øre (eks mva)
+
+  const threshold1 = 0.9 * 1.25;
+  const threshold2 = 2.5 * 1.25;
+
+  const step1 = -Math.min(threshold1, priceWithSupport) * 0.05;
+  const step2 =
+    -Math.max(0, Math.min(threshold2, priceWithSupport) - threshold1) * 0.3;
+  const step3 = -Math.max(0, priceWithSupport - threshold2) * 0.6;
+
+  return step1 + step2 + step3;
+}
 
 // Uten MVA.
 export const finansieltResultatPerKwhActualByMonth: Record<
@@ -270,7 +296,11 @@ export function calculateFjernvarmeHourlyPrice(props: {
     usageKwh: props.usageKwh,
     variableByKwh: multiplyWithUsage(props.usageKwh, {
       Kraft: spotpriceMonth,
-      Rabatt: -(spotpriceMonth - priceSupport) * fjernvarmeRabattPercent,
+      Rabatt: fjernvarmeRabatt(
+        plainDate.toPlainYearMonth(),
+        spotpriceMonth,
+        priceSupport
+      ),
       "Administrativt påslag": fjernvarmeAdministativtPaaslagPerKwh,
       Nettleie: fjernvarmeNettleiePerKwh,
       Forbruksavgift: forbruksavgiftPerKwhByMonth[yearMonth] ?? NaN,
