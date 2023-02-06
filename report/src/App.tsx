@@ -468,8 +468,13 @@ function EnergyTemperature({ etData }: { etData: ReportData["et"] }) {
       fillOpacity: 0.3,
     },
     {
-      items: finalData.slice(0, -10).filter((it) => it.date >= "2022-07-01"),
+      items: finalData.slice(0, -10).filter((it) => it.date >= "2022-07-01" && it.date < "2023-01-01"),
       color: "#6aa84f",
+      fillOpacity: 0.8,
+    },
+    {
+      items: finalData.slice(0, -10).filter((it) => it.date >= "2023-01-01"),
+      color: "#ff6600",
       fillOpacity: 0.8,
     },
     {
@@ -569,6 +574,13 @@ function EnergyTemperature({ etData }: { etData: ReportData["et"] }) {
             name="Vår 2022"
             isAnimationActive={false}
           />
+          <Line
+            data={trendData(etData.linearV23)}
+            dataKey="power"
+            stroke="#FF6600"
+            name="Vår 2023"
+            isAnimationActive={false}
+          />
           <Legend verticalAlign="top" height={40} />
         </ChartType>
       </ResponsiveContainer>
@@ -587,6 +599,11 @@ function EnergyTemperature({ etData }: { etData: ReportData["et"] }) {
           Høst 2022: forbruk = f(temperatur) ={" "}
           {roundTwoDec(etData.linearH22.slope)} * temperatur +{" "}
           {Math.round(etData.linearH22.yStart)}
+        </li>
+        <li>
+          Vår 2023: forbruk = f(temperatur) ={" "}
+          {roundTwoDec(etData.linearV23.slope)} * temperatur +{" "}
+          {Math.round(etData.linearV23.yStart)}
         </li>
       </ul>
       <p>

@@ -572,7 +572,20 @@ export async function generateReportData(data: Data) {
               it.power != null &&
               it.temperature < trendlineTemperatureLowerThan
           )
-          .filter((it) => it.date >= "2022-07"),
+          .filter((it) => it.date >= "2022-07")
+          .filter((it) => it.date <= "2022-12"),
+        "temperature",
+        "power"
+      ),
+      linearV23: createTrend(
+        energyTemperatureReport
+          .filter(
+            (it) =>
+              it.temperature != null &&
+              it.power != null &&
+              it.temperature < trendlineTemperatureLowerThan
+          )
+          .filter((it) => it.date >= "2023-01"),
         "temperature",
         "power"
       ),
@@ -621,7 +634,20 @@ export async function generateReportData(data: Data) {
               it.power != null &&
               it.temperature < trendlineTemperatureLowerThan
           )
-          .filter((it) => it.date >= "2022-07"),
+          .filter((it) => it.date >= "2022-07")
+          .filter((it) => it.date <= "2022-12"),
+        "temperature",
+        "power"
+      ),
+      linearV23: createTrend(
+        energyTemperatureReportFjernvarme
+          .filter(
+            (it) =>
+              it.temperature != null &&
+              it.power != null &&
+              it.temperature < trendlineTemperatureLowerThan
+          )
+          .filter((it) => it.date >= "2023-01"),
         "temperature",
         "power"
       ),
