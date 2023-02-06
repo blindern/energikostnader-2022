@@ -11,3 +11,16 @@ Dette inkluderer:
 - Henting av døgnmiddeltemperaturer fra Yr
 
 Se undermapper for mer detaljer.
+
+## Lokal utvikling
+
+```bash
+cd extractor
+npm ci
+scp root@fcos-3.nrec.foreningenbs.no:/var/mnt/data/energi-extractor/data.json data.json
+npx ts-node src/report/cli.ts
+
+cd ../report
+npm ci
+npm run dev
+```
