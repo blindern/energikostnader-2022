@@ -25,10 +25,8 @@ npx ts-node src/cli/nordpool.ts 2022-09-26 >/tmp/nordpool.csv
   forrige time. Data er tilgjengelig anslagsvis 15-30 minutter etter timen
   er avsluttet.
 
-- **Strøm:** Fra Fortum kan vi hente ut data frem til gårsdagen. Det er ikke timedata
-  tilgjengelig for inneværende dag.
+- **Strøm:** Fra Elvia kan vi hente ut data frem til og med forrige time. Noe sporadisk
+  forsinkelse på dataene.
 
-  Merk at Fortum ikke ser ut til å ha noe egnet API, og de nye sidene deres
-  bruker et mer komplisert Websocket-oppsett kontra de gamle sidene som er
-  rent HTTP-basert (men session styrt). Derfor "scraper" vi data fra de gamle
-  sidene deres da dette var enklere å få fort opp og gå.
+  Merk at Elvia sitt API ikke kan brukes av oss som bedrift (kun støttet
+  for privatpersoner), så derfor henter vi data tilsvarende som web-klienten.

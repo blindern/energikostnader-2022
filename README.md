@@ -6,7 +6,7 @@ med energiforbruk høsten 2022.
 Dette inkluderer:
 
 - Uttrekk av timeforbruk for fjernvarme fra Hafslund Oslo Celsio
-- Uttrekk av timeforbruk for strøm fra Fortum
+- Uttrekk av timeforbruk for strøm fra Elvia
 - Henting av timepriser fra Nordpool
 - Henting av døgnmiddeltemperaturer fra Yr
 
