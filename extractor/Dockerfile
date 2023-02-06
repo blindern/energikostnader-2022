@@ -1,4 +1,4 @@
-FROM node:18-slim
+FROM node:19-slim
 
 COPY --chown=node:node package.json package-lock.json /usr/src/app/
 
