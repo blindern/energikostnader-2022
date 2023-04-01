@@ -121,3 +121,7 @@ p {
   border: 1px solid #ddd;
   z-index: 2;
 }
+
+.recharts-text {
+  fill: #333;
+}
