@@ -1,7 +1,7 @@
-# Energikostnader 2022
+# Energikostnader på Blindern Studenterhjem
 
 Denne kodebasen inkluderer verktøy for å hente ut tall for å holde følge
-med energiforbruk høsten 2022.
+med energiforbruk og -kostnader på Blindern Studenterhjem.
 
 Dette inkluderer:
 
