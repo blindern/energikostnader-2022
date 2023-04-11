@@ -87,16 +87,16 @@ export const energileddPerKwhByMonth: Record<string, number | undefined> = {
   "2022-12": 0.085 * 1.25,
   "2023-01": 0.085 * 1.25,
   "2023-02": 0.05 * 1.25,
-  "2023-03": 0.085 * 1.25, // Asssumption.
-  "2023-04": 0.085 * 1.25, // Asssumption.
-  "2023-05": 0.06 * 1.25, // Asssumption.
-  "2023-06": 0.06 * 1.25, // Asssumption.
-  "2023-07": 0.06 * 1.25, // Asssumption.
-  "2023-08": 0.06 * 1.25, // Asssumption.
-  "2023-09": 0.06 * 1.25, // Asssumption.
-  "2023-10": 0.06 * 1.25, // Asssumption.
-  "2023-11": 0.085 * 1.25, // Asssumption.
-  "2023-12": 0.085 * 1.25, // Asssumption.
+  "2023-03": 0.05 * 1.25, // Asssumption.
+  "2023-04": 0.05 * 1.25, // Asssumption.
+  "2023-05": 0.05 * 1.25, // Asssumption.
+  "2023-06": 0.05 * 1.25, // Asssumption.
+  "2023-07": 0.05 * 1.25, // Asssumption.
+  "2023-08": 0.05 * 1.25, // Asssumption.
+  "2023-09": 0.05 * 1.25, // Asssumption.
+  "2023-10": 0.05 * 1.25, // Asssumption.
+  "2023-11": 0.05 * 1.25, // Asssumption.
+  "2023-12": 0.05 * 1.25, // Asssumption.
 };
 
 // https://www.skatteetaten.no/bedrift-og-organisasjon/avgifter/saravgifter/om/elektrisk-kraft/
@@ -144,16 +144,16 @@ export const effektleddPerKwhByMonth: Record<string, number | undefined> = {
   "2022-12": 113 * 90 * 1.25, // From invoice.
   "2023-01": 118.4 * 90 * 1.25, // From invoice.
   "2023-02": 126.6 * 75 * 1.25, // From invoice.
-  "2023-03": 120.2 * 90 * 1.25, // Guess.
-  "2023-04": 106.8 * 90 * 1.25, // Guess.
-  "2023-05": 104.2 * 40 * 1.25, // Guess.
-  "2023-06": 102.4 * 40 * 1.25, // Guess.
-  "2023-07": 96.2 * 40 * 1.25, // Guess.
-  "2023-08": 112.8 * 40 * 1.25, // Guess.
-  "2023-09": 100 * 40 * 1.25, // Guess.
-  "2023-10": 110 * 40 * 1.25, // Guess.
-  "2023-11": 130 * 90 * 1.25, // Guess.
-  "2023-12": 130 * 90 * 1.25, // Guess.
+  "2023-03": 120.2 * 75 * 1.25, // Guess.
+  "2023-04": 106.8 * 32 * 1.25, // Guess.
+  "2023-05": 104.2 * 32 * 1.25, // Guess.
+  "2023-06": 102.4 * 32 * 1.25, // Guess.
+  "2023-07": 96.2 * 32 * 1.25, // Guess.
+  "2023-08": 112.8 * 32 * 1.25, // Guess.
+  "2023-09": 100 * 32 * 1.25, // Guess.
+  "2023-10": 110 * 75 * 1.25, // Guess.
+  "2023-11": 130 * 75 * 1.25, // Guess.
+  "2023-12": 130 * 75 * 1.25, // Guess.
 };
 
 // https://www.regjeringen.no/no/aktuelt/vil-forlenge-stromstotten-til-husholdninger-ut-2023/id2930621/
