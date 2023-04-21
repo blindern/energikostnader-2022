@@ -205,7 +205,11 @@ export async function loadStroemIfNeeded(
   const dates = datesInRange(firstDate, lastDate);
   const datesFormatted = dates.map((it) => it.toString());
 
-  const meterIds = ELVIA_CONTRACT_LIST.map((it) => it.contractId);
+  const activeContracts = ELVIA_CONTRACT_LIST.filter(
+    (it) => it.flag !== "nofetch"
+  )
+
+  const meterIds = activeContracts.map((it) => it.contractId);
 
   const storedDates = new Set(
     meterIds
@@ -238,7 +242,7 @@ export async function loadStroemIfNeeded(
 
   const years = R.range(firstDate.year, lastDate.year + 1);
 
-  for (const contract of ELVIA_CONTRACT_LIST) {
+  for (const contract of activeContracts) {
     for (const year of years) {
       const meterValues = await getMeterValues({
         customerId: ELVIA_CUSTOMER_ID,

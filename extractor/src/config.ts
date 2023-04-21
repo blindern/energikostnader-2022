@@ -27,8 +27,12 @@ export const ELVIA_CUSTOMER_ID = requireEnv("ELVIA_CUSTOMER_ID");
 export const ELVIA_CONTRACT_LIST = requireEnv("ELVIA_CONTRACT_LIST")
   .split(",")
   .map((it) => {
-    const [meterId, contractId] = it.split(":", 2);
-    return { meterId, contractId };
+    const [meterId, contractId, flag = undefined] = it.split(":", 3);
+    return {
+      meterId,
+      contractId,
+      flag: flag === "nofetch" ? ("nofetch" as const) : undefined,
+    };
   });
 
 export const DATA_FILE = process.env["DATA_FILE"] ?? "data.json";

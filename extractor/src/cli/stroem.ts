@@ -34,6 +34,10 @@ const years = R.range(firstDate.year, lastDate.year + 1);
 for (const contract of ELVIA_CONTRACT_LIST) {
   const usages: HourUsage[] = [];
 
+  if (contract.flag === "nofetch") {
+    continue;
+  }
+
   for (const year of years) {
     const meterValues = await getMeterValues({
       customerId: ELVIA_CUSTOMER_ID,
