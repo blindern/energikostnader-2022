@@ -16,8 +16,25 @@ export interface UsagePrice {
 
 export const stroemFastbeloepAar = 600 * 1.25;
 export const stroemPaaslagPerKwh = 0.02 * 1.25;
-export const nettFastleddMaaned = 340 * 1.25;
 export const fjernvarmeFastleddAar = 3000 * 1.25;
+
+const nettFastleddMaanedByMonth: Record<string, number | undefined> = {
+  "2022-01": 340 * 1.25, // From invoice.
+  "2022-02": 340 * 1.25, // From invoice.
+  "2022-03": 340 * 1.25, // From invoice.
+  "2022-04": 340 * 1.25, // From invoice.
+  "2022-05": 340 * 1.25, // From invoice.
+  "2022-06": 340 * 1.25, // From invoice.
+  "2022-07": 340 * 1.25, // From invoice.
+  "2022-08": 340 * 1.25, // From invoice.
+  "2022-09": 340 * 1.25, // From invoice.
+  "2022-10": 340 * 1.25, // From invoice.
+  "2022-11": 340 * 1.25, // From invoice.
+  "2022-12": 340 * 1.25, // From invoice.
+  "2023-01": 340 * 1.25, // From invoice.
+  "2023-02": 500 * 1.25, // From invoice.
+  "2023-03": 500 * 1.25, // From invoice.
+};
 
 // https://www.celsio.no/fjernvarme-og-kjoling/
 const fjernvarmeAdministativtPaaslagPerKwh = 0.035 * 1.25;
@@ -255,7 +272,10 @@ export function calculateStroemHourlyPrice(props: {
     }),
     static: {
       "Strøm: Fastbeløp": stroemFastbeloepAar / plainDate.daysInYear / 24,
-      "Nettleie: Fastledd": nettFastleddMaaned / plainDate.daysInMonth / 24,
+      "Nettleie: Fastledd":
+        (nettFastleddMaanedByMonth[yearMonth] ?? NaN) /
+        plainDate.daysInMonth /
+        24,
       "Nettleie: Effektledd":
         (effektleddPerKwhByMonth[yearMonth] ?? NaN) /
         plainDate.daysInMonth /
