@@ -215,11 +215,7 @@ export function getFinansieltResultatPerKwh(
   yearMonth: string,
   averageSpotPrice: number
 ) {
-  // Guessing 5 % increased usage over spot and 10 % discount.
-  return (
-    finansieltResultatPerKwhActualByMonth[yearMonth] ??
-    averageSpotPrice * 1.05 * -0.1
-  );
+  return finansieltResultatPerKwhActualByMonth[yearMonth] ?? 0;
 }
 
 export function getPriceSupportOfMonthPerKwh(
