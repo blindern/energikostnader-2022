@@ -34,6 +34,15 @@ const nettFastleddMaanedByMonth: Record<string, number | undefined> = {
   "2023-01": 340 * 1.25, // From invoice.
   "2023-02": 500 * 1.25, // From invoice.
   "2023-03": 500 * 1.25, // From invoice.
+  "2023-04": 500 * 1.25, // Assumption.
+  "2023-05": 500 * 1.25, // Assumption.
+  "2023-06": 500 * 1.25, // Assumption.
+  "2023-07": 500 * 1.25, // Assumption.
+  "2023-08": 500 * 1.25, // Assumption.
+  "2023-09": 500 * 1.25, // Assumption.
+  "2023-10": 500 * 1.25, // Assumption.
+  "2023-11": 500 * 1.25, // Assumption.
+  "2023-12": 500 * 1.25, // Assumption.
 };
 
 // https://www.celsio.no/fjernvarme-og-kjoling/
