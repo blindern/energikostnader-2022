@@ -203,12 +203,26 @@ const priceSupportPercentByMonth: Record<string, number | undefined> = {
   "2023-04": 0.8,
   "2023-05": 0.8,
   "2023-06": 0.8,
-  "2023-07": 0.8,
-  "2023-08": 0.8,
-  "2023-09": 0.8,
+  // https://www.regjeringen.no/no/tema/energi/regjeringens-stromtiltak/id2900232/?expand=factbox2900261
+  // Utvidet til 90 % fra og med juni 2023 og ut 2024.
+  "2023-07": 0.9,
+  "2023-08": 0.9,
+  "2023-09": 0.9,
   "2023-10": 0.9,
   "2023-11": 0.9,
   "2023-12": 0.9,
+  "2024-01": 0.9,
+  "2024-02": 0.9,
+  "2024-03": 0.9,
+  "2024-04": 0.9,
+  "2024-05": 0.9,
+  "2024-06": 0.9,
+  "2024-07": 0.9,
+  "2024-08": 0.9,
+  "2024-09": 0.9,
+  "2024-10": 0.9,
+  "2024-11": 0.9,
+  "2024-12": 0.9,
 };
 
 export function getFinansieltResultatPerKwh(
