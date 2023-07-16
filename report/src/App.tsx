@@ -214,8 +214,10 @@ function Hourly({ reportData }: { reportData: ReportData }) {
   );
 }
 
-function Daily({ reportData }: { reportData: ReportData }) {
-  const graphData = reportData.daily.rows;
+function Daily({ reportData, year }: { reportData: ReportData; year: number }) {
+  const graphData = reportData.daily.rows.filter((it) =>
+    it.date.startsWith(String(year))
+  );
 
   return (
     <ResponsiveContainer width="100%" height={450}>
@@ -297,7 +299,10 @@ function Daily({ reportData }: { reportData: ReportData }) {
           height={40}
           interval={0}
           tickMargin={15}
-          ticks={graphData.slice(-1).map((it) => it.name)}
+          ticks={graphData
+            .filter((it) => it.fjernvarme != null && it.stroem != null)
+            .slice(-1)
+            .map((it) => it.name)}
           fontSize={7}
         />
         <YAxis unit=" kWh" tickCount={15} />
@@ -468,7 +473,9 @@ function EnergyTemperature({ etData }: { etData: ReportData["et"] }) {
       fillOpacity: 0.3,
     },
     {
-      items: finalData.slice(0, -10).filter((it) => it.date >= "2022-07-01" && it.date < "2023-01-01"),
+      items: finalData
+        .slice(0, -10)
+        .filter((it) => it.date >= "2022-07-01" && it.date < "2023-01-01"),
       color: "#6aa84f",
       fillOpacity: 0.8,
     },
@@ -935,21 +942,17 @@ function App() {
             for strøm følger spotpris per time. Estimert kostnad inkluderer mva,
             nettleie, strømstøtte m.v.
           </p>
-
           <p>
             Merk at prismodellen mangler enkelte detaljer, slik at endelig
             regnskapsmessig kostnad vil avvike noe.
           </p>
-
           <h2>Daglig forbruk vs. utetemperatur (siden 1. juli 2021)</h2>
           <EnergyTemperature etData={reportData.et} />
-
           <h2>
             Daglig forbruk vs. utetemperatur (siden 1. juli 2021) - kun
             fjernvarme
           </h2>
           <EnergyTemperature etData={reportData.etFjernvarme} />
-
           <h2>Kostnader så langt</h2>
           <MonthPrice data={reportData.cost.previousMonth} />
           <MonthPrice data={reportData.cost.currentMonth} current />
@@ -959,7 +962,6 @@ function App() {
             lastYear
           />
           <MonthPrice data={reportData.cost.currentYear} current />
-
           <h2>Estimert pris per kWh</h2>
           <p>
             Endelig pris påvirkes blant annet av månedens gjennomsnittlige
@@ -986,20 +988,22 @@ function App() {
             )}
           </p>
           <HourlyPrice reportData={reportData} />
-
-          <h2>Daglig forbruk siden 1. september 2021</h2>
-          <Daily reportData={reportData} />
-
+          {[...new Set(reportData.daily.rows.map((it) => it.date.slice(0, 4)))]
+            .sort()
+            .reverse()
+            .map((year) => (
+              <>
+                <h2>Daglig forbruk {year}</h2>
+                <Daily reportData={reportData} year={Number(year)} />
+              </>
+            ))}
           <h2>Detaljerte årstall</h2>
           Tall for 2021 kan være mangelfulle.
           <TableData title="År" item={reportData.table.yearly} />
-
           <h2>Detaljerte månedstall</h2>
           <TableData title="Måned" item={reportData.table.monthly} />
-
           <h2>Detaljerte dagstall siste dager</h2>
           <TableData title="Dato" item={reportData.table.lastDays} />
-
           <p>
             <a href="https://github.com/blindern/energi">
               github.com/blindern/energi

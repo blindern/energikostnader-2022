@@ -511,10 +511,11 @@ export async function generateReportData(data: Data) {
       rows: generateDailyReport(
         data,
         indexedData,
-        Temporal.PlainDate.from("2021-09-01"),
-        Temporal.Now.plainDateISO("Europe/Oslo").subtract({
-          days: 1,
-        })
+        Temporal.PlainDate.from("2021-01-01"),
+        Temporal.Now.plainDateISO("Europe/Oslo").with({
+          month: 12,
+          day: 31,
+        }),
       ),
     },
     hourly: {

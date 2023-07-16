@@ -33,7 +33,7 @@ async function iteration() {
   const now = Temporal.Now.zonedDateTimeISO("Europe/Oslo");
 
   const firstDate = Temporal.Now.plainDateISO("Europe/Oslo").subtract({
-    days: 10,
+    days: 40,
   });
   const lastDate = Temporal.Now.plainDateISO("Europe/Oslo");
 
