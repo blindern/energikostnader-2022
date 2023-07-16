@@ -102,7 +102,7 @@ async function getInitialLoginState(): Promise<{
   cookies: Record<string, string>;
   csrfToken: string;
 }> {
-  const response = await fetch("https://elvid.elvia.io/Account/Login", {
+  const response = await fetch("https://elvid.elvia.io/Login", {
     method: "GET",
     redirect: "manual",
   });
@@ -151,7 +151,7 @@ async function getValidLoginState({
     RememberLogin: "false",
   };
 
-  const response = await fetch("https://elvid.elvia.io/Account/Login", {
+  const response = await fetch("https://elvid.elvia.io/Login", {
     method: "POST",
     headers: {
       "content-type": "application/x-www-form-urlencoded",
