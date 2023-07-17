@@ -34,15 +34,16 @@ const nettFastleddMaanedByMonth: Record<string, number | undefined> = {
   "2023-01": 340 * 1.25, // From invoice.
   "2023-02": 500 * 1.25, // From invoice.
   "2023-03": 500 * 1.25, // From invoice.
-  "2023-04": 500 * 1.25, // Assumption.
-  "2023-05": 500 * 1.25, // Assumption.
-  "2023-06": 500 * 1.25, // Assumption.
-  "2023-07": 500 * 1.25, // Assumption.
-  "2023-08": 500 * 1.25, // Assumption.
-  "2023-09": 500 * 1.25, // Assumption.
-  "2023-10": 500 * 1.25, // Assumption.
-  "2023-11": 500 * 1.25, // Assumption.
-  "2023-12": 500 * 1.25, // Assumption.
+  // Fra April så er "Energifondet fastavgift" egen linje.
+  "2023-04": 433.33 * 1.25, // From invoice.
+  "2023-05": 433.33 * 1.25, // Assumption.
+  "2023-06": 433.33 * 1.25, // Assumption.
+  "2023-07": 433.33 * 1.25, // Assumption.
+  "2023-08": 433.33 * 1.25, // Assumption.
+  "2023-09": 433.33 * 1.25, // Assumption.
+  "2023-10": 433.33 * 1.25, // Assumption.
+  "2023-11": 433.33 * 1.25, // Assumption.
+  "2023-12": 433.33 * 1.25, // Assumption.
 };
 
 // https://www.celsio.no/fjernvarme-og-kjoling/
@@ -96,6 +97,9 @@ export const finansieltResultatPerKwhActualByMonth: Record<
   "2023-01": 0.7715, // From invoice.
   "2023-02": 0.9217, // From invoice.
   "2023-03": 0.9546, // From invoice.
+  "2023-04": 0.0577, // From invoice.
+  "2023-05": 0.2458, // From invoice.
+  "2023-06": 0.2832, // From invoice.
 };
 
 // https://www.elvia.no/nettleie/alt-om-nettleiepriser/nettleiepriser-og-effekttariff-for-bedrifter-med-arsforbruk-over-100000-kwh/
@@ -144,9 +148,9 @@ export const forbruksavgiftPerKwhByMonth: Record<string, number | undefined> = {
   "2023-01": 0.0916 * 1.25,
   "2023-02": 0.0916 * 1.25,
   "2023-03": 0.0916 * 1.25,
-  "2023-04": 0.1541 * 1.25, // Assumption.
-  "2023-05": 0.1541 * 1.25, // Assumption.
-  "2023-06": 0.1541 * 1.25, // Assumption.
+  "2023-04": 0.1541 * 1.25,
+  "2023-05": 0.1541 * 1.25,
+  "2023-06": 0.1541 * 1.25,
   "2023-07": 0.1541 * 1.25, // Assumption.
   "2023-08": 0.1541 * 1.25, // Assumption.
   "2023-09": 0.1541 * 1.25, // Assumption.
@@ -172,9 +176,9 @@ export const effektleddPerKwhByMonth: Record<string, number | undefined> = {
   "2023-01": 118.4 * 90 * 1.25, // From invoice.
   "2023-02": 126.6 * 75 * 1.25, // From invoice.
   "2023-03": 116.2 * 75 * 1.25, // From invoice.
-  "2023-04": 106.8 * 32 * 1.25, // Guess.
-  "2023-05": 104.2 * 32 * 1.25, // Guess.
-  "2023-06": 102.4 * 32 * 1.25, // Guess.
+  "2023-04": 108.4 * 32 * 1.25, // From invoice.
+  "2023-05": 102.4 * 32 * 1.25, // From invoice.
+  "2023-06": 94.2 * 32 * 1.25, // From invoice.
   "2023-07": 96.2 * 32 * 1.25, // Guess.
   "2023-08": 112.8 * 32 * 1.25, // Guess.
   "2023-09": 100 * 32 * 1.25, // Guess.
@@ -244,26 +248,13 @@ export function getPriceSupportOfMonthPerKwh(
   return Math.max(0, (averageSpotPrice - 0.7 * 1.25) * percent);
 }
 
-export function calculateStroemHourlyPrice(props: {
+function calculateStroemHourlyPricePre2023Apr(props: {
   data: Data;
   indexedData: IndexedData;
   date: string;
   hour: number;
   usageKwh: number;
-}): UsagePrice | null {
-  // Different price model before 2022 not implemented.
-  if (Number(props.date.slice(0, 4)) < 2022) {
-    return {
-      usageKwh: props.usageKwh,
-      variableByKwh: {
-        "Unsupported price model": NaN,
-      },
-      static: {
-        "Unsupported price model": NaN,
-      },
-    };
-  }
-
+}): UsagePrice {
   const plainDate = Temporal.PlainDate.from(props.date);
   const yearMonth = yearMonthIndexer(props);
   const dateHour = dateHourIndexer(props);
@@ -273,7 +264,7 @@ export function calculateStroemHourlyPrice(props: {
   const spotpriceMonthPerKwh =
     props.indexedData.spotpriceByMonth[yearMonth] ?? NaN;
 
-  const components = {
+  return {
     usageKwh: props.usageKwh,
     variableByKwh: multiplyWithUsage(props.usageKwh, {
       "Strøm: Strømforbruk": spotpriceHourPerKwh,
@@ -301,8 +292,80 @@ export function calculateStroemHourlyPrice(props: {
         24,
     },
   };
+}
 
-  return components;
+function calculateStroemHourlyPriceFrom2023Apr(props: {
+  data: Data;
+  indexedData: IndexedData;
+  date: string;
+  hour: number;
+  usageKwh: number;
+}): UsagePrice {
+  const plainDate = Temporal.PlainDate.from(props.date);
+  const yearMonth = yearMonthIndexer(props);
+  const dateHour = dateHourIndexer(props);
+
+  const spotpriceHourPerKwh =
+    props.indexedData.spotpriceByHour[dateHour] ?? NaN;
+  const spotpriceMonthPerKwh =
+    props.indexedData.spotpriceByMonth[yearMonth] ?? NaN;
+
+  return {
+    usageKwh: props.usageKwh,
+    variableByKwh: multiplyWithUsage(props.usageKwh, {
+      "Strøm: Strømforbruk": spotpriceHourPerKwh,
+      "Strøm: Finansielt resultat": getFinansieltResultatPerKwh(
+        yearMonth,
+        spotpriceMonthPerKwh
+      ),
+      "Strøm: Påslag": stroemPaaslagPerKwh,
+      "Nettleie: Energiledd": energileddPerKwhByMonth[yearMonth] ?? NaN,
+      "Nettleie: Elavgift": forbruksavgiftPerKwhByMonth[yearMonth] ?? NaN,
+      Strømstøtte: -getPriceSupportOfMonthPerKwh(
+        yearMonth,
+        props.indexedData.spotpriceByMonth[yearMonth] ?? 0
+      ),
+    }),
+    static: {
+      "Strøm: Fastbeløp": stroemFastbeloepAar / plainDate.daysInYear / 24,
+      "Nettleie: Energifondet fastavgift": (800 * 1.25) / 365 / 24,
+      "Nettleie: Fastledd lavspent Næring":
+        (nettFastleddMaanedByMonth[yearMonth] ?? NaN) /
+        plainDate.daysInMonth /
+        24,
+      "Nettleie: Aktiv effekt":
+        (effektleddPerKwhByMonth[yearMonth] ?? NaN) /
+        plainDate.daysInMonth /
+        24,
+    },
+  };
+}
+
+export function calculateStroemHourlyPrice(props: {
+  data: Data;
+  indexedData: IndexedData;
+  date: string;
+  hour: number;
+  usageKwh: number;
+}): UsagePrice {
+  // Different price model before 2022 not implemented.
+  if (Number(props.date.slice(0, 4)) < 2022) {
+    return {
+      usageKwh: props.usageKwh,
+      variableByKwh: {
+        "Unsupported price model": NaN,
+      },
+      static: {
+        "Unsupported price model": NaN,
+      },
+    };
+  }
+
+  if (props.date >= "2023-04") {
+    return calculateStroemHourlyPriceFrom2023Apr(props);
+  }
+
+  return calculateStroemHourlyPricePre2023Apr(props);
 }
 
 export function calculateFjernvarmeHourlyPrice(props: {
@@ -400,14 +463,13 @@ function addPricesInner(
   one: Record<string, number>,
   two: Record<string, number>
 ): Record<string, number> {
-  if (Object.keys(one).length != Object.keys(two).length) {
-    throw new Error("Not implemented");
+  const result: Record<string, number> = {};
+
+  for (const key of new Set([...Object.keys(one), ...Object.keys(two)])) {
+    result[key] = zeroForNaN(one[key]) + zeroForNaN(two[key]);
   }
 
-  return R.mapObjIndexed(
-    (value, key) => zeroForNaN(value) + zeroForNaN(two[key]),
-    one
-  );
+  return result;
 }
 
 export function addPrices(one: UsagePrice, two: UsagePrice): UsagePrice {
