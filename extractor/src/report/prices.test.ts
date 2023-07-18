@@ -1,4 +1,5 @@
 import { Temporal } from "@js-temporal/polyfill";
+import { expect, test } from "vitest";
 import { fjernvarmeRabatt } from "./prices.js";
 
 test("fjernvarmeRabatt", () => {
