@@ -10,8 +10,5 @@
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
     "noEmit": true
-  },
-  "ts-node": {
-    "esm": true
   }
 }

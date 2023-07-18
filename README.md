@@ -18,7 +18,7 @@ Se undermapper for mer detaljer.
 cd extractor
 npm ci
 scp root@fcos-3.nrec.foreningenbs.no:/var/mnt/data/energi-extractor/data.json data.json
-npx ts-node src/report/cli.ts
+npx tsx src/report/cli.ts
 
 cd ../report
 npm ci

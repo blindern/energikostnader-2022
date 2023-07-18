@@ -10,4 +10,4 @@ RUN npm ci
 COPY --chown=node:node tsconfig.json /usr/src/app/
 COPY --chown=node:node src /usr/src/app/src
 
-CMD ["npx", "ts-node",  "/usr/src/app/src/service/service.ts"]
+CMD ["npx", "tsx", "/usr/src/app/src/service/service.ts"]

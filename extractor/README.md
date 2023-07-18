@@ -13,10 +13,10 @@ npm ci
 Trekk ut data:
 
 ```bash
-npx ts-node src/cli/temperatur.ts >/tmp/temperatur.csv
-npx ts-node src/cli/stroem.ts 2022-09-01 2022-09-25 >/tmp/stroem.csv
-npx ts-node src/cli/fjernvarme.ts 2022-01-01 2022-09-26 >/tmp/fjernvarme.csv
-npx ts-node src/cli/nordpool.ts 2022-09-26 >/tmp/nordpool.csv
+npx tsx src/cli/temperatur.ts >/tmp/temperatur.csv
+npx tsx src/cli/stroem.ts 2022-09-01 2022-09-25 >/tmp/stroem.csv
+npx tsx src/cli/fjernvarme.ts 2022-01-01 2022-09-26 >/tmp/fjernvarme.csv
+npx tsx src/cli/nordpool.ts 2022-09-26 >/tmp/nordpool.csv
 ```
 
 ## Tilgjengelige data
