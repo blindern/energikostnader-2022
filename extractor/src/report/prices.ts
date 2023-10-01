@@ -211,9 +211,21 @@ export const effektleddPerKwhByMonth: Record<string, number | undefined> = {
   // Står nå som bare "Effekt" på faktura.
   "2023-08": 95.4 * 32 * 1.25, // From invoice.
   "2023-09": 100 * 32 * 1.25, // Guess.
-  "2023-10": 110 * 75 * 1.25, // Guess.
-  "2023-11": 130 * 75 * 1.25, // Guess.
-  "2023-12": 130 * 75 * 1.25, // Guess.
+  "2023-10": 110 * 86 * 1.25, // Guess.
+  "2023-11": 120 * 86 * 1.25, // Guess.
+  "2023-12": 120 * 86 * 1.25, // Guess.
+  "2024-01": 118.4 * 86 * 1.25, // Guess.
+  "2024-02": 126.6 * 86 * 1.25, // Guess.
+  "2024-03": 116.2 * 86 * 1.25, // Guess.
+  "2024-04": 108.4 * 36 * 1.25, // Guess.
+  "2024-05": 102.4 * 36 * 1.25, // Guess.
+  "2024-06": 94.2 * 36 * 1.25, // Guess.
+  "2024-07": 57.4 * 36 * 1.25, // Guess.
+  "2024-08": 95.4 * 36 * 1.25, // Guess.
+  "2024-09": 100 * 36 * 1.25, // Guess.
+  "2024-10": 110 * 86 * 1.25, // Guess.
+  "2024-11": 120 * 86 * 1.25, // Guess.
+  "2024-12": 120 * 86 * 1.25, // Guess.
 };
 
 // https://www.regjeringen.no/no/aktuelt/vil-forlenge-stromstotten-til-husholdninger-ut-2023/id2930621/
@@ -240,6 +252,7 @@ const priceSupportPercentByMonth: Record<string, number | undefined> = {
   // Utvidet til 90 % fra og med juni 2023 og ut 2024.
   "2023-07": 0.9,
   "2023-08": 0.9,
+  // Fra september beregnes denne per time.
   "2023-09": 0.9,
   "2023-10": 0.9,
   "2023-11": 0.9,
@@ -258,14 +271,14 @@ const priceSupportPercentByMonth: Record<string, number | undefined> = {
   "2024-12": 0.9,
 };
 
-export function getFinansieltResultatPerKwh(
+function getFinansieltResultatPerKwh(
   yearMonth: string,
   averageSpotPrice: number
 ) {
   return finansieltResultatPerKwhActualByMonth[yearMonth] ?? 0;
 }
 
-export function getPriceSupportOfMonthPerKwh(
+function getPriceSupportOfMonthPerKwh(
   yearMonth: string,
   averageSpotPrice: number
 ): number {
@@ -275,6 +288,18 @@ export function getPriceSupportOfMonthPerKwh(
   }
 
   return Math.max(0, (averageSpotPrice - 0.7 * 1.25) * percent);
+}
+
+function getPriceSupportOfHourPerKwh(
+  yearMonth: string,
+  spotpriceHourPerKwh: number
+) {
+  const percent = priceSupportPercentByMonth[yearMonth];
+  if (percent == null) {
+    return 0;
+  }
+
+  return Math.max(0, (spotpriceHourPerKwh - 0.7 * 1.25) * percent);
 }
 
 function calculateStroemHourlyPricePre2023Apr(props: {
@@ -339,6 +364,8 @@ function calculateStroemHourlyPriceFrom2023Apr(props: {
   const spotpriceMonthPerKwh =
     props.indexedData.spotpriceByMonth[yearMonth] ?? NaN;
 
+  const hourlyPriceSupport = props.date >= "2023-09";
+
   return {
     usageKwh: props.usageKwh,
     variableByKwh: multiplyWithUsage(props.usageKwh, {
@@ -350,10 +377,12 @@ function calculateStroemHourlyPriceFrom2023Apr(props: {
       "Strøm: Påslag": stroemPaaslagPerKwh,
       "Nettleie: Energiledd": energileddPerKwhByMonth[yearMonth] ?? NaN,
       "Nettleie: Elavgift": forbruksavgiftPerKwhByMonth[yearMonth] ?? NaN,
-      Strømstøtte: -getPriceSupportOfMonthPerKwh(
-        yearMonth,
-        props.indexedData.spotpriceByMonth[yearMonth] ?? 0
-      ),
+      Strømstøtte: hourlyPriceSupport
+        ? -getPriceSupportOfHourPerKwh(yearMonth, spotpriceHourPerKwh)
+        : -getPriceSupportOfMonthPerKwh(
+            yearMonth,
+            props.indexedData.spotpriceByMonth[yearMonth] ?? 0
+          ),
     }),
     static: {
       "Strøm: Fastbeløp": stroemFastbeloepAar / plainDate.daysInYear / 24,
