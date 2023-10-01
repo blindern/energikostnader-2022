@@ -74,7 +74,7 @@ const fjernvarmeNettleiePerKwhByMonth: Record<string, number | undefined> = {
   "2023-10": 0.2569 * 1.25,
   "2023-11": 0.2569 * 1.25,
   "2023-12": 0.2569 * 1.25,
-}
+};
 
 export function fjernvarmeRabatt(
   month: Temporal.PlainYearMonth,
@@ -127,7 +127,7 @@ export const finansieltResultatPerKwhActualByMonth: Record<
   "2023-05": 0.2458, // From invoice.
   "2023-06": 0.2832, // From invoice.
   "2023-07": 0.3658, // From invoice.
-  "2023-08": 0.3830, // From invoice.
+  "2023-08": 0.383, // From invoice.
 };
 
 // https://www.elvia.no/nettleie/alt-om-nettleiepriser/nettleiepriser-og-effekttariff-for-bedrifter-med-arsforbruk-over-100000-kwh/
