@@ -48,7 +48,33 @@ const nettFastleddMaanedByMonth: Record<string, number | undefined> = {
 
 // https://www.celsio.no/fjernvarme-og-kjoling/
 const fjernvarmeAdministativtPaaslagPerKwh = 0.035 * 1.25;
-const fjernvarmeNettleiePerKwh = 0.2315 * 1.25;
+const fjernvarmeNettleiePerKwhByMonth: Record<string, number | undefined> = {
+  "2022-01": 0.2315 * 1.25,
+  "2022-02": 0.2315 * 1.25,
+  "2022-03": 0.2315 * 1.25,
+  "2022-04": 0.2315 * 1.25,
+  "2022-05": 0.2315 * 1.25,
+  "2022-06": 0.2315 * 1.25,
+  "2022-07": 0.2315 * 1.25,
+  "2022-08": 0.2315 * 1.25,
+  "2022-09": 0.2315 * 1.25,
+  "2022-10": 0.2315 * 1.25,
+  "2022-11": 0.2315 * 1.25,
+  "2022-12": 0.2315 * 1.25,
+  "2023-01": 0.2315 * 1.25,
+  "2023-02": 0.2315 * 1.25,
+  "2023-03": 0.2315 * 1.25,
+  "2023-04": 0.2315 * 1.25,
+  "2023-05": 0.2315 * 1.25,
+  "2023-06": 0.2315 * 1.25,
+  "2023-07": 0.2315 * 1.25,
+  "2023-08": 0.2315 * 1.25,
+  "2023-09": 0.2315 * 1.25,
+  // https://celsio.no/fjernvarme/prisjustering-fra-1-oktober
+  "2023-10": 0.2569 * 1.25,
+  "2023-11": 0.2569 * 1.25,
+  "2023-12": 0.2569 * 1.25,
+}
 
 export function fjernvarmeRabatt(
   month: Temporal.PlainYearMonth,
@@ -411,7 +437,7 @@ export function calculateFjernvarmeHourlyPrice(props: {
         priceSupport
       ),
       "Administrativt påslag": fjernvarmeAdministativtPaaslagPerKwh,
-      Nettleie: fjernvarmeNettleiePerKwh,
+      Nettleie: fjernvarmeNettleiePerKwhByMonth[yearMonth] ?? NaN,
       Forbruksavgift: forbruksavgiftPerKwhByMonth[yearMonth] ?? NaN,
       Strømstøtte: -priceSupport,
     }),
