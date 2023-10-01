@@ -40,7 +40,7 @@ export function indexData(data: Data): IndexedData {
   );
 
   const stroemByHour = R.mapObjIndexed(
-    (it) => R.sum(it.map((x) => x.usage)),
+    (it) => R.sum(it!.map((x) => x.usage)),
     R.groupBy<DataPowerUsageHour>(
       dateHourIndexer,
       Object.entries(data.powerUsage ?? {})
@@ -69,7 +69,7 @@ export function indexData(data: Data): IndexedData {
   );
 
   const spotpriceByMonth = R.mapObjIndexed(
-    (it) => R.sum(it.map((x) => (x.price / 1000) * 1.25)) / it.length,
+    (it) => R.sum(it!.map((x) => (x.price / 1000) * 1.25)) / it!.length,
     R.groupBy<DataNordpoolPriceHour>(yearMonthIndexer, data.nordpool ?? [])
   );
 

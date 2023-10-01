@@ -401,7 +401,7 @@ function generateYearlyTableReport(data: Data, indexedData: IndexedData) {
   return Object.values(
     R.mapObjIndexed(
       (bucketDates, year) =>
-        generateTableData(data, indexedData, String(year), bucketDates),
+        generateTableData(data, indexedData, String(year), bucketDates!),
       byYear(dates)
     )
   );
@@ -418,7 +418,7 @@ function generateMonthlyTableReport(data: Data, indexedData: IndexedData) {
   return Object.values(
     R.mapObjIndexed(
       (bucketDates, month) =>
-        generateTableData(data, indexedData, String(month), bucketDates),
+        generateTableData(data, indexedData, String(month), bucketDates!),
       byMonth(dates)
     )
   );
