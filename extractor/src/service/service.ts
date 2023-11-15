@@ -54,15 +54,15 @@ async function iteration() {
   }
 
   await handleFailure(() =>
-    loadDailyTemperatureIfNeeded(data, previousDays[0], previousDays.at(-2)!)
+    loadDailyTemperatureIfNeeded(data, previousDays[0]!, previousDays.at(-2)!)
   );
 
   await handleFailure(() =>
-    loadStroemIfNeeded(data, previousDays[0], previousDays.at(-1)!)
+    loadStroemIfNeeded(data, previousDays[0]!, previousDays.at(-1)!)
   );
 
   await handleFailure(() =>
-    loadFjernvarmeIfNeeded(data, previousDays[0], previousDays.at(-1)!)
+    loadFjernvarmeIfNeeded(data, previousDays[0]!, previousDays.at(-1)!)
   );
 
   await dataStore.save(data);

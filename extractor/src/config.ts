@@ -29,8 +29,8 @@ export const ELVIA_CONTRACT_LIST = requireEnv("ELVIA_CONTRACT_LIST")
   .map((it) => {
     const [meterId, contractId, flag = undefined] = it.split(":", 3);
     return {
-      meterId,
-      contractId,
+      meterId: meterId!,
+      contractId: contractId!,
       flag: flag === "nofetch" ? ("nofetch" as const) : undefined,
     };
   });

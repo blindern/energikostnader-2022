@@ -7,7 +7,7 @@ if (process.argv.length < 3) {
   process.exit(1);
 }
 
-const date = process.argv[2];
+const date = process.argv[2]!;
 
 const data = await getHourlyData(Temporal.PlainDate.from(date));
 

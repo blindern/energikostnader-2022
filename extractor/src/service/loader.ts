@@ -213,7 +213,7 @@ export async function loadStroemIfNeeded(
 
   const storedDates = new Set(
     meterIds
-      .map((it) => (data.powerUsage ?? {})[it] ?? [])
+      .map((it) => (data.powerUsage ?? {})[it]! ?? [])
       .map((usages) => {
         const verifiedMeasures = usages.filter(
           (it) => it.verified == null || it.verified
@@ -223,7 +223,7 @@ export async function loadStroemIfNeeded(
           verifiedMeasures
         );
         return Object.entries(dateWithHours)
-          .filter(([_, values]) => values.length == 24)
+          .filter(([_, values]) => values!.length == 24)
           .map(([date, _]) => date);
       })
       .flat()

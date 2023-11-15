@@ -7,7 +7,7 @@ if (process.argv.length < 3) {
   process.exit(1);
 }
 
-const dateStr = process.argv[2];
+const dateStr = process.argv[2]!;
 const data = await getNordpoolData(Temporal.PlainDate.from(dateStr));
 
 process.stdout.write(

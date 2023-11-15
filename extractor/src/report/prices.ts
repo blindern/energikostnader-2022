@@ -272,10 +272,7 @@ const priceSupportPercentByMonth: Record<string, number | undefined> = {
   "2024-12": 0.9,
 };
 
-function getFinansieltResultatPerKwh(
-  yearMonth: string,
-  averageSpotPrice: number
-) {
+function getFinansieltResultatPerKwh(yearMonth: string) {
   return finansieltResultatPerKwhActualByMonth[yearMonth] ?? 0;
 }
 
@@ -316,17 +313,12 @@ function calculateStroemHourlyPricePre2023Apr(props: {
 
   const spotpriceHourPerKwh =
     props.indexedData.spotpriceByHour[dateHour] ?? NaN;
-  const spotpriceMonthPerKwh =
-    props.indexedData.spotpriceByMonth[yearMonth] ?? NaN;
 
   return {
     usageKwh: props.usageKwh,
     variableByKwh: multiplyWithUsage(props.usageKwh, {
       "Strøm: Strømforbruk": spotpriceHourPerKwh,
-      "Strøm: Finansielt resultat": getFinansieltResultatPerKwh(
-        yearMonth,
-        spotpriceMonthPerKwh
-      ),
+      "Strøm: Finansielt resultat": getFinansieltResultatPerKwh(yearMonth),
       "Strøm: Påslag": stroemPaaslagPerKwh,
       "Nettleie: Energiledd": energileddPerKwhByMonth[yearMonth] ?? NaN,
       "Nettleie: Forbruksavgift": forbruksavgiftPerKwhByMonth[yearMonth] ?? NaN,
@@ -362,8 +354,6 @@ function calculateStroemHourlyPriceFrom2023Apr(props: {
 
   const spotpriceHourPerKwh =
     props.indexedData.spotpriceByHour[dateHour] ?? NaN;
-  const spotpriceMonthPerKwh =
-    props.indexedData.spotpriceByMonth[yearMonth] ?? NaN;
 
   const hourlyPriceSupport = props.date >= "2023-09";
 
@@ -371,10 +361,7 @@ function calculateStroemHourlyPriceFrom2023Apr(props: {
     usageKwh: props.usageKwh,
     variableByKwh: multiplyWithUsage(props.usageKwh, {
       "Strøm: Strømforbruk": spotpriceHourPerKwh,
-      "Strøm: Finansielt resultat": getFinansieltResultatPerKwh(
-        yearMonth,
-        spotpriceMonthPerKwh
-      ),
+      "Strøm: Finansielt resultat": getFinansieltResultatPerKwh(yearMonth),
       "Strøm: Påslag": stroemPaaslagPerKwh,
       "Nettleie: Energiledd": energileddPerKwhByMonth[yearMonth] ?? NaN,
       "Nettleie: Elavgift": forbruksavgiftPerKwhByMonth[yearMonth] ?? NaN,
@@ -525,7 +512,7 @@ function addPricesInner(
   const result: Record<string, number> = {};
 
   for (const key of new Set([...Object.keys(one), ...Object.keys(two)])) {
-    result[key] = zeroForNaN(one[key]) + zeroForNaN(two[key]);
+    result[key] = zeroForNaN(one[key]!) + zeroForNaN(two[key]!);
   }
 
   return result;

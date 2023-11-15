@@ -1,5 +1,5 @@
 import { Temporal } from "@js-temporal/polyfill";
-import { HourUsage } from "./extract/common";
+import { HourUsage } from "./extract/common.js";
 
 export function generateHourUsageCsvRows(
   meterName: string,

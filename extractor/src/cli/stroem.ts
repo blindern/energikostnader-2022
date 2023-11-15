@@ -20,8 +20,8 @@ if (process.argv.length < 4) {
   process.exit(1);
 }
 
-const firstDate = Temporal.PlainDate.from(process.argv[2]);
-const lastDate = Temporal.PlainDate.from(process.argv[3]);
+const firstDate = Temporal.PlainDate.from(process.argv[2]!);
+const lastDate = Temporal.PlainDate.from(process.argv[3]!);
 
 const accessToken = await getAccessTokenFromCredentials({
   email: ELVIA_EMAIL,

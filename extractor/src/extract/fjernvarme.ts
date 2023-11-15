@@ -88,7 +88,7 @@ function parseCsvData(csvData: string): HourUsage[] {
 
   const lines = csvData.split("\n");
 
-  const firstLine = lines[0].split(";");
+  const firstLine = lines[0]!.split(";");
   if (firstLine[0] !== "Tid" || firstLine[1] !== "Forbruk [kWh]") {
     console.log(csvData);
     throw new Error("Unexpected csv data");
@@ -104,11 +104,11 @@ function parseCsvData(csvData: string): HourUsage[] {
     const parts = line.split(";");
     result.push({
       date: Temporal.PlainDate.from({
-        year: Number(parts[0].slice(0, 4)),
-        month: Number(parts[0].slice(4, 6)),
-        day: Number(parts[0].slice(6, 8)),
+        year: Number(parts[0]!.slice(0, 4)),
+        month: Number(parts[0]!.slice(4, 6)),
+        day: Number(parts[0]!.slice(6, 8)),
       }),
-      hour: Number(parts[0].slice(8, 10)),
+      hour: Number(parts[0]!.slice(8, 10)),
       usage: Number(parts[1]),
     });
   }

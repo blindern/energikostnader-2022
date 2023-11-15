@@ -18,8 +18,8 @@ if (process.argv.length < 4) {
   process.exit(1);
 }
 
-const firstDate = process.argv[2];
-const lastDate = process.argv[3];
+const firstDate = process.argv[2]!;
+const lastDate = process.argv[3]!;
 
 const usage = await getHourlyData({
   accessToken,

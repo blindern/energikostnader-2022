@@ -68,7 +68,7 @@ function parseSetCookie(values: string[]): Record<string, string> {
         namedParts.expires == null ||
         new Date(namedParts.expires).getTime() > new Date().getTime()
       ) {
-        return [parts[0].split("=", 2)];
+        return [parts[0]!.split("=", 2)];
       } else {
         return [];
       }
@@ -125,7 +125,7 @@ async function getInitialLoginState(): Promise<{
 
   return {
     cookies,
-    csrfToken: csrfTokenMatch[1],
+    csrfToken: csrfTokenMatch[1]!,
   };
 }
 

@@ -178,7 +178,7 @@ function Hourly({ reportData }: { reportData: ReportData }) {
               key={`date-text-${it.name}`}
               x={it.name}
               y={-0.05}
-              label={it.name.split(" ")[0]}
+              label={it.name.split(" ")[0]!}
               fillOpacity={0}
               strokeWidth={0}
               ifOverflow="visible"
@@ -286,7 +286,7 @@ function Daily({ reportData, year }: { reportData: ReportData; year: number }) {
               key={`month-text-${it.name}`}
               x={it.name}
               y={-0.05}
-              label={monthNames[Number(it.date.slice(5, 7))]}
+              label={monthNames[Number(it.date.slice(5, 7))]!}
               fillOpacity={0}
               strokeWidth={0}
               ifOverflow="visible"
@@ -423,7 +423,7 @@ function HourlyPrice({ reportData }: { reportData: ReportData }) {
               key={`date-text-${it.name}`}
               x={it.name}
               y={-0.05}
-              label={it.name.split(" kl")[0]}
+              label={it.name.split(" kl")[0]!}
               fillOpacity={0}
               strokeWidth={0}
               ifOverflow="visible"
@@ -495,7 +495,7 @@ function EnergyTemperature({ etData }: { etData: ReportData["et"] }) {
   const result2 = result
     .filter((it) => it.items.length > 0)
     .map((it) => {
-      const firstDate = it.items[0].date;
+      const firstDate = it.items[0]!.date;
       const lastDate = it.items.at(-1)!.date;
 
       const name =
@@ -647,8 +647,8 @@ function MonthPrice({
   const sumKwh = data.cost.stroem.usageKwh + data.cost.fjernvarme.usageKwh;
   const sumPrice = data.cost.stroemSum + data.cost.fjernvarmeSum;
   const sumSupport =
-    data.cost.stroem.variableByKwh["Strømstøtte"] +
-    data.cost.fjernvarme.variableByKwh["Strømstøtte"];
+    data.cost.stroem.variableByKwh["Strømstøtte"]! +
+    data.cost.fjernvarme.variableByKwh["Strømstøtte"]!;
 
   let label: string;
   if ("yearMonth" in data) {
@@ -874,7 +874,7 @@ function Presentation({
             Kostnad så langt i{" "}
             {monthNamesLong[
               Number(reportData.cost.currentMonth.yearMonth.slice(5))
-            ].toLowerCase()}
+            ]!.toLowerCase()}
           </h2>
           <div className="presentation-key-number-value">
             kr <PrettyNumber>{Math.round(currentMonthCost)}</PrettyNumber>
@@ -913,7 +913,7 @@ function App() {
     fetch("report.json")
       .then((it) => it.json())
       .then((resultJson) => {
-        setReportData(resultJson);
+        setReportData(resultJson as ReportData);
       })
       .catch((e) => {
         console.error("Failed to load data", e);

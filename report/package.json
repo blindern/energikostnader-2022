@@ -2,6 +2,7 @@
   "name": "rapport",
   "private": true,
   "version": "0.0.0",
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -14,6 +15,8 @@
     "recharts": "^2.1.14"
   },
   "devDependencies": {
+    "@tsconfig/node20": "^20.1.2",
+    "@tsconfig/strictest": "^2.0.2",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "@vitejs/plugin-react": "^4.0.0",
