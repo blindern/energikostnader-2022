@@ -27,13 +27,6 @@ code {
   align-content: space-around;
 }
 
-@media (max-width: 600px) {
-  .presentation {
-    display: block;
-    height: auto;
-  }
-}
-
 .presentation h1 {
   flex: 1 100%;
 }
@@ -75,6 +68,22 @@ code {
   color: red;
 }
 
+@media (max-width: 800px) {
+  .presentation {
+    display: block;
+    height: auto;
+  }
+  .presentation-key-numbers {
+    flex-direction: column;
+  }
+  .presentation-key-number {
+    margin: 60px 0;
+  }
+  .presentation-key-number + .presentation-key-number {
+    margin-top: 0;
+  }
+}
+
 .presentation-show-more {
   flex: 1 100%;
   font-size: 16px;
@@ -82,6 +91,8 @@ code {
 
 .more-data {
   padding: 10px;
+  /* spacing on the bottom due to price hovering box */
+  margin-bottom: 250px;
 }
 
 h1 {
@@ -90,7 +101,7 @@ h1 {
 }
 
 h2 {
-  margin: 0;
+  margin: 16px 0 4px;
   font-size: 22px;
 }
 
@@ -102,9 +113,18 @@ p {
   max-width: 700px;
 }
 
+.usagetable {
+  border-collapse: collapse;
+}
+
+.usagetable td {
+  white-space: nowrap;
+}
+
 .usagetable th,
 .usagetable td {
   text-align: right;
+  border: 1px solid #ddd;
 }
 
 .usagetable th:first-child,
@@ -130,4 +150,8 @@ p {
 
 .recharts-text {
   fill: #333;
+}
+
+.github-link {
+  font-size: 13px;
 }

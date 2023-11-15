@@ -329,9 +329,9 @@ function generatePriceReport(
           date,
           hour,
           name: `${dateStr} kl ${String(hour).padStart(2, "0")}`,
-          priceStroemKwh: priceStroem / stroemUsage,
-          priceFjernvarmeKwh: priceFjernvarme / fjernvarmeUsage,
-          nordpoolKwh: nordpoolKwh == null ? undefined : nordpoolKwh,
+          priceStroemKwh: roundTwoDec(priceStroem / stroemUsage),
+          priceFjernvarmeKwh: roundTwoDec(priceFjernvarme / fjernvarmeUsage),
+          nordpoolKwh: roundTwoDec(nordpoolKwh == null ? NaN : nordpoolKwh),
         };
       });
     })
@@ -470,33 +470,11 @@ export async function generateReportData(data: Data) {
     now.toPlainDate()
   );
 
-  const sameMonthLastYear = currentMonth.subtract({ years: 1 });
-  const sameMonthLastYearDateFrom = sameMonthLastYear.toPlainDate({ day: 1 });
-  const sameMonthLastYearDateTo = now
-    .subtract({ years: 1, hours: 4, days: 1 })
-    .toPlainDate();
-  const sameMonthLastYearDates =
-    Temporal.PlainDate.compare(
-      sameMonthLastYearDateFrom,
-      sameMonthLastYearDateTo
-    ) > 0
-      ? []
-      : datesInRange(sameMonthLastYearDateFrom, sameMonthLastYearDateTo);
-
   const previousMonthDates = datesInRange(
     previousMonth.toPlainDate({ day: 1 }),
     previousMonth
       .toPlainDate({ day: 1 })
       .add({ months: 1 })
-      .subtract({ days: 1 })
-  );
-
-  const currentYearDates = datesInRange(
-    now.toPlainDate().with({ month: 1, day: 1 }),
-    now
-      .toPlainDate()
-      .with({ month: 1, day: 1 })
-      .add({ years: 1 })
       .subtract({ days: 1 })
   );
 
@@ -554,7 +532,7 @@ export async function generateReportData(data: Data) {
         "temperature",
         "power"
       ),
-      linearH21: createTrend(
+      linearH21V22: createTrend(
         energyTemperatureReport
           .filter(
             (it) =>
@@ -562,19 +540,7 @@ export async function generateReportData(data: Data) {
               it.power != null &&
               it.temperature < trendlineTemperatureLowerThan
           )
-          .filter((it) => it.date >= "2021-07" && it.date <= "2021-12"),
-        "temperature",
-        "power"
-      ),
-      linearV22: createTrend(
-        energyTemperatureReport
-          .filter(
-            (it) =>
-              it.temperature != null &&
-              it.power != null &&
-              it.temperature < trendlineTemperatureLowerThan
-          )
-          .filter((it) => it.date >= "2022-01" && it.date <= "2022-06"),
+          .filter((it) => it.date >= "2021-07" && it.date < "2022-07"),
         "temperature",
         "power"
       ),
@@ -586,8 +552,7 @@ export async function generateReportData(data: Data) {
               it.power != null &&
               it.temperature < trendlineTemperatureLowerThan
           )
-          .filter((it) => it.date >= "2022-07")
-          .filter((it) => it.date <= "2022-12"),
+          .filter((it) => it.date >= "2022-07" && it.date < "2023"),
         "temperature",
         "power"
       ),
@@ -599,7 +564,19 @@ export async function generateReportData(data: Data) {
               it.power != null &&
               it.temperature < trendlineTemperatureLowerThan
           )
-          .filter((it) => it.date >= "2023-01"),
+          .filter((it) => it.date >= "2023-01" && it.date < "2023-07"),
+        "temperature",
+        "power"
+      ),
+      linearH23: createTrend(
+        energyTemperatureReport
+          .filter(
+            (it) =>
+              it.temperature != null &&
+              it.power != null &&
+              it.temperature < trendlineTemperatureLowerThan
+          )
+          .filter((it) => it.date >= "2023-07"),
         "temperature",
         "power"
       ),
@@ -616,7 +593,7 @@ export async function generateReportData(data: Data) {
         "temperature",
         "power"
       ),
-      linearH21: createTrend(
+      linearH21V22: createTrend(
         energyTemperatureReportFjernvarme
           .filter(
             (it) =>
@@ -624,19 +601,7 @@ export async function generateReportData(data: Data) {
               it.power != null &&
               it.temperature < trendlineTemperatureLowerThan
           )
-          .filter((it) => it.date >= "2021-07" && it.date <= "2021-12"),
-        "temperature",
-        "power"
-      ),
-      linearV22: createTrend(
-        energyTemperatureReportFjernvarme
-          .filter(
-            (it) =>
-              it.temperature != null &&
-              it.power != null &&
-              it.temperature < trendlineTemperatureLowerThan
-          )
-          .filter((it) => it.date >= "2022-01" && it.date <= "2022-06"),
+          .filter((it) => it.date >= "2021-07" && it.date < "2022-07"),
         "temperature",
         "power"
       ),
@@ -648,8 +613,7 @@ export async function generateReportData(data: Data) {
               it.power != null &&
               it.temperature < trendlineTemperatureLowerThan
           )
-          .filter((it) => it.date >= "2022-07")
-          .filter((it) => it.date <= "2022-12"),
+          .filter((it) => it.date >= "2022-07" && it.date < "2023-01"),
         "temperature",
         "power"
       ),
@@ -661,7 +625,19 @@ export async function generateReportData(data: Data) {
               it.power != null &&
               it.temperature < trendlineTemperatureLowerThan
           )
-          .filter((it) => it.date >= "2023-01"),
+          .filter((it) => it.date >= "2023-01" && it.date < "2023-07"),
+        "temperature",
+        "power"
+      ),
+      linearH23: createTrend(
+        energyTemperatureReportFjernvarme
+          .filter(
+            (it) =>
+              it.temperature != null &&
+              it.power != null &&
+              it.temperature < trendlineTemperatureLowerThan
+          )
+          .filter((it) => it.date >= "2023-07"),
         "temperature",
         "power"
       ),
@@ -695,21 +671,9 @@ export async function generateReportData(data: Data) {
         yearMonth: currentMonth.toString(),
         cost: generateCostReport(data, indexedData, currentMonthDates),
       },
-      sameMonthLastYear: {
-        yearMonth: sameMonthLastYear.toString(),
-        lastDate:
-          sameMonthLastYearDates.length === 0
-            ? null
-            : sameMonthLastYearDates.at(-1)?.toString(),
-        cost: generateCostReport(data, indexedData, sameMonthLastYearDates),
-      },
       previousMonth: {
         yearMonth: previousMonth.toString(),
         cost: generateCostReport(data, indexedData, previousMonthDates),
-      },
-      currentYear: {
-        year: now.year,
-        cost: generateCostReport(data, indexedData, currentYearDates),
       },
     },
     table: {

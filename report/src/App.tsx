@@ -459,30 +459,28 @@ function EnergyTemperature({ etData }: { etData: ReportData["et"] }) {
 
   const result = [
     {
-      items: finalData
-        .slice(0, -10)
-        .filter((it) => !it.date.startsWith("2022")),
-      color: "#888888",
+      items: finalData.slice(0, -10).filter((it) => it.date < "2022-07"),
+      color: "#AAAAAA",
       fillOpacity: 0.4,
     },
     {
       items: finalData
         .slice(0, -10)
-        .filter((it) => it.date >= "2022-01-01" && it.date < "2022-07-01"),
-      color: "#336EFF",
-      fillOpacity: 0.3,
+        .filter((it) => it.date >= "2022-07" && it.date < "2023"),
+      color: "#6aa84f",
+      fillOpacity: 0.4,
     },
     {
       items: finalData
         .slice(0, -10)
-        .filter((it) => it.date >= "2022-07-01" && it.date < "2023-01-01"),
-      color: "#6aa84f",
-      fillOpacity: 0.8,
+        .filter((it) => it.date >= "2023-01-01" && it.date < "2023-07-01"),
+      color: "#336EFF",
+      fillOpacity: 0.4,
     },
     {
-      items: finalData.slice(0, -10).filter((it) => it.date >= "2023-01-01"),
-      color: "#ff6600",
-      fillOpacity: 0.8,
+      items: finalData.slice(0, -10).filter((it) => it.date >= "2023-07-01"),
+      color: "#FF6600",
+      fillOpacity: 0.7,
     },
     {
       items: finalData.slice(-10, -1),
@@ -561,31 +559,36 @@ function EnergyTemperature({ etData }: { etData: ReportData["et"] }) {
             />
           ))}
           <Line
-            data={trendData(etData.linearH21)}
+            data={trendData(etData.linearH21V22)}
             dataKey="power"
-            stroke="#888888"
-            name="Høst 2021"
+            stroke="#AAAAAA"
+            strokeOpacity={0.5}
+            name="H21 / V22"
             isAnimationActive={false}
           />
           <Line
             data={trendData(etData.linearH22)}
             dataKey="power"
             stroke="#6aa84f"
-            name="Høst 2022"
-            isAnimationActive={false}
-          />
-          <Line
-            data={trendData(etData.linearV22)}
-            dataKey="power"
-            stroke="#336EFF"
-            name="Vår 2022"
+            strokeOpacity={0.5}
+            name="H22"
             isAnimationActive={false}
           />
           <Line
             data={trendData(etData.linearV23)}
             dataKey="power"
-            stroke="#FF6600"
-            name="Vår 2023"
+            stroke="#336EFF"
+            strokeOpacity={0.5}
+            name="V23"
+            isAnimationActive={false}
+          />
+          <Line
+            data={trendData(etData.linearH23)}
+            dataKey="power"
+            stroke="#ff6600"
+            strokeOpacity={0.8}
+            strokeWidth={2}
+            name="H23"
             isAnimationActive={false}
           />
           <Legend verticalAlign="top" height={40} />
@@ -593,14 +596,9 @@ function EnergyTemperature({ etData }: { etData: ReportData["et"] }) {
       </ResponsiveContainer>
       <ul>
         <li>
-          Høst 2021: forbruk = f(temperatur) ={" "}
-          {roundTwoDec(etData.linearH21.slope)} * temperatur +{" "}
-          {Math.round(etData.linearH21.yStart)}
-        </li>
-        <li>
-          Vår 2022: forbruk = f(temperatur) ={" "}
-          {roundTwoDec(etData.linearV22.slope)} * temperatur +{" "}
-          {Math.round(etData.linearV22.yStart)}
+          Høst 2021 / vår 2022: forbruk = f(temperatur) ={" "}
+          {roundTwoDec(etData.linearH21V22.slope)} * temperatur +{" "}
+          {Math.round(etData.linearH21V22.yStart)}
         </li>
         <li>
           Høst 2022: forbruk = f(temperatur) ={" "}
@@ -611,6 +609,11 @@ function EnergyTemperature({ etData }: { etData: ReportData["et"] }) {
           Vår 2023: forbruk = f(temperatur) ={" "}
           {roundTwoDec(etData.linearV23.slope)} * temperatur +{" "}
           {Math.round(etData.linearV23.yStart)}
+        </li>
+        <li>
+          Høst 2023: forbruk = f(temperatur) ={" "}
+          {roundTwoDec(etData.linearH23.slope)} * temperatur +{" "}
+          {Math.round(etData.linearH23.yStart)}
         </li>
       </ul>
       <p>
@@ -633,72 +636,6 @@ function EnergyTemperature({ etData }: { etData: ReportData["et"] }) {
 
 function PrettyNumber({ children }: { children: number }) {
   return <>{children.toLocaleString("nb")}</>;
-}
-
-function MonthPrice({
-  data,
-  current,
-  lastYear,
-}: {
-  data: ReportData["cost"][keyof ReportData["cost"]];
-  current?: boolean;
-  lastYear?: boolean;
-}) {
-  const sumKwh = data.cost.stroem.usageKwh + data.cost.fjernvarme.usageKwh;
-  const sumPrice = data.cost.stroemSum + data.cost.fjernvarmeSum;
-  const sumSupport =
-    data.cost.stroem.variableByKwh["Strømstøtte"]! +
-    data.cost.fjernvarme.variableByKwh["Strømstøtte"]!;
-
-  let label: string;
-  if ("yearMonth" in data) {
-    const year = data.yearMonth.slice(0, 4);
-    const month = monthNamesLong[Number(data.yearMonth.slice(5))];
-    label = `${month} ${year}`;
-  } else {
-    label = String(data["year"]);
-  }
-
-  return (
-    <>
-      <h3>
-        {label}
-        {current && !lastYear && " (så langt)"}
-        {current &&
-          lastYear &&
-          "lastDate" in data &&
-          data.lastDate &&
-          ` (til ${data.lastDate})`}
-      </h3>
-      <p>
-        {!lastYear && (
-          <>
-            kr <PrettyNumber>{Math.round(sumPrice)}</PrettyNumber> for{" "}
-          </>
-        )}
-        <PrettyNumber>{Math.round(sumKwh)}</PrettyNumber> kWh
-        {!lastYear && (
-          <>
-            {" "}
-            (
-            <PrettyNumber>
-              {Math.round((sumPrice * 100) / sumKwh)}
-            </PrettyNumber>{" "}
-            øre / kWh)
-          </>
-        )}
-        {!lastYear && (
-          <>
-            <br />
-            <span>
-              Strømstøtte: kr{" "}
-              <PrettyNumber>{-Math.round(sumSupport)}</PrettyNumber>
-            </span>
-          </>
-        )}
-      </p>
-    </>
-  );
 }
 
 function sum(items: Record<string, number>) {
@@ -774,6 +711,7 @@ function TableData({
           <th>Forbruk strøm</th>
           <th>Forbruk fjernvarme</th>
           <th>Forbruk alt</th>
+          <th>Strømstøtte</th>
           <th>Kostnad strøm</th>
           <th>Kostnad fjernvarme</th>
           <th>Kostnad alt</th>
@@ -790,6 +728,12 @@ function TableData({
             <td>{Math.round(it.stroem.usageKwh)}</td>
             <td>{Math.round(it.fjernvarme.usageKwh)}</td>
             <td>{Math.round(it.stroem.usageKwh + it.fjernvarme.usageKwh)}</td>
+            <td>
+              {Math.round(
+                it.stroem.variableByKwh["Strømstøtte"]! +
+                  it.fjernvarme.variableByKwh["Strømstøtte"]!
+              ) || 0}
+            </td>
             <td>
               <PriceDetails
                 item={it.stroem}
@@ -957,15 +901,6 @@ function App() {
             fjernvarme
           </h2>
           <EnergyTemperature etData={reportData.etFjernvarme} />
-          <h2>Kostnader så langt</h2>
-          <MonthPrice data={reportData.cost.previousMonth} />
-          <MonthPrice data={reportData.cost.currentMonth} current />
-          <MonthPrice
-            data={reportData.cost.sameMonthLastYear}
-            current
-            lastYear
-          />
-          <MonthPrice data={reportData.cost.currentYear} current />
           <h2>Estimert pris per kWh</h2>
           <p>
             Endelig pris påvirkes blant annet av månedens gjennomsnittlige
@@ -1008,7 +943,9 @@ function App() {
           <TableData title="Måned" item={reportData.table.monthly} />
           <h2>Detaljerte dagstall siste dager</h2>
           <TableData title="Dato" item={reportData.table.lastDays} />
-          <p>
+          <p className="github-link">
+            Laget av Henrik Steen
+            <br />
             <a href="https://github.com/blindern/energi">
               github.com/blindern/energi
             </a>
