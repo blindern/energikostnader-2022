@@ -856,6 +856,10 @@ function Presentation({
           <div className="presentation-key-number-desc">
             Inkluderer også strømstøtte
           </div>
+          <div className="presentation-key-number-note">
+            Det rapporterte tallet her har over en mulig lengre periode ved feil
+            vært ca. halvparten av det riktige tallet. Rettet 15. november.
+          </div>
         </div>
         <div className="presentation-key-number">
           <h2>Hva koster energien i dag i forhold til tidligere?</h2>

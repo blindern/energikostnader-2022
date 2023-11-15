@@ -273,6 +273,11 @@ export function generateEnergyTemperatureReportFjernvarme(
     });
 }
 
+function undefinedForZero(value: number | undefined) {
+  if (value === 0) return undefined;
+  return value;
+}
+
 function generatePriceReport(
   data: Data,
   indexedData: IndexedData,
@@ -293,8 +298,10 @@ function generatePriceReport(
 
         // The fallback value doesn't have that much impact, so keeping a static value.
         // (This is relevant for future data.)
-        const stroemUsage = indexedData.stroemByHour[index] ?? 50;
-        const fjernvarmeUsage = indexedData.fjernvarmeByHour[index] ?? 80;
+        const stroemUsage =
+          undefinedForZero(indexedData.stroemByHour[index]) ?? 50;
+        const fjernvarmeUsage =
+          undefinedForZero(indexedData.fjernvarmeByHour[index]) ?? 80;
 
         const priceStroem = sumPrice(
           calculateStroemHourlyPrice({
