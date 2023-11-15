@@ -1,5 +1,5 @@
 import { Temporal } from "@js-temporal/polyfill";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import {
   Area,
   CartesianGrid,
@@ -992,10 +992,10 @@ function App() {
             .sort()
             .reverse()
             .map((year) => (
-              <>
+              <Fragment key={year}>
                 <h2>Daglig forbruk {year}</h2>
                 <Daily reportData={reportData} year={Number(year)} />
-              </>
+              </Fragment>
             ))}
           <h2>Detaljerte årstall</h2>
           Tall for 2021 kan være mangelfulle.
