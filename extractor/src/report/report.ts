@@ -1,6 +1,7 @@
 import { Temporal } from "@js-temporal/polyfill";
 import * as fs from "fs/promises";
 import * as R from "ramda";
+import { createTrend } from "trendline";
 import { REPORT_FILE } from "../config.js";
 import { datesInRange } from "../dates.js";
 import {
@@ -9,33 +10,38 @@ import {
   DataTemperatureDay,
 } from "../service/data-store.js";
 import {
+  dayNames,
+  hoursInADay,
+  trendlineTemperatureLowerThan,
+} from "./constants.js";
+import {
   averageSpotprice,
   averageTemperature,
   roundTwoDec,
 } from "./helpers.js";
-import { dateHourIndexer, indexData, IndexedData } from "./indexed-data.js";
+import { IndexedData, dateHourIndexer, indexData } from "./indexed-data.js";
 import {
+  UsagePrice,
   calculateFjernvarmeHourlyPrice,
   calculateHourlyPrice,
   calculateStroemHourlyPrice,
   flattenPrices,
   sumPrice,
-  UsagePrice,
 } from "./prices.js";
 
-// @ts-ignore
-import { default as _createTrend } from "trendline";
-import {
-  dayNames,
-  hoursInADay,
-  trendlineTemperatureLowerThan,
-} from "./constants.js";
-
-function createTrend(...args: any): {
-  slope: number;
-  yStart: number;
-} {
-  return _createTrend(...args);
+// The official types are not correct.
+declare module "trendline" {
+  export function createTrend<X extends string, Y extends string>(
+    data: Array<{
+      [K in X | Y]: number | undefined;
+    }>,
+    xKey: X,
+    yKey: Y
+  ): {
+    slope: number;
+    yStart: number;
+    calcY: (x: number) => number;
+  };
 }
 
 export function generateDailyReport(
@@ -515,7 +521,7 @@ export async function generateReportData(data: Data) {
         Temporal.Now.plainDateISO("Europe/Oslo").with({
           month: 12,
           day: 31,
-        }),
+        })
       ),
     },
     hourly: {
