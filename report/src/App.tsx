@@ -273,32 +273,30 @@ function Daily({
           legendType="plainline"
           strokeWidth={1.2}
         />
-        {
-          graphData
-            .slice(1)
-            .filter((it) => it.date.endsWith("-01"))
-            .map((it) => (
-              <ReferenceLine
-                key={`month-${it.name}`}
-                x={it.name}
-                stroke="#555555"
-              />
-            ))}
-        {
-          graphData
-            .filter((it) => it.date.endsWith("-15"))
-            .map((it) => (
-              <ReferenceDot
-                key={`month-text-${it.name}`}
-                x={it.name}
-                y={-0.05}
-                label={monthNames[Number(it.date.slice(5, 7))]!}
-                fillOpacity={0}
-                strokeWidth={0}
-                ifOverflow="visible"
-                yAxisId="label"
-              />
-            ))}
+        {graphData
+          .slice(1)
+          .filter((it) => it.date.endsWith("-01"))
+          .map((it) => (
+            <ReferenceLine
+              key={`month-${it.name}`}
+              x={it.name}
+              stroke="#555555"
+            />
+          ))}
+        {graphData
+          .filter((it) => it.date.endsWith("-15"))
+          .map((it) => (
+            <ReferenceDot
+              key={`month-text-${it.name}`}
+              x={it.name}
+              y={-0.05}
+              label={monthNames[Number(it.date.slice(5, 7))]!}
+              fillOpacity={0}
+              strokeWidth={0}
+              ifOverflow="visible"
+              yAxisId="label"
+            />
+          ))}
         <XAxis
           dataKey="name"
           angle={-90}
@@ -715,22 +713,27 @@ function TableData({
   title: string;
   isDaily?: boolean;
 }) {
+  const header = (
+    <tr>
+      <th>{title}</th>
+      <th>Temperatur</th>
+      <th>Spotpris</th>
+      <th>Forbruk strøm</th>
+      <th>Forbruk fjernvarme</th>
+      <th>Forbruk alt</th>
+      <th>Strømstøtte</th>
+      <th>Kostnad strøm</th>
+      <th>Kostnad fjernvarme</th>
+      <th>Kostnad alt</th>
+    </tr>
+  );
+
   return (
     <table className="usagetable">
-      <thead>
-        <tr>
-          <th>{title}</th>
-          <th>Temperatur</th>
-          <th>Spotpris</th>
-          <th>Forbruk strøm</th>
-          <th>Forbruk fjernvarme</th>
-          <th>Forbruk alt</th>
-          <th>Strømstøtte</th>
-          <th>Kostnad strøm</th>
-          <th>Kostnad fjernvarme</th>
-          <th>Kostnad alt</th>
-        </tr>
-      </thead>
+      <thead>{header}</thead>
+      {item.length > 20 && (
+        <tfoot>{header}</tfoot>
+      )}
       <tbody>
         {item.map((it) => (
           <tr key={it.name}>
@@ -978,7 +981,7 @@ function App() {
               </Fragment>
             ))}
           <h2>Detaljerte årstall</h2>
-          Tall for 2021 kan være mangelfulle.
+          Tall før 2022 kan være mangelfulle.
           <TableData title="År" item={reportData.table.yearly} />
           <h2>Detaljerte månedstall</h2>
           <TableData title="Måned" item={reportData.table.monthly} />

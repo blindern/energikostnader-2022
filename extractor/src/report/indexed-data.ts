@@ -47,6 +47,9 @@ export function indexData(data: Data): IndexedData {
         .filter(([key, _]) => key !== "Fjernvarme")
         .map(([_, values]) => values)
         .flat()
+        // Data for 2017 is only since 2017-10-01,
+        // so skip those months.
+        .filter((it) => it.date >= "2018")
     )
   );
 

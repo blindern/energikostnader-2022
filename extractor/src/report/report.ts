@@ -404,7 +404,7 @@ function generateTableData(
 }
 
 function generateYearlyTableReport(data: Data, indexedData: IndexedData) {
-  const firstDate = Temporal.PlainDate.from("2021-01-01");
+  const firstDate = Temporal.PlainDate.from("2013-01-01");
 
   const dates = datesInRange(firstDate, indexedData.lastDate);
   const byYear = R.groupBy((value: Temporal.PlainDate) =>
@@ -421,7 +421,7 @@ function generateYearlyTableReport(data: Data, indexedData: IndexedData) {
 }
 
 function generateMonthlyTableReport(data: Data, indexedData: IndexedData) {
-  const firstDate = Temporal.PlainDate.from("2021-01-01");
+  const firstDate = Temporal.PlainDate.from("2013-01-01");
 
   const dates = datesInRange(firstDate, indexedData.lastDate);
   const byMonth = R.groupBy((value: Temporal.PlainDate) =>
