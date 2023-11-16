@@ -37,9 +37,14 @@ code {
   margin-bottom: 15px;
 }
 
-.presentation-hourly {
+.presentation-daily {
   flex: 1 100%;
   margin: 0 5%;
+}
+
+.presentation-daily-graph {
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .presentation-key-numbers {
@@ -110,7 +115,7 @@ p {
 }
 
 .et-graph {
-  max-width: 700px;
+  max-width: 800px;
 }
 
 .usagetable {
@@ -147,6 +152,21 @@ p {
   border: 1px solid #ddd;
   z-index: 2;
 }
+.pricedetails p {
+  margin: 8px 0;
+  font-size: 12px;
+}
+.pricedetails ul {
+  margin-top: -6px;
+  margin-bottom: 8px;
+}
+.pricedetails .item > :first-child {
+  margin-top: 0;
+}
+.pricedetails .item > :last-child {
+  margin-bottom: 0;
+}
+
 
 .recharts-text {
   fill: #333;
@@ -154,4 +174,9 @@ p {
 
 .github-link {
   font-size: 13px;
+}
+
+.incomplete-data {
+  color: red;
+  font-size: 10px;
 }

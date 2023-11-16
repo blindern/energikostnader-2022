@@ -318,7 +318,7 @@ function calculateStroemHourlyPricePre2023Apr(props: {
   return {
     usageKwh: props.usageKwh,
     variableByKwh: multiplyWithUsage(props.usageKwh, {
-      "Strøm: Strømforbruk": spotpriceHourPerKwh,
+      "Strøm: Kraft": spotpriceHourPerKwh,
       "Strøm: Finansielt resultat": getFinansieltResultatPerKwh(yearMonth),
       "Strøm: Påslag": stroemPaaslagPerKwh,
       "Nettleie: Energiledd": energileddPerKwhByMonth[yearMonth] ?? NaN,
@@ -361,7 +361,7 @@ function calculateStroemHourlyPriceFrom2023Apr(props: {
   return {
     usageKwh: props.usageKwh,
     variableByKwh: multiplyWithUsage(props.usageKwh, {
-      "Strøm: Strømforbruk": spotpriceHourPerKwh,
+      "Strøm: Kraft": spotpriceHourPerKwh,
       "Strøm: Finansielt resultat": getFinansieltResultatPerKwh(yearMonth),
       "Strøm: Påslag": stroemPaaslagPerKwh,
       "Nettleie: Energiledd": energileddPerKwhByMonth[yearMonth] ?? NaN,

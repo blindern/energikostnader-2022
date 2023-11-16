@@ -214,17 +214,21 @@ function Hourly({ reportData }: { reportData: ReportData }) {
   );
 }
 
-function Daily({ reportData, year }: { reportData: ReportData; year: number }) {
-  const graphData = reportData.daily.rows.filter((it) =>
-    it.date.startsWith(String(year))
-  );
-
+function Daily({
+  graphData,
+  summary,
+}: {
+  graphData: ReportData["daily"]["rows"];
+  summary?: boolean;
+}) {
   return (
-    <ResponsiveContainer width="100%" height={450}>
-      <ComposedChart data={expandLast(addEndItem(graphData))}>
+    <ResponsiveContainer width="100%" height={summary ? 300 : 450}>
+      <ComposedChart
+        data={summary ? graphData : expandLast(addEndItem(graphData))}
+      >
         <CartesianGrid stroke="#dddddd" />
         <Area
-          type="stepAfter"
+          type={summary ? "basis" : "stepAfter"}
           dataKey="fjernvarme"
           name="Fjernvarme"
           stroke="#ff0000"
@@ -236,7 +240,7 @@ function Daily({ reportData, year }: { reportData: ReportData; year: number }) {
           strokeWidth={1.2}
         />
         <Area
-          type="stepAfter"
+          type={summary ? "basis" : "stepAfter"}
           dataKey="stroem"
           name="Strøm"
           stroke="#6aa84f"
@@ -248,7 +252,7 @@ function Daily({ reportData, year }: { reportData: ReportData; year: number }) {
           strokeWidth={1.2}
         />
         <Line
-          type="stepAfter"
+          type={summary ? "basis" : "stepAfter"}
           dataKey="temperature"
           name="Utetemperatur Blindern"
           stroke="#336EFF"
@@ -259,7 +263,7 @@ function Daily({ reportData, year }: { reportData: ReportData; year: number }) {
           strokeWidth={1.2}
         />
         <Line
-          type="stepAfter"
+          type={summary ? "basis" : "stepAfter"}
           dataKey="price"
           name="Estimert kostnad"
           stroke="#555555"
@@ -269,30 +273,32 @@ function Daily({ reportData, year }: { reportData: ReportData; year: number }) {
           legendType="plainline"
           strokeWidth={1.2}
         />
-        {graphData
-          .slice(1)
-          .filter((it) => it.date.endsWith("-01"))
-          .map((it) => (
-            <ReferenceLine
-              key={`month-${it.name}`}
-              x={it.name}
-              stroke="#555555"
-            />
-          ))}
-        {graphData
-          .filter((it) => it.date.endsWith("-15"))
-          .map((it) => (
-            <ReferenceDot
-              key={`month-text-${it.name}`}
-              x={it.name}
-              y={-0.05}
-              label={monthNames[Number(it.date.slice(5, 7))]!}
-              fillOpacity={0}
-              strokeWidth={0}
-              ifOverflow="visible"
-              yAxisId="label"
-            />
-          ))}
+        {
+          graphData
+            .slice(1)
+            .filter((it) => it.date.endsWith("-01"))
+            .map((it) => (
+              <ReferenceLine
+                key={`month-${it.name}`}
+                x={it.name}
+                stroke="#555555"
+              />
+            ))}
+        {
+          graphData
+            .filter((it) => it.date.endsWith("-15"))
+            .map((it) => (
+              <ReferenceDot
+                key={`month-text-${it.name}`}
+                x={it.name}
+                y={-0.05}
+                label={monthNames[Number(it.date.slice(5, 7))]!}
+                fillOpacity={0}
+                strokeWidth={0}
+                ifOverflow="visible"
+                yAxisId="label"
+              />
+            ))}
         <XAxis
           dataKey="name"
           angle={-90}
@@ -654,7 +660,9 @@ function PriceDetails({
   datapointsCount: number;
 }) {
   const [show, setShow] = useState(false);
-  const stroemkostnad = item.variableByKwh["Strøm: Strømforbruk"];
+  const stroemkostnad = item.variableByKwh["Strøm: Kraft"];
+
+  const sum = sumall(item);
 
   return (
     <div
@@ -662,10 +670,11 @@ function PriceDetails({
       onMouseEnter={() => setShow(true)}
       onMouseLeave={() => setShow(false)}
     >
-      {Math.round(sumall(item))}
+      {Math.round(sum)}
       {show && (
         <div className="item">
-          Fastpriser
+          <p>Priser medregnet MVA</p>
+          <p>Fastpriser</p>
           <ul>
             {Object.entries(item.static).map(([key, val]) => (
               <li key={key}>
@@ -673,7 +682,7 @@ function PriceDetails({
               </li>
             ))}
           </ul>
-          Variable priser
+          <p>Variable priser</p>
           <ul>
             {Object.entries(item.variableByKwh).map(([key, val]) => (
               <li key={key}>
@@ -682,12 +691,15 @@ function PriceDetails({
             ))}
           </ul>
           {stroemkostnad != null && (
-            <div>
+            <p>
               Snitt kraftpris:{" "}
               {roundTwoDec((stroemkostnad / item.usageKwh) * 100)} øre / kWh
-            </div>
+            </p>
           )}
-          <div>Datapunkter: {datapointsCount}</div>
+          <p>
+            Snitt per kWh: {roundTwoDec((sum / item.usageKwh) * 100)} øre / kWh
+          </p>
+          <p>Datapunkter: {datapointsCount}</p>
         </div>
       )}
     </div>
@@ -697,9 +709,11 @@ function PriceDetails({
 function TableData({
   item,
   title,
+  isDaily,
 }: {
   item: ReportData["table"]["yearly"];
   title: string;
+  isDaily?: boolean;
 }) {
   return (
     <table className="usagetable">
@@ -725,8 +739,22 @@ function TableData({
             <td>
               {it.spotprice == null ? "" : roundTwoDec(it.spotprice * 100)}
             </td>
-            <td>{Math.round(it.stroem.usageKwh)}</td>
-            <td>{Math.round(it.fjernvarme.usageKwh)}</td>
+            <td>
+              {Math.round(it.stroem.usageKwh)}
+              {isDaily && it.stroemDatapointsCount !== 24 && (
+                <div className="incomplete-data">
+                  {it.stroemDatapointsCount} datapunkter
+                </div>
+              )}
+            </td>
+            <td>
+              {Math.round(it.fjernvarme.usageKwh)}
+              {isDaily && it.fjernvarmeDatapointsCount !== 24 && (
+                <div className="incomplete-data">
+                  {it.fjernvarmeDatapointsCount} datapunkter
+                </div>
+              )}
+            </td>
             <td>{Math.round(it.stroem.usageKwh + it.fjernvarme.usageKwh)}</td>
             <td>
               {Math.round(
@@ -837,9 +865,16 @@ function Presentation({
           </div>
         </div>
       </div>
-      <div className="presentation-hourly">
-        <h2>Forbruk time for time siste 7 dager</h2>
-        <Hourly reportData={reportData} />
+      <div className="presentation-daily">
+        <h2>Daglig forbruk siste 45 dager</h2>
+        <div className="presentation-daily-graph">
+          <Daily
+            graphData={reportData.daily.rows
+              .filter((it) => it.date < nowDate)
+              .slice(-45)}
+            summary
+          />
+        </div>
       </div>
       <div className="presentation-show-more">
         {presentationMode ? (
@@ -894,6 +929,8 @@ function App() {
             Merk at prismodellen mangler enkelte detaljer, slik at endelig
             regnskapsmessig kostnad vil avvike noe.
           </p>
+          <h2>Forbruk time for time siste 7 dager</h2>
+          <Hourly reportData={reportData} />
           <h2>Daglig forbruk vs. utetemperatur (siden 1. juli 2021)</h2>
           <EnergyTemperature etData={reportData.et} />
           <h2>
@@ -933,7 +970,11 @@ function App() {
             .map((year) => (
               <Fragment key={year}>
                 <h2>Daglig forbruk {year}</h2>
-                <Daily reportData={reportData} year={Number(year)} />
+                <Daily
+                  graphData={reportData.daily.rows.filter((it) =>
+                    it.date.startsWith(String(year))
+                  )}
+                />
               </Fragment>
             ))}
           <h2>Detaljerte årstall</h2>
@@ -942,7 +983,7 @@ function App() {
           <h2>Detaljerte månedstall</h2>
           <TableData title="Måned" item={reportData.table.monthly} />
           <h2>Detaljerte dagstall siste dager</h2>
-          <TableData title="Dato" item={reportData.table.lastDays} />
+          <TableData title="Dato" item={reportData.table.lastDays} isDaily />
           <p className="github-link">
             Laget av Henrik Steen
             <br />
