@@ -704,6 +704,16 @@ function PriceDetails({
   );
 }
 
+// Source: Oversikt strømkostnader Blindern.xlsx
+const sumOverride = {
+  "2016": 1033000,
+  "2017": 1425000,
+  "2018": 1571000,
+  "2019": 1414000,
+  "2020": 928000,
+  "2021": 2456000,
+}
+
 function TableData({
   item,
   title,
@@ -777,7 +787,9 @@ function TableData({
                 datapointsCount={it.fjernvarmeDatapointsCount}
               />
             </td>
-            <td>{Math.round(sumall(it.stroem) + sumall(it.fjernvarme))}</td>
+            <td>
+              {sumOverride[it.name] ?? Math.round(sumall(it.stroem) + sumall(it.fjernvarme))}
+            </td>
           </tr>
         ))}
       </tbody>
