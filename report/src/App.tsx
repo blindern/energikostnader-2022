@@ -705,14 +705,14 @@ function PriceDetails({
 }
 
 // Source: Oversikt strømkostnader Blindern.xlsx
-const sumOverride = {
+const sumOverride: Record<string, number> = {
   "2016": 1033000,
   "2017": 1425000,
   "2018": 1571000,
   "2019": 1414000,
   "2020": 928000,
   "2021": 2456000,
-}
+};
 
 function TableData({
   item,
@@ -741,9 +741,7 @@ function TableData({
   return (
     <table className="usagetable">
       <thead>{header}</thead>
-      {item.length > 20 && (
-        <tfoot>{header}</tfoot>
-      )}
+      {item.length > 20 && <tfoot>{header}</tfoot>}
       <tbody>
         {item.map((it) => (
           <tr key={it.name}>
@@ -788,7 +786,8 @@ function TableData({
               />
             </td>
             <td>
-              {sumOverride[it.name] ?? Math.round(sumall(it.stroem) + sumall(it.fjernvarme))}
+              {sumOverride[it.name] ??
+                Math.round(sumall(it.stroem) + sumall(it.fjernvarme))}
             </td>
           </tr>
         ))}
