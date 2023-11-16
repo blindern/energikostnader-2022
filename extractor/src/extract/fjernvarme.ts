@@ -102,6 +102,15 @@ function parseCsvData(csvData: string): HourUsage[] {
     }
 
     const parts = line.split(";");
+    if (parts[1] === "") {
+      // This case was seen on 2023-10-29 during the DST change.
+      // It has 25 records and the 25th was:
+      // 2023102902;
+      // While the third row had the value for two hours:
+      // 2023102902;380
+      continue;
+    }
+
     result.push({
       date: Temporal.PlainDate.from({
         year: Number(parts[0]!.slice(0, 4)),
