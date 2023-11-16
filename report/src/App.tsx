@@ -27,9 +27,13 @@ function roundTwoDec(value: number) {
 
 // Tall fra regnskap. Årlig kostnad / sum årlig forbruk.
 const averagePrices = {
+  // Kilde: Oversikt strømkostnader Blindern.xlsx
   2018: 1.0888,
   2019: 1.053,
   2020: 0.7569,
+  2021: 1.4354,
+  // Beregnet av Henrik utifra fakturaer.
+  2022: 2504408 / 1660446,
 };
 
 const monthNames: Record<number, string> = {
@@ -398,27 +402,40 @@ function HourlyPrice({ reportData }: { reportData: ReportData }) {
           />
         )}
         <ReferenceLine y={0} stroke="#555" strokeWidth={1} />
-        {/* Tall fra regnskap. Årlig kostnad / sum årlig forbruk. */}
         <ReferenceLine
-          y={1.053}
+          y={averagePrices[2018]}
+          stroke="#555"
+          strokeWidth={1}
+          strokeDasharray="3 4"
+          label="2018"
+        />{" "}
+        <ReferenceLine
+          y={averagePrices[2019]}
           stroke="#555"
           strokeWidth={1}
           strokeDasharray="3 4"
           label="2019"
         />
         <ReferenceLine
-          y={0.7569}
+          y={averagePrices[2020]}
           stroke="#555"
           strokeWidth={1}
           strokeDasharray="3 4"
           label="2020"
         />
         <ReferenceLine
-          y={1.4354}
+          y={averagePrices[2021]}
           stroke="#555"
           strokeWidth={1}
           strokeDasharray="3 4"
           label="2021"
+        />
+        <ReferenceLine
+          y={averagePrices[2022]}
+          stroke="#555"
+          strokeWidth={1}
+          strokeDasharray="3 4"
+          label="2022"
         />
         {reportData.prices.rows
           .filter((it) => it.name.endsWith("kl 13"))
@@ -823,9 +840,14 @@ function Presentation({
   const sumTodayPrices = todayPrices.reduce((acc, cur) => acc + cur, 0);
   const averagePriceToday = sumTodayPrices / todayPrices.length;
 
+  const averagePricesToBeUsed = {
+    2018: averagePrices[2018],
+    2019: averagePrices[2019],
+    2020: averagePrices[2020],
+  };
   const averagePreviousYears =
-    Object.values(averagePrices).reduce((acc, cur) => acc + cur, 0) /
-    Object.values(averagePrices).length;
+    Object.values(averagePricesToBeUsed).reduce((acc, cur) => acc + cur, 0) /
+    Object.values(averagePricesToBeUsed).length;
   const priceDifference =
     (averagePriceToday - averagePreviousYears) / averagePreviousYears;
 
