@@ -384,7 +384,7 @@ function generateCostReport(
     stroemDatapointsCount: stroemItems.length,
     fjernvarme,
     fjernvarmeSum: sumPrice(fjernvarme),
-    fjernvarmeDatapointsCount: stroemItems.length,
+    fjernvarmeDatapointsCount: fjernvarmeItems.length,
     sum: sumPrice(stroem) + sumPrice(fjernvarme),
   };
 }
