@@ -34,14 +34,14 @@ const nettFastleddMaanedByMonth: Record<string, number | undefined> = {
   "2023-01": 340 * 1.25, // From invoice.
   "2023-02": 500 * 1.25, // From invoice.
   "2023-03": 500 * 1.25, // From invoice.
-  // Fra April så er "Energifondet fastavgift" egen linje.
+  // Fra april så er "Energifondet fastavgift" / "Enova påslag" egen linje.
   "2023-04": 433.33 * 1.25, // From invoice.
   "2023-05": 433.33 * 1.25, // From invoice.
   "2023-06": 433.33 * 1.25, // From invoice.
   "2023-07": 433.33 * 1.25, // From invoice.
   "2023-08": 433.33 * 1.25, // From invoice.
   "2023-09": 433.33 * 1.25, // From invoice.
-  "2023-10": 433.33 * 1.25, // Assumption.
+  "2023-10": 433.33 * 1.25, // From invoice.
   "2023-11": 433.33 * 1.25, // Assumption.
   "2023-12": 433.33 * 1.25, // Assumption.
 };
@@ -129,6 +129,7 @@ export const finansieltResultatPerKwhActualByMonth: Record<
   "2023-07": 0.3658, // From invoice.
   "2023-08": 0.383, // From invoice.
   "2023-09": 0.4694, // From invoice.
+  "2023-10": 0.5772, // From invoice.
 };
 
 // https://www.elvia.no/nettleie/alt-om-nettleiepriser/nettleiepriser-og-effekttariff-for-bedrifter-med-arsforbruk-over-100000-kwh/
@@ -154,7 +155,7 @@ export const energileddPerKwhByMonth: Record<string, number | undefined> = {
   "2023-07": 0.05 * 1.25,
   "2023-08": 0.05 * 1.25,
   "2023-09": 0.05 * 1.25,
-  "2023-10": 0.05 * 1.25, // Asssumption.
+  "2023-10": 0.05 * 1.25,
   "2023-11": 0.05 * 1.25, // Asssumption.
   "2023-12": 0.05 * 1.25, // Asssumption.
 };
@@ -183,7 +184,7 @@ export const forbruksavgiftPerKwhByMonth: Record<string, number | undefined> = {
   "2023-07": 0.1584 * 1.25,
   "2023-08": 0.1584 * 1.25,
   "2023-09": 0.1584 * 1.25,
-  "2023-10": 0.1584 * 1.25, // Assumption.
+  "2023-10": 0.1584 * 1.25,
   "2023-11": 0.1584 * 1.25, // Assumption.
   "2023-12": 0.1584 * 1.25, // Assumption.
 };
@@ -212,7 +213,7 @@ export const effektleddPerKwhByMonth: Record<string, number | undefined> = {
   // Står nå som bare "Effekt" på faktura.
   "2023-08": 95.4 * 32 * 1.25, // From invoice.
   "2023-09": 107.6 * 32 * 1.25, // From invoice.
-  "2023-10": 110 * 86 * 1.25, // Guess.
+  "2023-10": 107.8 * 86 * 1.25, // From invoice.
   "2023-11": 120 * 86 * 1.25, // Guess.
   "2023-12": 120 * 86 * 1.25, // Guess.
   "2024-01": 118.4 * 86 * 1.25, // Guess.
