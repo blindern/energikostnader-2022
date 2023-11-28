@@ -81,26 +81,45 @@ export function fjernvarmeRabatt(
   spotpriceMonth: number,
   priceSupport: number
 ) {
-  const cutoff = Temporal.PlainYearMonth.from("2022-11");
+  const cutoff2022 = Temporal.PlainYearMonth.from("2022-11");
+  const cutoff2023 = Temporal.PlainYearMonth.from("2023-11");
   const priceWithSupport = spotpriceMonth - priceSupport;
 
-  if (Temporal.PlainYearMonth.compare(month, cutoff) < 0) {
+  if (Temporal.PlainYearMonth.compare(month, cutoff2022) < 0) {
     return -priceWithSupport * 0.05;
+  } else if (Temporal.PlainYearMonth.compare(month, cutoff2023) < 0) {
+    // 5 % for 0-90 øre (eks mva)
+    // 30 % for 90-250 øre (eks mva)
+    // 60 % fra 250 øre (eks mva)
+
+    const threshold1 = 0.9 * 1.25;
+    const threshold2 = 2.5 * 1.25;
+
+    const step1 = -Math.min(threshold1, priceWithSupport) * 0.05;
+    const step2 =
+      -Math.max(0, Math.min(threshold2, priceWithSupport) - threshold1) * 0.3;
+    const step3 = -Math.max(0, priceWithSupport - threshold2) * 0.6;
+
+    return step1 + step2 + step3;
+  } else {
+    // https://celsio.no/fjernvarme/prisjustering-fra-1-oktober
+    // 0 % for 0-50 øre (eks mva)
+    // 5 % for 50-90 øre (eks mva)
+    // 30 % for 90-250 øre (eks mva)
+    // 60 % fra 250 øre (eks mva)
+
+    const threshold0 = 0.5 * 1.25;
+    const threshold1 = 0.9 * 1.25;
+    const threshold2 = 2.5 * 1.25;
+
+    const step1 =
+      -Math.max(0, Math.min(threshold1, priceWithSupport) - threshold0) * 0.05;
+    const step2 =
+      -Math.max(0, Math.min(threshold2, priceWithSupport) - threshold1) * 0.3;
+    const step3 = -Math.max(0, priceWithSupport - threshold2) * 0.6;
+
+    return step1 + step2 + step3;
   }
-
-  // 5 % for 0-90 øre (eks mva)
-  // 30 % for 90-250 øre (eks mva)
-  // 60 % fra 250 øre (eks mva)
-
-  const threshold1 = 0.9 * 1.25;
-  const threshold2 = 2.5 * 1.25;
-
-  const step1 = -Math.min(threshold1, priceWithSupport) * 0.05;
-  const step2 =
-    -Math.max(0, Math.min(threshold2, priceWithSupport) - threshold1) * 0.3;
-  const step3 = -Math.max(0, priceWithSupport - threshold2) * 0.6;
-
-  return step1 + step2 + step3;
 }
 
 // Uten MVA.
