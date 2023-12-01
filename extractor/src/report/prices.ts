@@ -1,7 +1,7 @@
 import { Temporal } from "@js-temporal/polyfill";
 import * as R from "ramda";
 import { Data } from "../service/data-store.js";
-import { multiplyWithUsage, roundTwoDec } from "./helpers.js";
+import { multiplyWithUsage, roundTwoDec, zeroForNaN } from "./helpers.js";
 import {
   dateHourIndexer,
   IndexedData,
@@ -519,10 +519,6 @@ export function calculateHourlyPrice({
       })
     )
   );
-}
-
-function zeroForNaN(value: number) {
-  return isNaN(value) ? 0 : value;
 }
 
 function addPricesInner(

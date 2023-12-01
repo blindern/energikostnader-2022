@@ -334,6 +334,226 @@ function Daily({
   );
 }
 
+function Monthly({ graphData }: { graphData: ReportData["monthly"]["rows"] }) {
+  return (
+    <ResponsiveContainer width="100%" height={450}>
+      <ComposedChart
+        data={graphData.map((it) => ({
+          ...it,
+          forbrukSum: (it.stroem ?? 0) + (it.fjernvarme ?? 0),
+        }))}
+      >
+        <CartesianGrid stroke="#dddddd" />
+        <Area
+          type="monotone"
+          dataKey="forbrukSum"
+          name="Forbruk alt"
+          stroke="#888888"
+          strokeOpacity={0.3}
+          fill="#888888"
+          fillOpacity={0.3}
+          isAnimationActive={false}
+          dot={false}
+          legendType="plainline"
+          strokeWidth={1.2}
+        />
+        <Area
+          type="monotone"
+          dataKey="fjernvarme"
+          name="Fjernvarme"
+          stroke="#ff0000"
+          fill="#ff0000"
+          fillOpacity={0.3}
+          isAnimationActive={false}
+          dot={false}
+          legendType="plainline"
+          strokeWidth={1.2}
+        />
+        <Area
+          type="monotone"
+          dataKey="stroem"
+          name="Strøm"
+          stroke="#6aa84f"
+          fill="#6aa84f"
+          fillOpacity={0.3}
+          isAnimationActive={false}
+          dot={false}
+          legendType="plainline"
+          strokeWidth={1.2}
+        />
+        <Line
+          type="monotone"
+          dataKey="temperature"
+          name="Utetemperatur Blindern"
+          stroke="#336EFF"
+          yAxisId="temp"
+          isAnimationActive={false}
+          dot={false}
+          legendType="plainline"
+          strokeWidth={1.2}
+        />
+        <Line
+          type="monotone"
+          dataKey="price"
+          name="Estimert kostnad"
+          stroke="#555555"
+          yAxisId="price"
+          isAnimationActive={false}
+          dot={false}
+          legendType="plainline"
+          strokeWidth={1.2}
+        />
+        {graphData
+          .slice(1)
+          .filter((it) => it.yearMonth.endsWith("-01"))
+          .map((it) => (
+            <ReferenceLine
+              key={`year-${it.name}`}
+              x={it.name}
+              stroke="#555555"
+            />
+          ))}
+        <XAxis
+          dataKey="name"
+          angle={-90}
+          height={40}
+          interval={0}
+          tickMargin={15}
+          fontSize={7}
+        />
+        <YAxis unit=" kWh" tickCount={15} />
+        <YAxis
+          yAxisId="temp"
+          unit=" &#8451;"
+          orientation="right"
+          interval={0}
+          ticks={deriveTempTickCount(
+            graphData.map((it) => it.temperature ?? 0)
+          )}
+          domain={["dataMin", "dataMax"]}
+          width={40}
+        />
+        <YAxis yAxisId="price" unit=" kr" orientation="right" tickCount={15} />
+        <YAxis yAxisId="label" hide domain={[0, 1]} />
+        <Tooltip />
+        <Legend verticalAlign="top" height={20} />
+      </ComposedChart>
+    </ResponsiveContainer>
+  );
+}
+
+function Yearly({ tableData }: { tableData: ReportData["table"]["yearly"] }) {
+  return (
+    <ResponsiveContainer width="100%" height={450}>
+      <ComposedChart
+        data={tableData
+          // Only fjernvarme before 2015, so let's exclude that.
+          // Temperature from 2015 which is interesting to compare against.
+          .filter((it) => it.name >= "2015")
+          .map((it) => ({
+            ...it,
+            // Don't have strøm usage before 2018, so avoid showing 0 for that.
+            usageStroem:
+              it.stroem.usageKwh === 0 ? null : roundTwoDec(it.stroem.usageKwh),
+            usageFjernvarme: roundTwoDec(it.fjernvarme.usageKwh),
+            usageSum:
+              it.stroem.usageKwh === 0
+                ? null
+                : roundTwoDec(it.stroem.usageKwh + it.fjernvarme.usageKwh),
+            sum: sumOverride[it.name] ?? (it.sum === 0 ? null : it.sum),
+            temperature:
+              it.temperature != null ? roundTwoDec(it.temperature) : null,
+          }))}
+      >
+        <CartesianGrid stroke="#dddddd" />
+        <Area
+          type="linear"
+          dataKey="usageSum"
+          name="Forbruk alt"
+          stroke="#888888"
+          strokeOpacity={0.3}
+          fill="#888888"
+          fillOpacity={0.3}
+          isAnimationActive={false}
+          dot={false}
+          legendType="plainline"
+          strokeWidth={1.2}
+        />
+        <Area
+          type="linear"
+          dataKey="usageFjernvarme"
+          name="Fjernvarme"
+          stroke="#ff0000"
+          fill="#ff0000"
+          fillOpacity={0.3}
+          isAnimationActive={false}
+          dot={false}
+          legendType="plainline"
+          strokeWidth={1.2}
+        />
+        <Area
+          type="linear"
+          dataKey="usageStroem"
+          name="Strøm"
+          stroke="#6aa84f"
+          fill="#6aa84f"
+          fillOpacity={0.3}
+          isAnimationActive={false}
+          dot={false}
+          legendType="plainline"
+          strokeWidth={1.2}
+        />
+        <Line
+          type="linear"
+          dataKey="temperature"
+          name="Utetemperatur Blindern"
+          stroke="#336EFF"
+          yAxisId="temp"
+          isAnimationActive={false}
+          dot={false}
+          legendType="plainline"
+          strokeWidth={1.2}
+        />
+        <Line
+          type="linear"
+          dataKey="sum"
+          name="Estimert kostnad"
+          stroke="#555555"
+          yAxisId="price"
+          isAnimationActive={false}
+          dot={false}
+          legendType="plainline"
+          strokeWidth={1.2}
+        />
+        <XAxis
+          dataKey="name"
+          angle={-90}
+          height={40}
+          interval={0}
+          tickMargin={15}
+          fontSize={7}
+        />
+        <YAxis unit=" kWh" tickCount={15} />
+        <YAxis
+          yAxisId="temp"
+          unit=" &#8451;"
+          orientation="right"
+          interval={0}
+          ticks={deriveTempTickCount(
+            tableData.map((it) => it.temperature ?? 0)
+          )}
+          domain={["dataMin", "dataMax"]}
+          width={40}
+        />
+        <YAxis yAxisId="price" unit=" kr" orientation="right" tickCount={15} />
+        <YAxis yAxisId="label" hide domain={[0, 1]} />
+        <Tooltip />
+        <Legend verticalAlign="top" height={20} />
+      </ComposedChart>
+    </ResponsiveContainer>
+  );
+}
+
 function HourlyPrice({ reportData }: { reportData: ReportData }) {
   const now = Temporal.Now.zonedDateTimeISO("Europe/Oslo");
   const nowDate = now.toPlainDate().toString();
@@ -821,12 +1041,12 @@ function Presentation({
   presentationMode: boolean;
 }) {
   const currentMonthCost =
-    reportData.cost.currentMonth.cost.fjernvarmeSum +
-    reportData.cost.currentMonth.cost.stroemSum;
+    (reportData.cost.currentMonth.cost.fjernvarmeSum ?? 0) +
+    (reportData.cost.currentMonth.cost.stroemSum ?? 0);
 
   const previousMonthCost =
-    reportData.cost.previousMonth.cost.fjernvarmeSum +
-    reportData.cost.previousMonth.cost.stroemSum;
+    (reportData.cost.previousMonth.cost.fjernvarmeSum ?? 0) +
+    (reportData.cost.previousMonth.cost.stroemSum ?? 0);
 
   const now = Temporal.Now.zonedDateTimeISO("Europe/Oslo");
   const nowDate = now.toPlainDate().toString();
@@ -1013,6 +1233,10 @@ function App() {
                 />
               </Fragment>
             ))}
+          <h2>Månedlig forbruk</h2>
+          <Monthly graphData={reportData.monthly.rows} />
+          <h2>Årlig forbruk</h2>
+          <Yearly tableData={reportData.table.yearly} />
           <h2>Detaljerte årstall</h2>
           Tall før 2022 kan være mangelfulle.
           <TableData title="År" item={reportData.table.yearly} />

@@ -65,3 +65,11 @@ export function averageTemperature(
 
   return R.sum(temps) / temps.length;
 }
+
+export function zeroForNaN(value: number) {
+  return isNaN(value) ? 0 : value;
+}
+
+export function nullForZero(value: number) {
+  return value === 0 ? null : value;
+}

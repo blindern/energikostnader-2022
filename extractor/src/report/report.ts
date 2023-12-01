@@ -17,7 +17,9 @@ import {
 import {
   averageSpotprice,
   averageTemperature,
+  nullForZero,
   roundTwoDec,
+  zeroForNaN,
 } from "./helpers.js";
 import { IndexedData, dateHourIndexer, indexData } from "./indexed-data.js";
 import {
@@ -42,6 +44,96 @@ declare module "trendline" {
     yStart: number;
     calcY: (x: number) => number;
   };
+}
+
+export function generateMonthlyReport(
+  data: Data,
+  indexedData: IndexedData,
+  firstDate: Temporal.PlainDate,
+  lastDate: Temporal.PlainDate
+) {
+  const dates = datesInRange(firstDate, lastDate).map((it) => it.toString());
+  const yearMonths = Array.from(new Set(dates.map((it) => it.slice(0, 7))));
+
+  const datesByYearMonths = R.groupBy((date: string) => date.slice(0, 7))(
+    dates
+  );
+
+  const byYearMonthGroup = R.groupBy(({ date }: DataPowerUsageHour) =>
+    date.slice(0, 7)
+  );
+  const sumHourUsages = (items: DataPowerUsageHour[]) =>
+    roundTwoDec(R.sum(items.map((it) => it.usage)));
+
+  const temperatures: Record<string, number | undefined> = R.mapObjIndexed(
+    (items: DataTemperatureDay[]) =>
+      roundTwoDec(R.sum(items.map((it) => it.meanTemperature)) / items.length),
+    R.groupBy(({ date }: DataTemperatureDay) => date.slice(0, 7))(
+      (data.dailyTemperature ?? []).filter((it) => dates.includes(it.date))
+    )
+  );
+
+  const stroem: Record<string, number | undefined> = R.mapObjIndexed(
+    sumHourUsages,
+    byYearMonthGroup(
+      Object.entries(data.powerUsage ?? {})
+        .filter(([key, _]) => key !== "Fjernvarme")
+        .map(([_, values]) => values)
+        .flat()
+    )
+  );
+
+  const fjernvarme: Record<string, number | undefined> = R.mapObjIndexed(
+    sumHourUsages,
+    byYearMonthGroup(
+      Object.entries(data.powerUsage ?? {})
+        .filter(([key, _]) => key === "Fjernvarme")
+        .map(([_, values]) => values)
+        .flat()
+    )
+  );
+
+  return yearMonths.map((yearMonth) => {
+    let priceStroem = 0;
+    let priceFjernvarme = 0;
+
+    for (const date of datesByYearMonths[yearMonth] ?? []) {
+      for (const hour of hoursInADay) {
+        const index = dateHourIndexer({ date, hour });
+        priceStroem += zeroForNaN(
+          sumPrice(
+            calculateStroemHourlyPrice({
+              data,
+              indexedData,
+              date,
+              hour,
+              usageKwh: indexedData.stroemByHour[index] ?? NaN,
+            })
+          )
+        );
+        priceFjernvarme += zeroForNaN(
+          sumPrice(
+            calculateFjernvarmeHourlyPrice({
+              data,
+              indexedData,
+              date,
+              hour,
+              usageKwh: indexedData.fjernvarmeByHour[index] ?? NaN,
+            })
+          )
+        );
+      }
+    }
+
+    return {
+      yearMonth,
+      name: yearMonth,
+      stroem: stroem[yearMonth],
+      fjernvarme: fjernvarme[yearMonth],
+      temperature: temperatures[yearMonth],
+      price: nullForZero(roundTwoDec(priceStroem + priceFjernvarme)),
+    };
+  });
 }
 
 export function generateDailyReport(
@@ -120,7 +212,7 @@ export function generateDailyReport(
       stroem: stroem[date],
       fjernvarme: fjernvarme[date],
       temperature: temperatures[date],
-      price: priceStroem + priceFjernvarme,
+      price: roundTwoDec(priceStroem + priceFjernvarme),
     };
   });
 }
@@ -160,14 +252,16 @@ export function generateHourlyReport(
             price:
               stroem == null || fjernvarme == null
                 ? NaN
-                : calculateHourlyPrice({
-                    data,
-                    indexedData,
-                    date,
-                    hour,
-                    stroem,
-                    fjernvarme,
-                  }),
+                : roundTwoDec(
+                    calculateHourlyPrice({
+                      data,
+                      indexedData,
+                      date,
+                      hour,
+                      stroem,
+                      fjernvarme,
+                    })
+                  ),
           };
         });
     })
@@ -380,12 +474,12 @@ function generateCostReport(
 
   return {
     stroem,
-    stroemSum: sumPrice(stroem),
+    stroemSum: nullForZero(sumPrice(stroem)),
     stroemDatapointsCount: stroemItems.length,
     fjernvarme,
-    fjernvarmeSum: sumPrice(fjernvarme),
+    fjernvarmeSum: nullForZero(sumPrice(fjernvarme)),
     fjernvarmeDatapointsCount: fjernvarmeItems.length,
-    sum: sumPrice(stroem) + sumPrice(fjernvarme),
+    sum: nullForZero(sumPrice(stroem) + sumPrice(fjernvarme)),
   };
 }
 
@@ -498,6 +592,17 @@ export async function generateReportData(data: Data) {
     );
 
   const result = {
+    monthly: {
+      rows: generateMonthlyReport(
+        data,
+        indexedData,
+        Temporal.PlainDate.from("2018-01-01"),
+        Temporal.Now.plainDateISO("Europe/Oslo").with({
+          month: 12,
+          day: 31,
+        })
+      ),
+    },
     daily: {
       rows: generateDailyReport(
         data,
