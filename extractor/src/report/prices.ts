@@ -18,6 +18,7 @@ export const stroemFastbeloepAar = 600 * 1.25;
 export const stroemPaaslagPerKwh = 0.02 * 1.25;
 export const fjernvarmeFastleddAar = 3000 * 1.25;
 
+// https://www.elvia.no/nettleie/alt-om-nettleiepriser/nettleiepriser-og-effekttariff-for-bedrifter-med-arsforbruk-over-100000-kwh/
 const nettFastleddMaanedByMonth: Record<string, number | undefined> = {
   "2022-01": 340 * 1.25, // From invoice.
   "2022-02": 340 * 1.25, // From invoice.
@@ -44,6 +45,18 @@ const nettFastleddMaanedByMonth: Record<string, number | undefined> = {
   "2023-10": 433.33 * 1.25, // From invoice.
   "2023-11": 433.33 * 1.25, // Assumption.
   "2023-12": 433.33 * 1.25, // Assumption.
+  "2024-01": 433.33 * 1.25, // Assumption.
+  "2024-02": 433.33 * 1.25, // Assumption.
+  "2024-03": 433.33 * 1.25, // Assumption.
+  "2024-04": 433.33 * 1.25, // Assumption.
+  "2024-05": 433.33 * 1.25, // Assumption.
+  "2024-06": 433.33 * 1.25, // Assumption.
+  "2024-07": 433.33 * 1.25, // Assumption.
+  "2024-08": 433.33 * 1.25, // Assumption.
+  "2024-09": 433.33 * 1.25, // Assumption.
+  "2024-10": 433.33 * 1.25, // Assumption.
+  "2024-11": 433.33 * 1.25, // Assumption.
+  "2024-12": 433.33 * 1.25, // Assumption.
 };
 
 // https://www.celsio.no/fjernvarme-og-kjoling/
@@ -74,6 +87,18 @@ const fjernvarmeNettleiePerKwhByMonth: Record<string, number | undefined> = {
   "2023-10": 0.2569 * 1.25,
   "2023-11": 0.2569 * 1.25,
   "2023-12": 0.2569 * 1.25,
+  "2024-01": 0.2569 * 1.25,
+  "2024-02": 0.2569 * 1.25,
+  "2024-03": 0.2569 * 1.25,
+  "2024-04": 0.2569 * 1.25,
+  "2024-05": 0.2569 * 1.25,
+  "2024-06": 0.2569 * 1.25,
+  "2024-07": 0.2569 * 1.25,
+  "2024-08": 0.2569 * 1.25,
+  "2024-09": 0.2569 * 1.25,
+  "2024-10": 0.2569 * 1.25,
+  "2024-11": 0.2569 * 1.25,
+  "2024-12": 0.2569 * 1.25,
 };
 
 export function fjernvarmeRabatt(
@@ -177,6 +202,18 @@ export const energileddPerKwhByMonth: Record<string, number | undefined> = {
   "2023-10": 0.05 * 1.25,
   "2023-11": 0.05 * 1.25, // Asssumption.
   "2023-12": 0.05 * 1.25, // Asssumption.
+  "2024-01": 0.05 * 1.25, // Asssumption.
+  "2024-02": 0.05 * 1.25, // Asssumption.
+  "2024-03": 0.05 * 1.25, // Asssumption.
+  "2024-04": 0.05 * 1.25, // Asssumption.
+  "2024-05": 0.05 * 1.25, // Asssumption.
+  "2024-06": 0.05 * 1.25, // Asssumption.
+  "2024-07": 0.05 * 1.25, // Asssumption.
+  "2024-08": 0.05 * 1.25, // Asssumption.
+  "2024-09": 0.05 * 1.25, // Asssumption.
+  "2024-10": 0.05 * 1.25, // Asssumption.
+  "2024-11": 0.05 * 1.25, // Asssumption.
+  "2024-12": 0.05 * 1.25, // Asssumption.
 };
 
 // https://www.skatteetaten.no/bedrift-og-organisasjon/avgifter/saravgifter/om/elektrisk-kraft/
@@ -206,6 +243,19 @@ export const forbruksavgiftPerKwhByMonth: Record<string, number | undefined> = {
   "2023-10": 0.1584 * 1.25,
   "2023-11": 0.1584 * 1.25, // Assumption.
   "2023-12": 0.1584 * 1.25, // Assumption.
+  // https://www.regjeringen.no/no/tema/okonomi-og-budsjett/skatter-og-avgifter/avgiftssatser-2024/id2997383/
+  "2024-01": 0.0951 * 1.25, // Assumption.
+  "2024-02": 0.0951 * 1.25, // Assumption.
+  "2024-03": 0.0951 * 1.25, // Assumption.
+  "2024-04": 0.1644 * 1.25, // Assumption.
+  "2024-05": 0.1644 * 1.25, // Assumption.
+  "2024-06": 0.1644 * 1.25, // Assumption.
+  "2024-07": 0.1644 * 1.25, // Assumption.
+  "2024-08": 0.1644 * 1.25, // Assumption.
+  "2024-09": 0.1644 * 1.25, // Assumption.
+  "2024-10": 0.1644 * 1.25, // Assumption.
+  "2024-11": 0.1644 * 1.25, // Assumption.
+  "2024-12": 0.1644 * 1.25, // Assumption.
 };
 
 // https://www.elvia.no/nettleie/alt-om-nettleiepriser/nettleiepriser-og-effekttariff-for-bedrifter-med-arsforbruk-over-100000-kwh/
@@ -292,6 +342,11 @@ const priceSupportPercentByMonth: Record<string, number | undefined> = {
   "2024-12": 0.9,
 };
 
+function getPriceSupportThreshold(yearMonth: string) {
+  if (yearMonth < "2024") return 0.7;
+  return 0.73;
+}
+
 function getFinansieltResultatPerKwh(yearMonth: string) {
   return finansieltResultatPerKwhActualByMonth[yearMonth] ?? 0;
 }
@@ -305,7 +360,10 @@ function getPriceSupportOfMonthPerKwh(
     return 0;
   }
 
-  return Math.max(0, (averageSpotPrice - 0.7 * 1.25) * percent);
+  return Math.max(
+    0,
+    (averageSpotPrice - getPriceSupportThreshold(yearMonth) * 1.25) * percent
+  );
 }
 
 function getPriceSupportOfHourPerKwh(
@@ -317,7 +375,10 @@ function getPriceSupportOfHourPerKwh(
     return 0;
   }
 
-  return Math.max(0, (spotpriceHourPerKwh - 0.7 * 1.25) * percent);
+  return Math.max(
+    0,
+    (spotpriceHourPerKwh - getPriceSupportThreshold(yearMonth) * 1.25) * percent
+  );
 }
 
 function calculateStroemHourlyPricePre2023Apr(props: {
