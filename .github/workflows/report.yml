@@ -5,15 +5,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with:
+          package_json_file: report/package.json
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
       # Cheating a bit on types from the other project, and it works if we install its deps.
-      - run: npm ci
+      - run: pnpm install
         working-directory: extractor
-      - run: npm ci
+      - run: pnpm install
         working-directory: report
-      - run: npm run build
+      - run: pnpm run build
         working-directory: report
       - name: Install SSH key
         if: github.ref == 'refs/heads/main'

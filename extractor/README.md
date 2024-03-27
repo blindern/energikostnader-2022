@@ -7,16 +7,16 @@ Opprett `.env` og definer det som er påkrevet i `config.ts`.
 Installer avhengigheter:
 
 ```bash
-npm ci
+pnpm install
 ```
 
 Trekk ut data:
 
 ```bash
-npx tsx src/cli/temperatur.ts >/tmp/temperatur.csv
-npx tsx src/cli/stroem.ts 2022-09-01 2022-09-25 >/tmp/stroem.csv
-npx tsx src/cli/fjernvarme.ts 2022-01-01 2022-09-26 >/tmp/fjernvarme.csv
-npx tsx src/cli/nordpool.ts 2022-09-26 >/tmp/nordpool.csv
+pnpm tsx src/cli/temperatur.ts >/tmp/temperatur.csv
+pnpm tsx src/cli/stroem.ts 2022-09-01 2022-09-25 >/tmp/stroem.csv
+pnpm tsx src/cli/fjernvarme.ts 2022-01-01 2022-09-26 >/tmp/fjernvarme.csv
+pnpm tsx src/cli/nordpool.ts 2022-09-26 >/tmp/nordpool.csv
 ```
 
 ## Tilgjengelige data

@@ -5,12 +5,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with:
+          package_json_file: report/package.json
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
-      - run: npm ci
+      - run: pnpm install
         working-directory: extractor
-      - run: npm test
+      - run: pnpm test
         working-directory: extractor
 
       - name: Set up Docker Buildx

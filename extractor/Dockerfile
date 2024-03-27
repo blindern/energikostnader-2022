@@ -1,13 +1,17 @@
 FROM node:20-slim
 
-COPY --chown=node:node package.json package-lock.json /usr/src/app/
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+
+COPY --chown=node:node package.json pnpm-lock.yaml /usr/src/app/
 
 USER node
 WORKDIR /usr/src/app
 
-RUN npm ci
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
 COPY --chown=node:node tsconfig.json /usr/src/app/
 COPY --chown=node:node src /usr/src/app/src
 
-CMD ["npx", "tsx", "/usr/src/app/src/service/service.ts"]
+CMD ["pnpm", "start"]
