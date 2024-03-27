@@ -7,6 +7,7 @@ Opprett `.env` og definer det som er påkrevet i `config.ts`.
 Installer avhengigheter:
 
 ```bash
+corepack enable
 pnpm install
 ```
 

@@ -17,9 +17,9 @@ import {
   YAxis,
   ZAxis,
 } from "recharts";
-import { trendlineTemperatureLowerThan } from "../../extractor/src/report/constants.js";
-import { UsagePrice } from "../../extractor/src/report/prices.js";
-import { generateReportData } from "../../extractor/src/report/report.js";
+import { trendlineTemperatureLowerThan } from "@blindern/energi-extractor/src/report/constants.js";
+import { UsagePrice } from "@blindern/energi-extractor/src/report/prices.js";
+import { generateReportData } from "@blindern/energi-extractor/src/report/report.js";
 
 function roundTwoDec(value: number) {
   return Math.round(value * 100) / 100;

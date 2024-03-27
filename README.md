@@ -15,6 +15,8 @@ Se undermapper for mer detaljer.
 ## Lokal utvikling
 
 ```bash
+corepack enable
+
 cd extractor
 pnpm install
 scp root@fcos-3.nrec.foreningenbs.no:/var/mnt/data/energi-extractor/data.json data.json

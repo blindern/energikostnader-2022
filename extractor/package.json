@@ -1,8 +1,12 @@
 {
-  "name": "energikostnader-2022",
+  "name": "@blindern/energi-extractor",
+  "private": true,
   "version": "0.0.0-development",
   "license": "MIT",
   "type": "module",
+  "exports": {
+    "./src/*": "./src/*"
+  },
   "devDependencies": {
     "@tsconfig/node20": "^20.1.2",
     "@tsconfig/strictest": "^2.0.2",
@@ -25,6 +29,5 @@
   "scripts": {
     "test": "vitest",
     "start": "tsx src/service/service.ts"
-  },
-  "packageManager": "pnpm@8.15.5+sha256.4b4efa12490e5055d59b9b9fc9438b7d581a6b7af3b5675eb5c5f447cee1a589"
+  }
 }

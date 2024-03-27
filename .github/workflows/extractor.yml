@@ -6,15 +6,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v3
-        with:
-          package_json_file: report/package.json
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
       - run: pnpm install
-        working-directory: extractor
-      - run: pnpm test
-        working-directory: extractor
+      - run: pnpm --filter ./extractor test
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -28,7 +24,8 @@ jobs:
       - name: Build container
         uses: docker/build-push-action@v5
         with:
-          context: extractor
+          context: .
+          file: extractor/Dockerfile
           load: true
           tags: blindern/energi-extractor:latest
           cache-from: type=gha
@@ -39,7 +36,8 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v5
         with:
-          context: extractor
+          context: .
+          file: extractor/Dockerfile
           push: true
           tags: blindern/energi-extractor:latest
 

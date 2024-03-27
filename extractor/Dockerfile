@@ -1,17 +1,16 @@
-FROM node:20-slim
-
+FROM node:20-slim AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
-
-COPY --chown=node:node package.json pnpm-lock.yaml /usr/src/app/
-
 USER node
 WORKDIR /usr/src/app
 
+FROM base AS build
+COPY --chown=node:node . /usr/src/app/
+
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm --filter ./extractor deploy /tmp/pruned
 
-COPY --chown=node:node tsconfig.json /usr/src/app/
-COPY --chown=node:node src /usr/src/app/src
-
+FROM base
+COPY --from=build /tmp/pruned .
 CMD ["pnpm", "start"]
