@@ -1,5 +1,4 @@
 import { Temporal } from "@js-temporal/polyfill";
-import fetch from "node-fetch";
 
 export interface HourPrice {
   date: Temporal.PlainDate;

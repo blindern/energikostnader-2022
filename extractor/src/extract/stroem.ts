@@ -1,6 +1,5 @@
 import { Temporal } from "@js-temporal/polyfill";
 import * as crypto from "crypto";
-import fetch, { Response } from "node-fetch";
 import { v4 as uuidv4 } from "uuid";
 import { HourUsage } from "./common.js";
 
@@ -78,7 +77,7 @@ function parseSetCookie(values: string[]): Record<string, string> {
 
 function deriveCookies(response: Response, initial?: Record<string, string>) {
   const additionalCookies = parseSetCookie(
-    response.headers.raw()["set-cookie"] ?? []
+    response.headers.getSetCookie() ?? []
   );
 
   const updatedCookies = {
@@ -112,7 +111,7 @@ async function getInitialLoginState(): Promise<{
     throw new Error("Unexpected response");
   }
 
-  const cookies = parseSetCookie(response.headers.raw()["set-cookie"] ?? []);
+  const cookies = parseSetCookie(response.headers.getSetCookie() ?? []);
   const textContent = await response.text();
 
   const csrfTokenMatch = textContent.match(
