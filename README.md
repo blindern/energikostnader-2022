@@ -20,7 +20,7 @@ corepack enable
 cd extractor
 pnpm install
 scp root@fcos-3.nrec.foreningenbs.no:/var/mnt/data/energi-extractor/data.json data.json
-npx tsx src/report/cli.ts
+pnpm tsx src/report/cli.ts
 
 cd ../report
 pnpm install
