@@ -10,7 +10,7 @@ jobs:
           package_json_file: report/package.json
       - uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
       # Cheating a bit on types from the other project, and it works if we install its deps.
       - run: pnpm install
         working-directory: extractor
