@@ -497,10 +497,34 @@ function generateTableData(
   };
 }
 
-function generateYearlyTableReport(data: Data, indexedData: IndexedData) {
-  const firstDate = Temporal.PlainDate.from("2013-01-01");
+function comparePlainMonthDay(
+  one: Temporal.PlainMonthDay,
+  two: Temporal.PlainMonthDay
+) {
+  if (one.monthCode == two.monthCode) {
+    return one.day - two.day;
+  }
+  return one.monthCode.localeCompare(two.monthCode);
+}
 
-  const dates = datesInRange(firstDate, indexedData.lastDate);
+function generateYearlyTableReport(
+  data: Data,
+  indexedData: IndexedData,
+  options?: {
+    untilDayIncl?: Temporal.PlainMonthDay | undefined;
+  }
+) {
+  const firstDate = Temporal.PlainDate.from("2013-01-01");
+  const { untilDayIncl } = options ?? {};
+
+  let dates = datesInRange(firstDate, indexedData.lastDate);
+
+  if (untilDayIncl) {
+    dates = dates.filter(
+      (it) => comparePlainMonthDay(it.toPlainMonthDay(), untilDayIncl) <= 0
+    );
+  }
+
   const byYear = R.groupBy((value: Temporal.PlainDate) =>
     value.year.toString()
   );
@@ -555,6 +579,7 @@ export async function generateReportData(data: Data) {
     ] !== undefined;
 
   const now = Temporal.Now.zonedDateTimeISO("Europe/Oslo");
+  const untilDayIncl = now.toPlainMonthDay();
 
   const currentMonth = now.toPlainYearMonth();
   const previousMonth = currentMonth.subtract({ months: 1 });
@@ -782,6 +807,12 @@ export async function generateReportData(data: Data) {
       },
     },
     table: {
+      yearlyToThisDate: {
+        untilDayIncl: now.toPlainMonthDay(),
+        data: generateYearlyTableReport(data, indexedData, {
+          untilDayIncl,
+        }),
+      },
       yearly: generateYearlyTableReport(data, indexedData),
       monthly: generateMonthlyTableReport(data, indexedData),
       lastDays: generateLastDaysTableReport(data, indexedData),

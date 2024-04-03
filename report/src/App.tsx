@@ -955,10 +955,12 @@ function TableData({
   item,
   title,
   isDaily,
+  skipOverride,
 }: {
   item: ReportData["table"]["yearly"];
   title: string;
   isDaily?: boolean;
+  skipOverride?: boolean;
 }) {
   const header = (
     <tr>
@@ -1023,7 +1025,7 @@ function TableData({
               />
             </td>
             <td>
-              {sumOverride[it.name] ??
+              {(skipOverride ? undefined : sumOverride[it.name]) ??
                 Math.round(sumall(it.stroem) + sumall(it.fjernvarme))}
             </td>
           </tr>
@@ -1146,6 +1148,15 @@ function Presentation({
   );
 }
 
+function FormatPlainMonthDay({ value }: { value: Temporal.PlainMonthDay }) {
+  const { isoDay, isoMonth } = value.getISOFields();
+  return (
+    <>
+      {isoDay}. {monthNamesLong[isoMonth]!.toLowerCase()}
+    </>
+  );
+}
+
 function App() {
   const [reportData, setReportData] = useState<ReportData>();
   useEffect(() => {
@@ -1237,7 +1248,22 @@ function App() {
           <Monthly graphData={reportData.monthly.rows} />
           <h2>Årlig forbruk</h2>
           <Yearly tableData={reportData.table.yearly} />
-          <h2>Detaljerte årstall</h2>
+          <h2>
+            Detaljerte årstall (hvert år frem til og med{" "}
+            <FormatPlainMonthDay
+              value={Temporal.PlainMonthDay.from(
+                reportData.table.yearlyToThisDate.untilDayIncl
+              )}
+            />
+            )
+          </h2>
+          Tall før 2022 kan være mangelfulle.
+          <TableData
+            title="År"
+            item={reportData.table.yearlyToThisDate.data}
+            skipOverride
+          />
+          <h2>Detaljerte årstall (hele år)</h2>
           Tall før 2022 kan være mangelfulle.
           <TableData title="År" item={reportData.table.yearly} />
           <h2>Detaljerte månedstall</h2>
