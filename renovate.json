@@ -8,7 +8,7 @@
   },
   "packageRules": [
     {
-      "matchDepTypes": ["devDependencies"],
+      "matchDepTypes": ["devDependencies", "packageManager"],
       "automerge": true,
       "automergeType": "branch"
     }
