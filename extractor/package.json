@@ -27,6 +27,7 @@
   },
   "scripts": {
     "test": "vitest",
-    "start": "tsx src/service/service.ts"
+    "start": "tsx src/service/service.ts",
+    "generate-report": "tsx src/report/cli.ts"
   }
 }

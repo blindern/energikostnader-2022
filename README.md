@@ -16,13 +16,8 @@ Se undermapper for mer detaljer.
 
 ```bash
 corepack enable
-
-cd extractor
 pnpm install
-scp root@fcos-3.nrec.foreningenbs.no:/var/mnt/data/energi-extractor/data.json data.json
-pnpm tsx src/report/cli.ts
-
-cd ../report
-pnpm install
-pnpm run dev
+scp -C root@fcos-3.nrec.foreningenbs.no:/var/mnt/data/energi-extractor/data.json extractor/data.json
+pnpm run --filter ./extractor generate-report
+pnpm run --filter ./report dev --open
 ```
