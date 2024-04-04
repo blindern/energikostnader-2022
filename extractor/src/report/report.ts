@@ -808,7 +808,7 @@ export async function generateReportData(data: Data) {
     },
     table: {
       yearlyToThisDate: {
-        untilDayIncl: now.toPlainMonthDay(),
+        untilDayIncl: now.toPlainMonthDay().toString(),
         data: generateYearlyTableReport(data, indexedData, {
           untilDayIncl,
         }),
