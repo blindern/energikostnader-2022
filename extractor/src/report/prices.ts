@@ -14,6 +14,8 @@ export interface UsagePrice {
   static: Record<string, number>;
 }
 
+// Fra og med april 2024 er denne fast 50 kr måned og ikke 600 i året delt på antall dager,
+// så det er bittelitt avrundingsfeil forbundet med det.
 export const stroemFastbeloepAar = 600 * 1.25;
 export const stroemPaaslagPerKwh = 0.02 * 1.25;
 export const fjernvarmeFastleddAar = 3000 * 1.25;
@@ -108,6 +110,7 @@ export function fjernvarmeRabatt(
 ) {
   const cutoff2022 = Temporal.PlainYearMonth.from("2022-11");
   const cutoff2023 = Temporal.PlainYearMonth.from("2023-11");
+  const cutoff2024 = Temporal.PlainYearMonth.from("2024-01");
   const priceWithSupport = spotpriceMonth - priceSupport;
 
   if (Temporal.PlainYearMonth.compare(month, cutoff2022) < 0) {
@@ -126,7 +129,12 @@ export function fjernvarmeRabatt(
     const step3 = -Math.max(0, priceWithSupport - threshold2) * 0.6;
 
     return step1 + step2 + step3;
-  } else {
+  } else if (Temporal.PlainYearMonth.compare(month, cutoff2024) < 0) {
+    // Fra nettsiden:
+    // 1. november 2022 innførte vi i tillegg en ny trinnvis rabattordning for at du skal ha større forutsigbarhet i en tid med svært varierende energipriser. Stiger prisen, stiger også rabattsatsen.
+    // Rabattsatsene gjelder etter at fjernvarmestøtten er trukket fra. Ordningen varer ut 2023.
+    // Per 2024-05-31 står det at det fortsatt er rabatt på 5 % >50 øre.
+
     // https://celsio.no/fjernvarme/prisjustering-fra-1-oktober
     // 0 % for 0-50 øre (eks mva)
     // 5 % for 50-90 øre (eks mva)
@@ -144,6 +152,15 @@ export function fjernvarmeRabatt(
     const step3 = -Math.max(0, priceWithSupport - threshold2) * 0.6;
 
     return step1 + step2 + step3;
+  } else {
+    // 2024-05-31: https://celsio.no/fjernvarme/rabatt-pa-fjernvarme
+    // 0 % for 0-50 øre (eks mva)
+    // 5 % for 50- øre (eks mva)
+
+    const threshold = 0.5 * 1.25;
+    const step = -Math.max(0, priceWithSupport - threshold) * 0.05;
+
+    return step;
   }
 }
 
@@ -175,6 +192,11 @@ export const finansieltResultatPerKwhActualByMonth: Record<
   "2023-09": 0.4694, // From invoice.
   "2023-10": 0.5772, // From invoice.
   "2023-11": 0.04, // From invoice.
+  "2023-12": 0.0682, // From invoice.
+  "2024-01": 0.0715, // From invoice.
+  "2024-02": 0.2209, // From invoice.
+  "2024-03": 0.1848, // From invoice.
+  "2024-04": -0.0316, // From invoice.
 };
 
 // https://www.elvia.no/nettleie/alt-om-nettleiepriser/nettleiepriser-og-effekttariff-for-bedrifter-med-arsforbruk-over-100000-kwh/
@@ -202,11 +224,11 @@ export const energileddPerKwhByMonth: Record<string, number | undefined> = {
   "2023-09": 0.05 * 1.25,
   "2023-10": 0.05 * 1.25,
   "2023-11": 0.05 * 1.25,
-  "2023-12": 0.05 * 1.25, // Asssumption.
-  "2024-01": 0.05 * 1.25, // Asssumption.
-  "2024-02": 0.05 * 1.25, // Asssumption.
-  "2024-03": 0.05 * 1.25, // Asssumption.
-  "2024-04": 0.05 * 1.25, // Asssumption.
+  "2023-12": 0.05 * 1.25,
+  "2024-01": 0.05 * 1.25,
+  "2024-02": 0.05 * 1.25,
+  "2024-03": 0.05 * 1.25,
+  "2024-04": 0.05 * 1.25,
   "2024-05": 0.05 * 1.25, // Asssumption.
   "2024-06": 0.05 * 1.25, // Asssumption.
   "2024-07": 0.05 * 1.25, // Asssumption.
@@ -243,12 +265,12 @@ export const forbruksavgiftPerKwhByMonth: Record<string, number | undefined> = {
   "2023-09": 0.1584 * 1.25,
   "2023-10": 0.1584 * 1.25,
   "2023-11": 0.1584 * 1.25,
-  "2023-12": 0.1584 * 1.25, // Assumption.
+  "2023-12": 0.1584 * 1.25,
   // https://www.regjeringen.no/no/tema/okonomi-og-budsjett/skatter-og-avgifter/avgiftssatser-2024/id2997383/
-  "2024-01": 0.0951 * 1.25, // Assumption.
-  "2024-02": 0.0951 * 1.25, // Assumption.
-  "2024-03": 0.0951 * 1.25, // Assumption.
-  "2024-04": 0.1644 * 1.25, // Assumption.
+  "2024-01": 0.0951 * 1.25,
+  "2024-02": 0.0951 * 1.25,
+  "2024-03": 0.0951 * 1.25,
+  "2024-04": 0.1644 * 1.25,
   "2024-05": 0.1644 * 1.25, // Assumption.
   "2024-06": 0.1644 * 1.25, // Assumption.
   "2024-07": 0.1644 * 1.25, // Assumption.
@@ -285,11 +307,11 @@ export const effektleddPerKwhByMonth: Record<string, number | undefined> = {
   "2023-09": 107.6 * 32 * 1.25, // From invoice.
   "2023-10": 107.8 * 86 * 1.25, // From invoice.
   "2023-11": 114.4 * 86 * 1.25, // From invoice.
-  "2023-12": 120 * 86 * 1.25, // Guess.
-  "2024-01": 118.4 * 86 * 1.25, // Guess.
-  "2024-02": 126.6 * 86 * 1.25, // Guess.
-  "2024-03": 116.2 * 86 * 1.25, // Guess.
-  "2024-04": 108.4 * 36 * 1.25, // Guess.
+  "2023-12": 121 * 86 * 1.25, // From invoice.
+  "2024-01": 118.2 * 86 * 1.25, // From invoice.
+  "2024-02": 112.2 * 86 * 1.25, // From invoice.
+  "2024-03": 104.4 * 86 * 1.25, // From invoice.
+  "2024-04": 115.2 * 36 * 1.25, // From invoice.
   "2024-05": 102.4 * 36 * 1.25, // Guess.
   "2024-06": 94.2 * 36 * 1.25, // Guess.
   "2024-07": 57.4 * 36 * 1.25, // Guess.
