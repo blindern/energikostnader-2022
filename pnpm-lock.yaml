@@ -23,8 +23,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       uuid:
-        specifier: ^9.0.0
-        version: 9.0.1
+        specifier: ^10.0.0
+        version: 10.0.0
     devDependencies:
       '@tsconfig/node20':
         specifier: ^20.1.2
@@ -1373,8 +1373,8 @@ packages:
     peerDependencies:
       browserslist: '>= 4.21.0'
 
-  uuid@9.0.1:
-    resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
+  uuid@10.0.0:
+    resolution: {integrity: sha512-8XkAphELsDnEGrDxUOHB3RGvXz6TeuYSGEZBOjtTtPm2lwhGBjLgOzLHB63IUWfBpNucQjND6d3AOudO+H3RWQ==}
     hasBin: true
 
   victory-vendor@36.9.2:
@@ -2648,7 +2648,7 @@ snapshots:
       escalade: 3.1.2
       picocolors: 1.0.1
 
-  uuid@9.0.1: {}
+  uuid@10.0.0: {}
 
   victory-vendor@36.9.2:
     dependencies:

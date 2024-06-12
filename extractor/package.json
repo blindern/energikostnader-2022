@@ -23,7 +23,7 @@
     "dotenv": "^16.0.2",
     "ramda": "^0.29.0",
     "trendline": "^1.0.0",
-    "uuid": "^9.0.0"
+    "uuid": "^10.0.0"
   },
   "scripts": {
     "test": "vitest",
