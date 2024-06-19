@@ -46,12 +46,12 @@ const nettFastleddMaanedByMonth: Record<string, number | undefined> = {
   "2023-09": 433.33 * 1.25, // From invoice.
   "2023-10": 433.33 * 1.25, // From invoice.
   "2023-11": 433.33 * 1.25, // From invoice.
-  "2023-12": 433.33 * 1.25, // Assumption.
-  "2024-01": 433.33 * 1.25, // Assumption.
-  "2024-02": 433.33 * 1.25, // Assumption.
-  "2024-03": 433.33 * 1.25, // Assumption.
-  "2024-04": 433.33 * 1.25, // Assumption.
-  "2024-05": 433.33 * 1.25, // Assumption.
+  "2023-12": 433.33 * 1.25, // From invoice.
+  "2024-01": 433.33 * 1.25, // From invoice.
+  "2024-02": 433.33 * 1.25, // From invoice.
+  "2024-03": 433.33 * 1.25, // From invoice.
+  "2024-04": 433.33 * 1.25, // From invoice.
+  "2024-05": 433.33 * 1.25, // From invoice.
   "2024-06": 433.33 * 1.25, // Assumption.
   "2024-07": 433.33 * 1.25, // Assumption.
   "2024-08": 433.33 * 1.25, // Assumption.
@@ -197,6 +197,7 @@ export const finansieltResultatPerKwhActualByMonth: Record<
   "2024-02": 0.2209, // From invoice.
   "2024-03": 0.1848, // From invoice.
   "2024-04": -0.0316, // From invoice.
+  "2024-05": 0.0869, // From invoice.
 };
 
 // https://www.elvia.no/nettleie/alt-om-nettleiepriser/nettleiepriser-og-effekttariff-for-bedrifter-med-arsforbruk-over-100000-kwh/
@@ -229,7 +230,7 @@ export const energileddPerKwhByMonth: Record<string, number | undefined> = {
   "2024-02": 0.05 * 1.25,
   "2024-03": 0.05 * 1.25,
   "2024-04": 0.05 * 1.25,
-  "2024-05": 0.05 * 1.25, // Asssumption.
+  "2024-05": 0.05 * 1.25,
   "2024-06": 0.05 * 1.25, // Asssumption.
   "2024-07": 0.05 * 1.25, // Asssumption.
   "2024-08": 0.05 * 1.25, // Asssumption.
@@ -271,7 +272,7 @@ export const forbruksavgiftPerKwhByMonth: Record<string, number | undefined> = {
   "2024-02": 0.0951 * 1.25,
   "2024-03": 0.0951 * 1.25,
   "2024-04": 0.1644 * 1.25,
-  "2024-05": 0.1644 * 1.25, // Assumption.
+  "2024-05": 0.1644 * 1.25,
   "2024-06": 0.1644 * 1.25, // Assumption.
   "2024-07": 0.1644 * 1.25, // Assumption.
   "2024-08": 0.1644 * 1.25, // Assumption.
@@ -312,7 +313,7 @@ export const effektleddPerKwhByMonth: Record<string, number | undefined> = {
   "2024-02": 112.2 * 86 * 1.25, // From invoice.
   "2024-03": 104.4 * 86 * 1.25, // From invoice.
   "2024-04": 115.2 * 36 * 1.25, // From invoice.
-  "2024-05": 102.4 * 36 * 1.25, // Guess.
+  "2024-05": 106 * 36 * 1.25, // From invoice.
   "2024-06": 94.2 * 36 * 1.25, // Guess.
   "2024-07": 57.4 * 36 * 1.25, // Guess.
   "2024-08": 95.4 * 36 * 1.25, // Guess.
