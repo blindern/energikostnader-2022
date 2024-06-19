@@ -34,6 +34,7 @@ const averagePrices = {
   2021: 1.4354,
   // Beregnet av Henrik utifra fakturaer.
   2022: 2504408 / 1660446,
+  2023: 2427069 / 1690617,
 };
 
 const monthNames: Record<number, string> = {
@@ -622,41 +623,15 @@ function HourlyPrice({ reportData }: { reportData: ReportData }) {
           />
         )}
         <ReferenceLine y={0} stroke="#555" strokeWidth={1} />
-        <ReferenceLine
-          y={averagePrices[2018]}
-          stroke="#555"
-          strokeWidth={1}
-          strokeDasharray="3 4"
-          label="2018"
-        />{" "}
-        <ReferenceLine
-          y={averagePrices[2019]}
-          stroke="#555"
-          strokeWidth={1}
-          strokeDasharray="3 4"
-          label="2019"
-        />
-        <ReferenceLine
-          y={averagePrices[2020]}
-          stroke="#555"
-          strokeWidth={1}
-          strokeDasharray="3 4"
-          label="2020"
-        />
-        <ReferenceLine
-          y={averagePrices[2021]}
-          stroke="#555"
-          strokeWidth={1}
-          strokeDasharray="3 4"
-          label="2021"
-        />
-        <ReferenceLine
-          y={averagePrices[2022]}
-          stroke="#555"
-          strokeWidth={1}
-          strokeDasharray="3 4"
-          label="2022"
-        />
+        {Object.entries(averagePrices).map(([year, price]) => (
+          <ReferenceLine
+            y={price}
+            stroke="#555"
+            strokeWidth={1}
+            strokeDasharray="3 4"
+            label={year}
+          />
+        ))}
         {reportData.prices.rows
           .filter((it) => it.name.endsWith("kl 13"))
           .map((it) => (
@@ -1066,6 +1041,9 @@ function Presentation({
     2018: averagePrices[2018],
     2019: averagePrices[2019],
     2020: averagePrices[2020],
+    2021: averagePrices[2021],
+    2022: averagePrices[2022],
+    2023: averagePrices[2023],
   };
   const averagePreviousYears =
     Object.values(averagePricesToBeUsed).reduce((acc, cur) => acc + cur, 0) /
@@ -1096,7 +1074,7 @@ function Presentation({
             {Math.round((1 + priceDifference) * 100)} %
           </div>
           <div className="presentation-key-number-desc">
-            Sammenliknet mot snittpris i 2018-2020
+            Sammenliknet mot snittpris i 2018-2023
           </div>
         </div>
         <div className="presentation-key-number">
