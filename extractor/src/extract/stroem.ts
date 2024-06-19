@@ -1,6 +1,5 @@
 import { Temporal } from "@js-temporal/polyfill";
 import * as crypto from "crypto";
-import { v4 as uuidv4 } from "uuid";
 import { HourUsage } from "./common.js";
 
 interface Consumption {
@@ -180,7 +179,7 @@ async function getAuthorizeCode({
 }> {
   const state = String(new Date().getTime());
 
-  const codeVerifier = uuidv4() + uuidv4() + uuidv4();
+  const codeVerifier = crypto.randomUUID() + crypto.randomUUID() + crypto.randomUUID();
   const codeChallenge = crypto
     .createHash("sha256")
     .update(codeVerifier)
