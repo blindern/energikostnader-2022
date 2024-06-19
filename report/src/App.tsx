@@ -700,26 +700,26 @@ function EnergyTemperature({ etData }: { etData: ReportData["et"] }) {
 
   const result = [
     {
-      items: finalData.slice(0, -10).filter((it) => it.date < "2022-07"),
+      items: finalData.slice(0, -10).filter((it) => it.date < "2023-07"),
       color: "#AAAAAA",
       fillOpacity: 0.4,
     },
     {
       items: finalData
         .slice(0, -10)
-        .filter((it) => it.date >= "2022-07" && it.date < "2023"),
+        .filter((it) => it.date >= "2023-07" && it.date < "2024"),
       color: "#6aa84f",
       fillOpacity: 0.4,
     },
     {
       items: finalData
         .slice(0, -10)
-        .filter((it) => it.date >= "2023-01-01" && it.date < "2023-07-01"),
+        .filter((it) => it.date >= "2024-01-01" && it.date < "2024-07-01"),
       color: "#336EFF",
       fillOpacity: 0.4,
     },
     {
-      items: finalData.slice(0, -10).filter((it) => it.date >= "2023-07-01"),
+      items: finalData.slice(0, -10).filter((it) => it.date >= "2024-07-01"),
       color: "#FF6600",
       fillOpacity: 0.7,
     },
@@ -788,7 +788,7 @@ function EnergyTemperature({ etData }: { etData: ReportData["et"] }) {
             width={70}
           />
           <ZAxis type="category" dataKey="date" name="Dato" range={[20, 20]} />
-          <Tooltip />
+          {showScatterDetails && <Tooltip />}
           {result2.map((it, idx) => (
             <Scatter
               key={idx}
@@ -800,36 +800,36 @@ function EnergyTemperature({ etData }: { etData: ReportData["et"] }) {
             />
           ))}
           <Line
-            data={trendData(etData.linearH21V22)}
+            data={trendData(etData.linearH21V23)}
             dataKey="power"
             stroke="#AAAAAA"
             strokeOpacity={0.5}
-            name="H21 / V22"
-            isAnimationActive={false}
-          />
-          <Line
-            data={trendData(etData.linearH22)}
-            dataKey="power"
-            stroke="#6aa84f"
-            strokeOpacity={0.5}
-            name="H22"
-            isAnimationActive={false}
-          />
-          <Line
-            data={trendData(etData.linearV23)}
-            dataKey="power"
-            stroke="#336EFF"
-            strokeOpacity={0.5}
-            name="V23"
+            name="H21V23"
             isAnimationActive={false}
           />
           <Line
             data={trendData(etData.linearH23)}
             dataKey="power"
+            stroke="#6aa84f"
+            strokeOpacity={0.5}
+            name="H23"
+            isAnimationActive={false}
+          />
+          <Line
+            data={trendData(etData.linearV24)}
+            dataKey="power"
+            stroke="#336EFF"
+            strokeOpacity={0.5}
+            name="V24"
+            isAnimationActive={false}
+          />
+          <Line
+            data={trendData(etData.linearH24)}
+            dataKey="power"
             stroke="#ff6600"
             strokeOpacity={0.8}
             strokeWidth={2}
-            name="H23"
+            name="H24"
             isAnimationActive={false}
           />
           <Legend verticalAlign="top" height={40} />
@@ -837,24 +837,24 @@ function EnergyTemperature({ etData }: { etData: ReportData["et"] }) {
       </ResponsiveContainer>
       <ul>
         <li>
-          Høst 2021 / vår 2022: forbruk = f(temperatur) ={" "}
-          {roundTwoDec(etData.linearH21V22.slope)} * temperatur +{" "}
-          {Math.round(etData.linearH21V22.yStart)}
-        </li>
-        <li>
-          Høst 2022: forbruk = f(temperatur) ={" "}
-          {roundTwoDec(etData.linearH22.slope)} * temperatur +{" "}
-          {Math.round(etData.linearH22.yStart)}
-        </li>
-        <li>
-          Vår 2023: forbruk = f(temperatur) ={" "}
-          {roundTwoDec(etData.linearV23.slope)} * temperatur +{" "}
-          {Math.round(etData.linearV23.yStart)}
+          Høst 2021 - vår 2023: forbruk = f(temperatur) ={" "}
+          {roundTwoDec(etData.linearH21V23.slope)} * temperatur +{" "}
+          {Math.round(etData.linearH21V23.yStart)}
         </li>
         <li>
           Høst 2023: forbruk = f(temperatur) ={" "}
           {roundTwoDec(etData.linearH23.slope)} * temperatur +{" "}
           {Math.round(etData.linearH23.yStart)}
+        </li>
+        <li>
+          Vår 2024: forbruk = f(temperatur) ={" "}
+          {roundTwoDec(etData.linearV24.slope)} * temperatur +{" "}
+          {Math.round(etData.linearV24.yStart)}
+        </li>
+        <li>
+          Høst 2024: forbruk = f(temperatur) ={" "}
+          {roundTwoDec(etData.linearH24.slope)} * temperatur +{" "}
+          {Math.round(etData.linearH24.yStart)}
         </li>
       </ul>
       <p>

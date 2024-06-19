@@ -565,6 +565,70 @@ function generateLastDaysTableReport(data: Data, indexedData: IndexedData) {
   );
 }
 
+function createEt(data: ReturnType<typeof generateEnergyTemperatureReport>) {
+  return {
+    rows: data,
+    linearAll: createTrend(
+      data.filter(
+        (it) =>
+          it.temperature != null &&
+          it.power != null &&
+          it.temperature < trendlineTemperatureLowerThan
+      ),
+      "temperature",
+      "power"
+    ),
+    linearH21V23: createTrend(
+      data
+        .filter(
+          (it) =>
+            it.temperature != null &&
+            it.power != null &&
+            it.temperature < trendlineTemperatureLowerThan
+        )
+        .filter((it) => it.date >= "2021-07" && it.date < "2023-07"),
+      "temperature",
+      "power"
+    ),
+    linearH23: createTrend(
+      data
+        .filter(
+          (it) =>
+            it.temperature != null &&
+            it.power != null &&
+            it.temperature < trendlineTemperatureLowerThan
+        )
+        .filter((it) => it.date >= "2023-07" && it.date < "2024"),
+      "temperature",
+      "power"
+    ),
+    linearV24: createTrend(
+      data
+        .filter(
+          (it) =>
+            it.temperature != null &&
+            it.power != null &&
+            it.temperature < trendlineTemperatureLowerThan
+        )
+        .filter((it) => it.date >= "2024-01" && it.date < "2024-07"),
+      "temperature",
+      "power"
+    ),
+    linearH24: createTrend(
+      data
+        .filter(
+          (it) =>
+            it.temperature != null &&
+            it.power != null &&
+            it.temperature < trendlineTemperatureLowerThan
+        )
+        .filter((it) => it.date >= "2024-07"),
+      "temperature",
+      "power"
+    ),
+  };
+}
+
 export async function generateReportData(data: Data) {
   const indexedData = indexData(data);
 
@@ -650,128 +714,8 @@ export async function generateReportData(data: Data) {
         Temporal.Now.plainDateTimeISO("Europe/Oslo")
       ),
     },
-    et: {
-      rows: energyTemperatureReport,
-      linearAll: createTrend(
-        energyTemperatureReport.filter(
-          (it) =>
-            it.temperature != null &&
-            it.power != null &&
-            it.temperature < trendlineTemperatureLowerThan
-        ),
-        "temperature",
-        "power"
-      ),
-      linearH21V22: createTrend(
-        energyTemperatureReport
-          .filter(
-            (it) =>
-              it.temperature != null &&
-              it.power != null &&
-              it.temperature < trendlineTemperatureLowerThan
-          )
-          .filter((it) => it.date >= "2021-07" && it.date < "2022-07"),
-        "temperature",
-        "power"
-      ),
-      linearH22: createTrend(
-        energyTemperatureReport
-          .filter(
-            (it) =>
-              it.temperature != null &&
-              it.power != null &&
-              it.temperature < trendlineTemperatureLowerThan
-          )
-          .filter((it) => it.date >= "2022-07" && it.date < "2023"),
-        "temperature",
-        "power"
-      ),
-      linearV23: createTrend(
-        energyTemperatureReport
-          .filter(
-            (it) =>
-              it.temperature != null &&
-              it.power != null &&
-              it.temperature < trendlineTemperatureLowerThan
-          )
-          .filter((it) => it.date >= "2023-01" && it.date < "2023-07"),
-        "temperature",
-        "power"
-      ),
-      linearH23: createTrend(
-        energyTemperatureReport
-          .filter(
-            (it) =>
-              it.temperature != null &&
-              it.power != null &&
-              it.temperature < trendlineTemperatureLowerThan
-          )
-          .filter((it) => it.date >= "2023-07"),
-        "temperature",
-        "power"
-      ),
-    },
-    etFjernvarme: {
-      rows: energyTemperatureReportFjernvarme,
-      linearAll: createTrend(
-        energyTemperatureReportFjernvarme.filter(
-          (it) =>
-            it.temperature != null &&
-            it.power != null &&
-            it.temperature < trendlineTemperatureLowerThan
-        ),
-        "temperature",
-        "power"
-      ),
-      linearH21V22: createTrend(
-        energyTemperatureReportFjernvarme
-          .filter(
-            (it) =>
-              it.temperature != null &&
-              it.power != null &&
-              it.temperature < trendlineTemperatureLowerThan
-          )
-          .filter((it) => it.date >= "2021-07" && it.date < "2022-07"),
-        "temperature",
-        "power"
-      ),
-      linearH22: createTrend(
-        energyTemperatureReportFjernvarme
-          .filter(
-            (it) =>
-              it.temperature != null &&
-              it.power != null &&
-              it.temperature < trendlineTemperatureLowerThan
-          )
-          .filter((it) => it.date >= "2022-07" && it.date < "2023-01"),
-        "temperature",
-        "power"
-      ),
-      linearV23: createTrend(
-        energyTemperatureReportFjernvarme
-          .filter(
-            (it) =>
-              it.temperature != null &&
-              it.power != null &&
-              it.temperature < trendlineTemperatureLowerThan
-          )
-          .filter((it) => it.date >= "2023-01" && it.date < "2023-07"),
-        "temperature",
-        "power"
-      ),
-      linearH23: createTrend(
-        energyTemperatureReportFjernvarme
-          .filter(
-            (it) =>
-              it.temperature != null &&
-              it.power != null &&
-              it.temperature < trendlineTemperatureLowerThan
-          )
-          .filter((it) => it.date >= "2023-07"),
-        "temperature",
-        "power"
-      ),
-    },
+    et: createEt(energyTemperatureReport),
+    etFjernvarme: createEt(energyTemperatureReportFjernvarme),
     prices: {
       rows: generatePriceReport(
         data,
