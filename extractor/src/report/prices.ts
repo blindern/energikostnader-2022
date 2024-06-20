@@ -164,6 +164,45 @@ export function fjernvarmeRabatt(
   }
 }
 
+// øre/kWh lest fra faktura.
+// Har ikke klart å regne meg frem til modellen bak dette tallet.
+// Ofte er dette rundt 10 % ekstra utover spotprisen.
+// Vi får ikke helt samme tall til slutt fordi vi beregner time-for-time,
+// men dette gir i det minste et mye nærmere tall.
+export const stroemKraftMonthlyAverage: Record<string, number | undefined> = {
+  "2022-01": 1.4787 * 1.25,
+  "2022-02": 1.267 * 1.25,
+  "2022-03": 1.9414 * 1.25,
+  "2022-04": 1.8068 * 1.25,
+  "2022-05": 1.7191 * 1.25,
+  "2022-06": 1.5684 * 1.25,
+  "2022-07": 1.7358 * 1.25,
+  "2022-08": 3.5868 * 1.25,
+  "2022-09": 3.7164 * 1.25,
+  "2022-10": 1.4163 * 1.25,
+  "2022-11": 1.2457 * 1.25,
+  "2022-12": 2.9962 * 1.25,
+  "2023-01": 1.3578 * 1.25,
+  "2023-02": 1.2154 * 1.25,
+  "2023-03": 1.1863 * 1.25,
+  "2023-04": 1.1614 * 1.25,
+  "2023-05": 0.8342 * 1.25,
+  "2023-06": 0.7781 * 1.25,
+  "2023-07": 0.4098 * 1.25,
+  "2023-08": 0.2467 * 1.25,
+  "2023-09": 0.0538 * 1.25,
+  "2023-10": 0.5151 * 1.25,
+  "2023-11": 1.1387 * 1.25,
+  "2023-12": 1.0759 * 1.25,
+  "2024-01": 1.0017 * 1.25,
+  "2024-02": 0.7345 * 1.25,
+  "2024-03": 0.7384 * 1.25,
+  "2024-04": 0.6582 * 1.25,
+  "2024-05": 0.4177 * 1.25,
+};
+
+export const stroemKraftMonthlyDefaultFactor = 1.1;
+
 // Uten MVA.
 export const finansieltResultatPerKwhActualByMonth: Record<
   string,
@@ -422,7 +461,10 @@ function calculateStroemHourlyPricePre2023Apr(props: {
   return {
     usageKwh: props.usageKwh,
     variableByKwh: multiplyWithUsage(props.usageKwh, {
-      "Strøm: Kraft": spotpriceHourPerKwh,
+      "Strøm: Kraft":
+        spotpriceHourPerKwh *
+        (props.indexedData.stroemSpotpriceFactorByMonth[yearMonth] ??
+          stroemKraftMonthlyDefaultFactor),
       "Strøm: Finansielt resultat": getFinansieltResultatPerKwh(yearMonth),
       "Strøm: Påslag": stroemPaaslagPerKwh,
       "Nettleie: Energiledd": energileddPerKwhByMonth[yearMonth] ?? NaN,
@@ -465,7 +507,10 @@ function calculateStroemHourlyPriceFrom2023Apr(props: {
   return {
     usageKwh: props.usageKwh,
     variableByKwh: multiplyWithUsage(props.usageKwh, {
-      "Strøm: Kraft": spotpriceHourPerKwh,
+      "Strøm: Kraft":
+        spotpriceHourPerKwh *
+        (props.indexedData.stroemSpotpriceFactorByMonth[yearMonth] ??
+          stroemKraftMonthlyDefaultFactor),
       "Strøm: Finansielt resultat": getFinansieltResultatPerKwh(yearMonth),
       "Strøm: Påslag": stroemPaaslagPerKwh,
       "Nettleie: Energiledd": energileddPerKwhByMonth[yearMonth] ?? NaN,

@@ -6,10 +6,12 @@ import {
   DataPowerUsageHour,
   DataTemperatureHour,
 } from "../service/data-store.js";
+import { stroemKraftMonthlyAverage } from "./prices.js";
 
 export interface IndexedData {
   lastDate: Temporal.PlainDate;
   stroemByHour: Record<string, number | undefined>;
+  stroemSpotpriceFactorByMonth: Record<string, number | undefined>;
   fjernvarmeByHour: Record<string, number | undefined>;
   spotpriceByHour: Record<string, number | undefined>;
   spotpriceByMonth: Record<string, number | undefined>;
@@ -88,9 +90,15 @@ export function indexData(data: Data): IndexedData {
     R.indexBy(R.prop("date"), data.dailyTemperature ?? [])
   );
 
+  const stroemSpotpriceFactorByMonth = R.mapObjIndexed((it, yearMonth) => {
+    const spotprice = spotpriceByMonth[yearMonth];
+    return it != null && spotprice != null ? it / spotprice : undefined;
+  }, stroemKraftMonthlyAverage);
+
   return {
     lastDate,
     stroemByHour,
+    stroemSpotpriceFactorByMonth,
     fjernvarmeByHour,
     spotpriceByHour,
     spotpriceByMonth,
