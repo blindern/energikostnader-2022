@@ -174,3 +174,7 @@ p {
   color: red;
   font-size: 10px;
 }
+
+.monthly-item {
+  display: inline-block;
+}

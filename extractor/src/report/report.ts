@@ -53,7 +53,9 @@ export function generateMonthlyReport(
   lastDate: Temporal.PlainDate
 ) {
   const dates = datesInRange(firstDate, lastDate).map((it) => it.toString());
-  const yearMonths = Array.from(new Set(dates.map((it) => it.slice(0, 7))));
+
+  const years = Array.from(new Set(dates.map((it) => it.slice(0, 4))));
+  const months = Array.from(new Set(dates.map((it) => it.slice(5, 7))));
 
   const datesByYearMonths = R.groupBy((date: string) => date.slice(0, 7))(
     dates
@@ -93,46 +95,71 @@ export function generateMonthlyReport(
     )
   );
 
-  return yearMonths.map((yearMonth) => {
-    let priceStroem = 0;
-    let priceFjernvarme = 0;
+  return months.map((month) => {
+    type YearMonthData = {
+      stroem: number | undefined;
+      fjernvarme: number | undefined;
+      forbrukSum: number | null;
+      temperature: number | undefined;
+      price: number | null;
+      spotprice: number | null;
+    };
 
-    for (const date of datesByYearMonths[yearMonth] ?? []) {
-      for (const hour of hoursInADay) {
-        const index = dateHourIndexer({ date, hour });
-        priceStroem += zeroForNaN(
-          sumPrice(
-            calculateStroemHourlyPrice({
-              data,
-              indexedData,
-              date,
-              hour,
-              usageKwh: indexedData.stroemByHour[index] ?? NaN,
-            })
-          )
-        );
-        priceFjernvarme += zeroForNaN(
-          sumPrice(
-            calculateFjernvarmeHourlyPrice({
-              data,
-              indexedData,
-              date,
-              hour,
-              usageKwh: indexedData.fjernvarmeByHour[index] ?? NaN,
-            })
-          )
-        );
+    const obj = {
+      month,
+      name: month,
+      years: {} as Record<string, YearMonthData>,
+    };
+
+    for (const year of years) {
+      let priceStroem = 0;
+      let priceFjernvarme = 0;
+
+      const yearMonth = `${year}-${month}`;
+
+      for (const date of datesByYearMonths[yearMonth] ?? []) {
+        for (const hour of hoursInADay) {
+          const index = dateHourIndexer({ date, hour });
+          priceStroem += zeroForNaN(
+            sumPrice(
+              calculateStroemHourlyPrice({
+                data,
+                indexedData,
+                date,
+                hour,
+                usageKwh: indexedData.stroemByHour[index] ?? NaN,
+              })
+            )
+          );
+          priceFjernvarme += zeroForNaN(
+            sumPrice(
+              calculateFjernvarmeHourlyPrice({
+                data,
+                indexedData,
+                date,
+                hour,
+                usageKwh: indexedData.fjernvarmeByHour[index] ?? NaN,
+              })
+            )
+          );
+        }
       }
+
+      obj.years[year] = {
+        stroem: stroem[yearMonth],
+        fjernvarme: fjernvarme[yearMonth],
+        forbrukSum: nullForZero(
+          (stroem[yearMonth] ?? 0) + (fjernvarme[yearMonth] ?? 0)
+        ),
+        temperature: temperatures[yearMonth],
+        price: nullForZero(roundTwoDec(priceStroem + priceFjernvarme)),
+        spotprice: nullForZero(
+          zeroForNaN(indexedData.spotpriceByMonth[yearMonth] ?? NaN) * 100
+        ),
+      };
     }
 
-    return {
-      yearMonth,
-      name: yearMonth,
-      stroem: stroem[yearMonth],
-      fjernvarme: fjernvarme[yearMonth],
-      temperature: temperatures[yearMonth],
-      price: nullForZero(roundTwoDec(priceStroem + priceFjernvarme)),
-    };
+    return obj;
   });
 }
 

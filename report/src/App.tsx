@@ -70,6 +70,18 @@ const monthNamesLong: Record<number, string> = {
   12: "Desember",
 };
 
+// https://www.heavy.ai/blog/12-color-palettes-for-telling-better-stories-with-your-data
+const colors = [
+  "#e60049",
+  "#0bb4ff",
+  "#50e991",
+  "#e6d800",
+  "#9b19f5",
+  "#ffa300",
+  "#dc0ab4",
+  "#b3d4ff",
+  "#00bfa0",
+];
 type ReportData = Awaited<ReturnType<typeof generateReportData>>;
 
 function deriveTempTickCount(data: number[]): number[] {
@@ -338,111 +350,115 @@ function Daily({
   );
 }
 
-function Monthly({ graphData }: { graphData: ReportData["monthly"]["rows"] }) {
+function MonthlyData({
+  graphData,
+  label,
+  field,
+}: {
+  graphData: ReportData["monthly"]["rows"];
+  label: string;
+  field: keyof ReportData["monthly"]["rows"][0]["years"][""] | "priceByKwh";
+}) {
+  const years = [
+    ...new Set(graphData.flatMap((it) => Object.keys(it.years))),
+  ].sort();
+
   return (
-    <ResponsiveContainer width="100%" height={450}>
-      <ComposedChart
-        data={graphData.map((it) => ({
-          ...it,
-          forbrukSum: (it.stroem ?? 0) + (it.fjernvarme ?? 0),
-        }))}
-      >
-        <CartesianGrid stroke="#dddddd" />
-        <Area
-          type="monotone"
-          dataKey="forbrukSum"
-          name="Forbruk alt"
-          stroke="#888888"
-          strokeOpacity={0.3}
-          fill="#888888"
-          fillOpacity={0.3}
-          isAnimationActive={false}
-          dot={false}
-          legendType="plainline"
-          strokeWidth={1.2}
-        />
-        <Area
-          type="monotone"
-          dataKey="fjernvarme"
-          name="Fjernvarme"
-          stroke="#ff0000"
-          fill="#ff0000"
-          fillOpacity={0.3}
-          isAnimationActive={false}
-          dot={false}
-          legendType="plainline"
-          strokeWidth={1.2}
-        />
-        <Area
-          type="monotone"
-          dataKey="stroem"
-          name="Strøm"
-          stroke="#6aa84f"
-          fill="#6aa84f"
-          fillOpacity={0.3}
-          isAnimationActive={false}
-          dot={false}
-          legendType="plainline"
-          strokeWidth={1.2}
-        />
-        <Line
-          type="monotone"
-          dataKey="temperature"
-          name="Utetemperatur Blindern"
-          stroke="#336EFF"
-          yAxisId="temp"
-          isAnimationActive={false}
-          dot={false}
-          legendType="plainline"
-          strokeWidth={1.2}
-        />
-        <Line
-          type="monotone"
-          dataKey="price"
-          name="Estimert kostnad"
-          stroke="#555555"
-          yAxisId="price"
-          isAnimationActive={false}
-          dot={false}
-          legendType="plainline"
-          strokeWidth={1.2}
-        />
-        {graphData
-          .slice(1)
-          .filter((it) => it.yearMonth.endsWith("-01"))
-          .map((it) => (
-            <ReferenceLine
-              key={`year-${it.name}`}
-              x={it.name}
-              stroke="#555555"
+    <div className="monthly-item">
+      <h3>{label}</h3>
+      <ResponsiveContainer width={500} height={450}>
+        <ComposedChart data={graphData}>
+          <CartesianGrid stroke="#dddddd" />
+          {years.map((year, idx) => (
+            <Line
+              type="monotone"
+              dataKey={
+                field === "priceByKwh"
+                  ? (it) =>
+                      Math.round(
+                        (it.years[year].price / it.years[year].forbrukSum) * 100
+                      )
+                  : `years.${year}.${field}`
+              }
+              name={year}
+              stroke={colors[idx % colors.length]}
+              isAnimationActive={false}
+              dot={false}
+              legendType="plainline"
+              strokeWidth={1.2}
             />
           ))}
-        <XAxis
-          dataKey="name"
-          angle={-90}
-          height={40}
-          interval={0}
-          tickMargin={15}
-          fontSize={7}
-        />
-        <YAxis unit=" kWh" tickCount={15} />
-        <YAxis
-          yAxisId="temp"
-          unit=" &#8451;"
-          orientation="right"
-          interval={0}
-          ticks={deriveTempTickCount(
-            graphData.map((it) => it.temperature ?? 0)
-          )}
-          domain={["dataMin", "dataMax"]}
-          width={40}
-        />
-        <YAxis yAxisId="price" unit=" kr" orientation="right" tickCount={15} />
-        <YAxis yAxisId="label" hide domain={[0, 1]} />
-        <Tooltip />
-        <Legend verticalAlign="top" height={20} />
-      </ComposedChart>
-    </ResponsiveContainer>
+          <XAxis dataKey={(it) => monthNames[Number(it.month)]} />
+          {field === "temperature" ? (
+            <YAxis
+              unit=" &#8451;"
+              interval={0}
+              ticks={deriveTempTickCount(
+                graphData.flatMap((it) =>
+                  Object.values(it.years).map((it) => it.temperature ?? 0)
+                )
+              )}
+              domain={["dataMin", "dataMax"]}
+              width={100}
+            />
+          ) : field === "fjernvarme" ||
+            field === "stroem" ||
+            field === "forbrukSum" ? (
+            <YAxis unit=" kWh" tickCount={15} width={100} />
+          ) : field === "price" ? (
+            <YAxis unit=" kr" tickCount={15} width={100} />
+          ) : field === "spotprice" || field === "priceByKwh" ? (
+            <YAxis unit=" øre" tickCount={15} width={100} />
+          ) : null}
+          <Tooltip />
+          {field === "priceByKwh" &&
+            Object.entries(averagePrices).map(([year, price]) => (
+              <ReferenceLine
+                y={price * 100}
+                stroke="#555"
+                strokeWidth={1}
+                strokeDasharray="3 4"
+                label={year}
+              />
+            ))}
+          <Legend verticalAlign="top" height={20} />
+        </ComposedChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+function Monthly({ graphData }: { graphData: ReportData["monthly"]["rows"] }) {
+  return (
+    <>
+      <MonthlyData graphData={graphData} label="Kostnad" field="price" />
+      <MonthlyData
+        graphData={graphData}
+        label="Forbruk alt"
+        field="forbrukSum"
+      />
+      <MonthlyData
+        graphData={graphData}
+        label="Gjennomsnittlig reell pris pr kWh"
+        field="priceByKwh"
+      />
+      <MonthlyData
+        graphData={graphData}
+        label="Gjennomsnittlig spotpris"
+        field="spotprice"
+      />
+      <MonthlyData
+        graphData={graphData}
+        label="Gjennomsnittlig utetemperatur Blindern"
+        field="temperature"
+      />
+      <MonthlyData
+        graphData={graphData}
+        label="Forbruk fjernvarme"
+        field="fjernvarme"
+      />
+      <MonthlyData graphData={graphData} label="Forbruk strøm" field="stroem" />
+    </>
   );
 }
 
@@ -1252,7 +1268,11 @@ function App() {
                 />
               </Fragment>
             ))}
-          <h2>Månedlig forbruk</h2>
+          <h2>Sammenlikning måned for måned på tvers av år</h2>
+          <p>
+            Vær obs på at inneværende måned vil ha manglende tall og vil vise
+            feil verdi.
+          </p>
           <Monthly graphData={reportData.monthly.rows} />
           <h2>Årlig forbruk</h2>
           <Yearly tableData={reportData.table.yearly} />
