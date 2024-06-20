@@ -18,7 +18,10 @@ import {
   ZAxis,
 } from "recharts";
 import { trendlineTemperatureLowerThan } from "@blindern/energi-extractor/src/report/constants.js";
-import { UsagePrice } from "@blindern/energi-extractor/src/report/prices.js";
+import {
+  UsagePrice,
+  pricesConfig,
+} from "@blindern/energi-extractor/src/report/prices.js";
 import { generateReportData } from "@blindern/energi-extractor/src/report/report.js";
 
 function roundTwoDec(value: number) {
@@ -863,9 +866,11 @@ function sumall(usage: UsagePrice) {
 }
 
 function PriceDetails({
+  type,
   item,
   datapointsCount,
 }: {
+  type: "stroem" | "fjernvarme";
   item: UsagePrice;
   datapointsCount: number;
 }) {
@@ -886,29 +891,56 @@ function PriceDetails({
           <p>Priser medregnet MVA</p>
           <p>Fastpriser</p>
           <ul>
-            {Object.entries(item.static).map(([key, val]) => (
-              <li key={key}>
-                {key}: {roundTwoDec(val)}
-              </li>
-            ))}
+            {Object.entries(item.static).map(([key, val]) => {
+              const mva =
+                pricesConfig.static[key as keyof typeof pricesConfig.static]
+                  ?.mva;
+              return (
+                <li key={key}>
+                  {key}: {roundTwoDec(val)}
+                  {!!mva && ` (eks mva: ${roundTwoDec(val / (1 + mva))})`}
+                </li>
+              );
+            })}
           </ul>
           <p>Variable priser</p>
           <ul>
-            {Object.entries(item.variableByKwh).map(([key, val]) => (
-              <li key={key}>
-                {key}: {roundTwoDec(val)}
-              </li>
-            ))}
+            {Object.entries(item.variableByKwh).map(([key, val]) => {
+              const mva =
+                pricesConfig.variableByKwh[
+                  key as keyof typeof pricesConfig.variableByKwh
+                ]?.mva;
+              return (
+                <li key={key}>
+                  {key}: {roundTwoDec(val)}
+                  {!!mva && ` (eks mva: ${roundTwoDec(val / (1 + mva))})`}
+                </li>
+              );
+            })}
           </ul>
           {stroemkostnad != null && (
             <p>
               Snitt kraftpris:{" "}
               {roundTwoDec((stroemkostnad / item.usageKwh) * 100)} øre / kWh
+              {` (eks mva: ${roundTwoDec(
+                ((stroemkostnad / item.usageKwh) * 100) / 1.25
+              )} øre / kWh)`}
             </p>
           )}
           <p>
             Snitt per kWh: {roundTwoDec((sum / item.usageKwh) * 100)} øre / kWh
           </p>
+          {type === "fjernvarme" && (
+            <p>
+              Snitt per kWh eks mva (for fakturakontroll):{" "}
+              {roundTwoDec(
+                (((sum - (item.static["Fastledd"] ?? 0)) / item.usageKwh) *
+                  100) /
+                  1.25
+              )}{" "}
+              øre / kWh
+            </p>
+          )}
           <p>Datapunkter: {datapointsCount}</p>
         </div>
       )}
@@ -989,12 +1021,14 @@ function TableData({
             </td>
             <td>
               <PriceDetails
+                type="stroem"
                 item={it.stroem}
                 datapointsCount={it.stroemDatapointsCount}
               />
             </td>
             <td>
               <PriceDetails
+                type="fjernvarme"
                 item={it.fjernvarme}
                 datapointsCount={it.fjernvarmeDatapointsCount}
               />

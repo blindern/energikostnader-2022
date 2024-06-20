@@ -7,13 +7,6 @@ export function roundTwoDec(value: number) {
   return Math.round(value * 100) / 100;
 }
 
-export function multiplyWithUsage(
-  usage: number,
-  values: Record<string, number>
-) {
-  return R.mapObjIndexed((it) => it * usage, values);
-}
-
 export function averageSpotprice(
   indexedData: IndexedData,
   dates: Temporal.PlainDate[]

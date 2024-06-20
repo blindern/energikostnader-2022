@@ -1,17 +1,51 @@
 import { Temporal } from "@js-temporal/polyfill";
 import * as R from "ramda";
 import { Data } from "../service/data-store.js";
-import { multiplyWithUsage, roundTwoDec, zeroForNaN } from "./helpers.js";
+import { roundTwoDec, zeroForNaN } from "./helpers.js";
 import {
   dateHourIndexer,
   IndexedData,
   yearMonthIndexer,
 } from "./indexed-data.js";
 
+interface PriceConfigItem {
+  mva: 0 | 0.25;
+}
+
+export const pricesConfig = {
+  variableByKwh: {
+    "Administrativt påslag": { mva: 0.25 },
+    Forbruksavgift: { mva: 0.25 },
+    Kraft: { mva: 0.25 },
+    Nettleie: { mva: 0.25 },
+    "Nettleie: Elavgift": { mva: 0.25 },
+    "Nettleie: Energiledd": { mva: 0.25 },
+    "Nettleie: Forbruksavgift": { mva: 0.25 },
+    Rabatt: { mva: 0.25 },
+    "Strøm: Finansielt resultat": { mva: 0 },
+    "Strøm: Kraft": { mva: 0.25 },
+    "Strøm: Påslag": { mva: 0.25 },
+    Strømstøtte: { mva: 0 },
+    "Unsupported price model": { mva: 0 },
+  },
+  static: {
+    Fastledd: { mva: 0.25 },
+    "Nettleie: Aktiv effekt": { mva: 0.25 },
+    "Nettleie: Effektledd": { mva: 0.25 },
+    "Nettleie: Energifondet fastavgift": { mva: 0.25 },
+    "Nettleie: Fastledd lavspent Næring": { mva: 0.25 },
+    "Nettleie: Fastledd": { mva: 0.25 },
+    "Strøm: Fastbeløp": { mva: 0.25 },
+    "Unsupported price model": { mva: 0 },
+  },
+} satisfies Record<string, Record<string, PriceConfigItem>>;
+
 export interface UsagePrice {
   usageKwh: number;
-  variableByKwh: Record<string, number>;
-  static: Record<string, number>;
+  variableByKwh: Partial<
+    Record<keyof typeof pricesConfig.variableByKwh, number>
+  >;
+  static: Partial<Record<keyof typeof pricesConfig.static, number>>;
 }
 
 // Fra og med april 2024 er denne fast 50 kr måned og ikke 600 i året delt på antall dager,
@@ -693,4 +727,11 @@ export function flattenPrices(items: UsagePrice[]): UsagePrice {
     };
   }
   return items.reduce(addPrices);
+}
+
+export function multiplyWithUsage(
+  usage: number,
+  values: UsagePrice["variableByKwh"]
+): UsagePrice["variableByKwh"] {
+  return R.mapObjIndexed((it) => it * usage, values);
 }
