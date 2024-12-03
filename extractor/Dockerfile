@@ -1,4 +1,4 @@
-FROM node:20-slim AS base
+FROM node:22-slim AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
@@ -9,8 +9,8 @@ FROM base AS build
 COPY --chown=node:node . /usr/src/app/
 
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm --filter ./extractor deploy /tmp/pruned
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm --filter ./extractor deploy pruned
 
 FROM base
-COPY --from=build /tmp/pruned .
+COPY --from=build /usr/src/app/pruned .
 CMD ["pnpm", "start"]
