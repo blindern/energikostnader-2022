@@ -997,6 +997,7 @@ function TableData({
       <th>Kostnad strøm</th>
       <th>Kostnad fjernvarme</th>
       <th>Kostnad alt</th>
+      <th>øre/kWh</th>
     </tr>
   );
 
@@ -1052,6 +1053,17 @@ function TableData({
             <td>
               {(skipOverride ? undefined : sumOverride[it.name]) ??
                 Math.round(sumall(it.stroem) + sumall(it.fjernvarme))}
+            </td>
+            <td>
+              {it.stroem.usageKwh + it.fjernvarme.usageKwh > 0 && (
+                <>
+                  {Math.round(
+                    ((sumall(it.stroem) + sumall(it.fjernvarme)) /
+                      (it.stroem.usageKwh + it.fjernvarme.usageKwh)) *
+                      100
+                  )}
+                </>
+              )}
             </td>
           </tr>
         ))}
