@@ -86,11 +86,11 @@ const nettFastleddMaanedByMonth: Record<string, number | undefined> = {
   "2024-03": 433.33 * 1.25, // From invoice.
   "2024-04": 433.33 * 1.25, // From invoice.
   "2024-05": 433.33 * 1.25, // From invoice.
-  "2024-06": 433.33 * 1.25, // Assumption.
-  "2024-07": 433.33 * 1.25, // Assumption.
-  "2024-08": 433.33 * 1.25, // Assumption.
-  "2024-09": 433.33 * 1.25, // Assumption.
-  "2024-10": 433.33 * 1.25, // Assumption.
+  "2024-06": 433.33 * 1.25, // From invoice.
+  "2024-07": 433.33 * 1.25, // From invoice.
+  "2024-08": 433.33 * 1.25, // From invoice.
+  "2024-09": 433.33 * 1.25, // From invoice.
+  "2024-10": 433.33 * 1.25, // From invoice.
   "2024-11": 433.33 * 1.25, // Assumption.
   "2024-12": 433.33 * 1.25, // Assumption.
 };
@@ -235,6 +235,11 @@ export const stroemKraftMonthlyAverage: Record<string, number | undefined> = {
   "2024-03": 0.7384 * 1.25,
   "2024-04": 0.6582 * 1.25,
   "2024-05": 0.4177 * 1.25,
+  "2024-06": 0.4356 * 1.25,
+  "2024-07": 0.3285 * 1.25,
+  "2024-08": 0.166 * 1.25,
+  "2024-09": 0.2692 * 1.25,
+  "2024-10": 0.458 * 1.25,
 };
 
 export const stroemKraftMonthlyDefaultFactor = 1.1;
@@ -273,6 +278,11 @@ export const finansieltResultatPerKwhActualByMonth: Record<
   "2024-03": 0.1848, // From invoice.
   "2024-04": -0.0316, // From invoice.
   "2024-05": 0.0869, // From invoice.
+  "2024-06": 0.0755, // From invoice.
+  "2024-07": 0.1129, // From invoice.
+  "2024-08": 0.1691, // From invoice.
+  "2024-09": 0.1281, // From invoice.
+  "2024-10": 0.2856, // From invoice.
 };
 
 // https://www.elvia.no/nettleie/alt-om-nettleiepriser/nettleiepriser-og-effekttariff-for-bedrifter-med-arsforbruk-over-100000-kwh/
@@ -306,13 +316,25 @@ export const energileddPerKwhByMonth: Record<string, number | undefined> = {
   "2024-03": 0.05 * 1.25,
   "2024-04": 0.05 * 1.25,
   "2024-05": 0.05 * 1.25,
-  "2024-06": 0.05 * 1.25, // Asssumption.
-  "2024-07": 0.05 * 1.25, // Asssumption.
-  "2024-08": 0.05 * 1.25, // Asssumption.
-  "2024-09": 0.05 * 1.25, // Asssumption.
-  "2024-10": 0.05 * 1.25, // Asssumption.
+  "2024-06": 0.05 * 1.25,
+  "2024-07": 0.05 * 1.25,
+  "2024-08": 0.05 * 1.25,
+  "2024-09": 0.05 * 1.25,
+  "2024-10": 0.05 * 1.25,
   "2024-11": 0.05 * 1.25, // Asssumption.
   "2024-12": 0.05 * 1.25, // Asssumption.
+  "2025-01": 0.05 * 1.25, // Asssumption.
+  "2025-02": 0.05 * 1.25, // Asssumption.
+  "2025-03": 0.05 * 1.25, // Asssumption.
+  "2025-04": 0.05 * 1.25, // Asssumption.
+  "2025-05": 0.05 * 1.25, // Asssumption.
+  "2025-06": 0.05 * 1.25, // Asssumption.
+  "2025-07": 0.05 * 1.25, // Asssumption.
+  "2025-08": 0.05 * 1.25, // Asssumption.
+  "2025-09": 0.05 * 1.25, // Asssumption.
+  "2025-10": 0.05 * 1.25, // Asssumption.
+  "2025-11": 0.05 * 1.25, // Asssumption.
+  "2025-12": 0.05 * 1.25, // Asssumption.
 };
 
 // https://www.skatteetaten.no/bedrift-og-organisasjon/avgifter/saravgifter/om/elektrisk-kraft/
@@ -348,13 +370,27 @@ export const forbruksavgiftPerKwhByMonth: Record<string, number | undefined> = {
   "2024-03": 0.0951 * 1.25,
   "2024-04": 0.1644 * 1.25,
   "2024-05": 0.1644 * 1.25,
-  "2024-06": 0.1644 * 1.25, // Assumption.
-  "2024-07": 0.1644 * 1.25, // Assumption.
-  "2024-08": 0.1644 * 1.25, // Assumption.
-  "2024-09": 0.1644 * 1.25, // Assumption.
-  "2024-10": 0.1644 * 1.25, // Assumption.
+  "2024-06": 0.1644 * 1.25,
+  "2024-07": 0.1644 * 1.25,
+  "2024-08": 0.1644 * 1.25,
+  "2024-09": 0.1644 * 1.25,
+  "2024-10": 0.1644 * 1.25,
   "2024-11": 0.1644 * 1.25, // Assumption.
   "2024-12": 0.1644 * 1.25, // Assumption.
+  // https://www.regjeringen.no/no/tema/okonomi-og-budsjett/skatter-og-avgifter/avgiftssatser-2025/id3057881/
+  // "Avgift på elektrisk kraft"
+  "2025-01": 0.0979 * 1.25, // Assumption.
+  "2025-02": 0.0979 * 1.25, // Assumption.
+  "2025-03": 0.0979 * 1.25, // Assumption.
+  "2025-04": 0.1693 * 1.25, // Assumption.
+  "2025-05": 0.1693 * 1.25, // Assumption.
+  "2025-06": 0.1693 * 1.25, // Assumption.
+  "2025-07": 0.1693 * 1.25, // Assumption.
+  "2025-08": 0.1693 * 1.25, // Assumption.
+  "2025-09": 0.1693 * 1.25, // Assumption.
+  "2025-10": 0.1693 * 1.25, // Assumption.
+  "2025-11": 0.1693 * 1.25, // Assumption.
+  "2025-12": 0.1693 * 1.25, // Assumption.
 };
 
 // https://www.elvia.no/nettleie/alt-om-nettleiepriser/nettleiepriser-og-effekttariff-for-bedrifter-med-arsforbruk-over-100000-kwh/
@@ -381,6 +417,7 @@ export const effektleddPerKwhByMonth: Record<string, number | undefined> = {
   // Står nå som bare "Effekt" på faktura.
   "2023-08": 95.4 * 32 * 1.25, // From invoice.
   "2023-09": 107.6 * 32 * 1.25, // From invoice.
+  // Prisjustering fra 1. oktober.
   "2023-10": 107.8 * 86 * 1.25, // From invoice.
   "2023-11": 114.4 * 86 * 1.25, // From invoice.
   "2023-12": 121 * 86 * 1.25, // From invoice.
@@ -389,13 +426,28 @@ export const effektleddPerKwhByMonth: Record<string, number | undefined> = {
   "2024-03": 104.4 * 86 * 1.25, // From invoice.
   "2024-04": 115.2 * 36 * 1.25, // From invoice.
   "2024-05": 106 * 36 * 1.25, // From invoice.
-  "2024-06": 94.2 * 36 * 1.25, // Guess.
-  "2024-07": 57.4 * 36 * 1.25, // Guess.
-  "2024-08": 95.4 * 36 * 1.25, // Guess.
-  "2024-09": 100 * 36 * 1.25, // Guess.
-  "2024-10": 110 * 86 * 1.25, // Guess.
-  "2024-11": 120 * 86 * 1.25, // Guess.
-  "2024-12": 120 * 86 * 1.25, // Guess.
+  "2024-06": 95.2 * 36 * 1.25, // From invoice.
+  "2024-07": 71.2 * 36 * 1.25, // From invoice.
+  "2024-08": 97.2 * 36 * 1.25, // From invoice.
+  "2024-09": 98.4 * 36 * 1.25, // From invoice.
+  // Prisjustering fra 1. oktober.
+  "2024-10": 106.2 * 104 * 1.25, // From invoice.
+  "2024-11": 120 * 104 * 1.25, // Guess.
+  "2024-12": 120 * 104 * 1.25, // Guess.
+  // https://assets.ctfassets.net/jbub5thfds15/3ZXkhgLNRYaCtyZoH4q6xz/5ea4057a4edc76bdd18171c76fa289b0/Tariffblad_3_0_Stor_n_ring_effekt_lavspent_20250101.pdf
+  "2025-01": 118.2 * 92 * 1.25, // Guess.
+  "2025-02": 112.2 * 92 * 1.25, // Guess.
+  "2025-03": 104.4 * 92 * 1.25, // Guess.
+  "2025-04": 115.2 * 38 * 1.25, // Guess.
+  "2025-05": 106 * 38 * 1.25, // Guess.
+  "2025-06": 95.2 * 38 * 1.25, // Guess.
+  "2025-07": 71.2 * 38 * 1.25, // Guess.
+  "2025-08": 97.2 * 38 * 1.25, // Guess.
+  "2025-09": 98.4 * 38 * 1.25, // Guess.
+  // Antatt prisjustering fra 1. oktober.
+  "2025-10": 106.2 * 98 * 1.25, // Guess.
+  "2025-11": 115 * 98 * 1.25, // Guess.
+  "2025-12": 120 * 98 * 1.25, // Guess.
 };
 
 // https://www.regjeringen.no/no/aktuelt/vil-forlenge-stromstotten-til-husholdninger-ut-2023/id2930621/
@@ -439,11 +491,25 @@ const priceSupportPercentByMonth: Record<string, number | undefined> = {
   "2024-10": 0.9,
   "2024-11": 0.9,
   "2024-12": 0.9,
+  // https://www.regjeringen.no/no/tema/energi/regjeringens-stromtiltak/id2900232/?expand=factbox2900261
+  "2025-01": 0.9,
+  "2025-02": 0.9,
+  "2025-03": 0.9,
+  "2025-04": 0.9,
+  "2025-05": 0.9,
+  "2025-06": 0.9,
+  "2025-07": 0.9,
+  "2025-08": 0.9,
+  "2025-09": 0.9,
+  "2025-10": 0.9,
+  "2025-11": 0.9,
+  "2025-12": 0.9,
 };
 
 function getPriceSupportThreshold(yearMonth: string) {
   if (yearMonth < "2024") return 0.7;
-  return 0.73;
+  if (yearMonth < "2025") return 0.73;
+  return 0.75;
 }
 
 function getFinansieltResultatPerKwh(yearMonth: string) {
