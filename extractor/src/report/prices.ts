@@ -93,6 +93,18 @@ const nettFastleddMaanedByMonth: Record<string, number | undefined> = {
   "2024-10": 433.33 * 1.25, // From invoice.
   "2024-11": 433.33 * 1.25, // Assumption.
   "2024-12": 433.33 * 1.25, // Assumption.
+  "2025-01": 433.33 * 1.25, // Assumption.
+  "2025-02": 433.33 * 1.25, // Assumption.
+  "2025-03": 433.33 * 1.25, // Assumption.
+  "2025-04": 433.33 * 1.25, // Assumption.
+  "2025-05": 433.33 * 1.25, // Assumption.
+  "2025-06": 433.33 * 1.25, // Assumption.
+  "2025-07": 433.33 * 1.25, // Assumption.
+  "2025-08": 433.33 * 1.25, // Assumption.
+  "2025-09": 433.33 * 1.25, // Assumption.
+  "2025-10": 433.33 * 1.25, // Assumption.
+  "2025-11": 433.33 * 1.25, // Assumption.
+  "2025-12": 433.33 * 1.25, // Assumption.
 };
 
 // https://www.celsio.no/fjernvarme-og-kjoling/
@@ -137,6 +149,19 @@ const fjernvarmeNettleiePerKwhByMonth: Record<string, number | undefined> = {
   "2024-10": 0.2609 * 1.25,
   "2024-11": 0.2609 * 1.25,
   "2024-12": 0.2609 * 1.25,
+  // https://www.hafslund.no/no/produkter-og-tjenester/fjernvarme/priser-fjernvarme/prismodell-for-fjernvarme-i-borettslag-og-sameier
+  "2025-01": 0.269 * 1.25,
+  "2025-02": 0.269 * 1.25,
+  "2025-03": 0.269 * 1.25,
+  "2025-04": 0.269 * 1.25,
+  "2025-05": 0.269 * 1.25,
+  "2025-06": 0.269 * 1.25,
+  "2025-07": 0.269 * 1.25,
+  "2025-08": 0.269 * 1.25,
+  "2025-09": 0.269 * 1.25,
+  "2025-10": 0.269 * 1.25,
+  "2025-11": 0.269 * 1.25,
+  "2025-12": 0.269 * 1.25,
 };
 
 export function fjernvarmeRabatt(
@@ -379,6 +404,7 @@ export const forbruksavgiftPerKwhByMonth: Record<string, number | undefined> = {
   "2024-12": 0.1644 * 1.25, // Assumption.
   // https://www.regjeringen.no/no/tema/okonomi-og-budsjett/skatter-og-avgifter/avgiftssatser-2025/id3057881/
   // "Avgift på elektrisk kraft"
+  // https://www.hafslund.no/no/produkter-og-tjenester/fjernvarme/priser-fjernvarme/prismodell-for-fjernvarme-i-borettslag-og-sameier
   "2025-01": 0.0979 * 1.25, // Assumption.
   "2025-02": 0.0979 * 1.25, // Assumption.
   "2025-03": 0.0979 * 1.25, // Assumption.
